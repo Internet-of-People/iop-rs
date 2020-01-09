@@ -1,7 +1,20 @@
 [package]
 name = "morpheus-sdk"
 version = "0.1.0"
-authors = ["Rache Bartmoss <bartmoss@tutanota.com>"]
+authors = ["IoP Ventures LLC <info@iop-ventures.com>", "Rache Bartmoss <bartmoss@tutanota.com>", "wigy <wigy_opensource_developer@yahoo.com>"]
+license = "LGPL-3.0-or-later"
 edition = "2018"
 
 [dependencies]
+async-trait = "*"
+failure = "*"
+futures = "*"
+keyvault = { git="https://github.com/Internet-of-People/mercury-rust" }
+log = "*"
+serde = "*"
+serde_bytes = "*"
+serde_json = "*"
+tokio = { version="*", features=["full"] }
+
+[dev-dependencies]
+tempfile = "*"
