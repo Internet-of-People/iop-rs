@@ -6,7 +6,7 @@ use failure::{ensure, format_err, Fallible};
 use log::*;
 use serde::{Deserialize, Serialize};
 
-use crate::model::*;
+use crate::data::did::*;
 use keyvault::{
     ed25519::{Ed25519, EdExtPrivateKey},
     multicipher, ExtendedPrivateKey, ExtendedPublicKey, KeyDerivationCrypto, PublicKey, Seed,

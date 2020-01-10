@@ -1,0 +1,108 @@
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
+
+use keyvault::multicipher;
+
+const PREFIX_DID_MORPHEUS: &str = "did:morpheus:";
+
+// NOTE should be const, but current language rules do not allow that
+fn prefix_multicipher_keyid() -> String {
+    multicipher::MKeyId::PREFIX.to_string()
+}
+
+#[derive(Clone, Debug, Eq, Hash, PartialEq, PartialOrd)]
+pub struct Did {
+    key_id: multicipher::MKeyId,
+}
+
+impl Serialize for Did {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        multicipher::MKeyId::serialize(&self.key_id, serializer)
+    }
+}
+
+impl<'de> Deserialize<'de> for Did {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        multicipher::MKeyId::deserialize(deserializer).map(|key_id| Did::new(key_id))
+    }
+}
+
+impl Did {
+    pub fn new(key_id: multicipher::MKeyId) -> Self {
+        Self { key_id }
+    }
+
+    pub fn key_id(&self) -> multicipher::MKeyId {
+        self.key_id.to_owned()
+    }
+}
+
+impl std::fmt::Display for Did {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> Result<(), std::fmt::Error> {
+        write!(f, "{}", String::from(self))
+    }
+}
+
+impl From<multicipher::MKeyId> for Did {
+    fn from(src: multicipher::MKeyId) -> Self {
+        Did::new(src)
+    }
+}
+
+impl From<&multicipher::MKeyId> for Did {
+    fn from(src: &multicipher::MKeyId) -> Self {
+        src.to_owned().into()
+    }
+}
+
+impl std::str::FromStr for Did {
+    type Err = failure::Error;
+    fn from_str(src: &str) -> Result<Self, Self::Err> {
+        if !src.starts_with(PREFIX_DID_MORPHEUS) {
+            failure::bail!("{} is not a valid DID: must start with {}", src, PREFIX_DID_MORPHEUS);
+        }
+        let mkeyid = src.replacen(PREFIX_DID_MORPHEUS, &prefix_multicipher_keyid(), 1);
+        Ok(Did::new(mkeyid.parse()?))
+    }
+}
+
+impl From<&Did> for String {
+    fn from(src: &Did) -> Self {
+        let key_id_str = src.key_id.to_string();
+        // if !key_id_str.starts_with(prefix_multicipher_keyid) {
+        //     panic!("Implementation error: {} is not a valid KeyId: must start with {}", key_id_str, prefix_multicipher_keyid );
+        // }
+        let result = key_id_str.replacen(&prefix_multicipher_keyid(), PREFIX_DID_MORPHEUS, 1);
+        result
+    }
+}
+
+impl From<Did> for String {
+    fn from(src: Did) -> Self {
+        (&src).into()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use failure::Fallible;
+
+    fn test_did_id(did_str: &str, key_id_str: &str) -> Fallible<()> {
+        let did = Did::new(key_id_str.parse()?);
+        assert_eq!(did.to_string(), did_str);
+        assert_eq!(did, did_str.parse()?);
+        Ok(())
+    }
+
+    #[test]
+    fn did_format() -> Fallible<()> {
+        test_did_id("did:morpheus:ezbeWGSY2dqcUBqT8K7R14xr", "iezbeWGSY2dqcUBqT8K7R14xr")?;
+        test_did_id("did:morpheus:ez25N5WZ1Q6TQpgpyYgiu9gTX", "iez25N5WZ1Q6TQpgpyYgiu9gTX")
+    }
+}
