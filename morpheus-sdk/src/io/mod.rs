@@ -1,2 +1,2 @@
-pub mod did;
-pub mod store;
+pub mod dist;
+pub mod local;

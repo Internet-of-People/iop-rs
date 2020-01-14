@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
 
-use crate::data::{claim::Claim, did::Did, hash::Content, sign::Signable};
+use crate::crypto::{hash::Content, sign::Signable};
+use crate::data::{claim::Claim, did::Did};
 
 #[derive(Clone, Debug, Deserialize, Eq, Hash, PartialEq, PartialOrd, Serialize)]
 pub struct License {

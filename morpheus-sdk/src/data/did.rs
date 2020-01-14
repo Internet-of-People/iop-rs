@@ -11,7 +11,7 @@ fn prefix_multicipher_keyid() -> String {
 
 #[derive(Clone, Debug, Eq, Hash, PartialEq, PartialOrd)]
 pub struct Did {
-    key_id: multicipher::MKeyId,
+    default_key_id: multicipher::MKeyId,
 }
 
 impl Serialize for Did {
@@ -19,7 +19,7 @@ impl Serialize for Did {
     where
         S: Serializer,
     {
-        multicipher::MKeyId::serialize(&self.key_id, serializer)
+        multicipher::MKeyId::serialize(&self.default_key_id, serializer)
     }
 }
 
@@ -34,11 +34,11 @@ impl<'de> Deserialize<'de> for Did {
 
 impl Did {
     pub fn new(key_id: multicipher::MKeyId) -> Self {
-        Self { key_id }
+        Self { default_key_id: key_id }
     }
 
-    pub fn key_id(&self) -> multicipher::MKeyId {
-        self.key_id.to_owned()
+    pub fn default_key_id(&self) -> multicipher::MKeyId {
+        self.default_key_id.to_owned()
     }
 }
 
@@ -73,7 +73,7 @@ impl std::str::FromStr for Did {
 
 impl From<&Did> for String {
     fn from(src: &Did) -> Self {
-        let key_id_str = src.key_id.to_string();
+        let key_id_str = src.default_key_id.to_string();
         // if !key_id_str.starts_with(prefix_multicipher_keyid) {
         //     panic!("Implementation error: {} is not a valid KeyId: must start with {}", key_id_str, prefix_multicipher_keyid );
         // }

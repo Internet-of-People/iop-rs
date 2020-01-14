@@ -113,7 +113,7 @@ impl InMemoryDidVault {
             .records
             .iter()
             .enumerate()
-            .filter(|(_idx, rec)| rec.pubkey.validate_id(&did.key_id()));
+            .filter(|(_idx, rec)| rec.pubkey.validate_id(&did.default_key_id()));
         matches_it.map(|(idx, _rec)| idx).next()
     }
 
@@ -148,8 +148,12 @@ impl DidVault for InMemoryDidVault {
     }
 
     fn record_by_did(&self, did: &Did) -> Fallible<DidVaultRecord> {
-        let rec_opt =
-            self.records.iter().filter(|rec| rec.pubkey.validate_id(&did.key_id())).cloned().next();
+        let rec_opt = self
+            .records
+            .iter()
+            .filter(|rec| rec.pubkey.validate_id(&did.default_key_id()))
+            .cloned()
+            .next();
         rec_opt.ok_or_else(|| format_err!("Vault does not contain DID {}", did))
     }
 

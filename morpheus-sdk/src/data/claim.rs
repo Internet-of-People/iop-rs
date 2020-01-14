@@ -1,12 +1,10 @@
 use serde::{Deserialize, Serialize};
 
-use crate::data::{
-    did::Did,
+use crate::crypto::{
     hash::{Content, ContentId},
-    process::ProcessId,
-    schema::MorpheusValue,
     sign::{Nonce, Signable},
 };
+use crate::data::{did::Did, process::ProcessId, schema::MorpheusValue};
 
 pub type ClaimId = ContentId;
 

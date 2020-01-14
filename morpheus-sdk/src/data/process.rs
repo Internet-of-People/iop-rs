@@ -1,10 +1,10 @@
 use serde::{Deserialize, Serialize};
 
-use crate::data::{
+use crate::crypto::{
     hash::{Content, ContentId},
-    schema::MorpheusSchema,
     sign::Signable,
 };
+use crate::data::schema::MorpheusSchema;
 
 pub type ProcessId = ContentId;
 

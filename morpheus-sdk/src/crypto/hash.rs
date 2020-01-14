@@ -52,6 +52,12 @@ impl Clone for ContentId {
     }
 }
 
+impl<'a> From<&'a ContentId> for &'a [u8] {
+    fn from(src: &'a ContentId) -> Self {
+        src.inner.as_bytes()
+    }
+}
+
 impl From<&ContentId> for String {
     fn from(src: &ContentId) -> Self {
         multibase::encode(multibase::Base::Base58btc, src.inner.as_bytes())
@@ -85,7 +91,7 @@ impl std::str::FromStr for ContentId {
     }
 }
 
-pub trait Content: Serialize {
+pub trait Content: Serialize + Clone + Sized {
     fn to_bytes(&self) -> Fallible<Vec<u8>> {
         // TODO consider a usable default
         Ok(serde_json::to_vec_pretty(self)?)
