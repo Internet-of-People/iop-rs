@@ -1,3 +1,5 @@
+pub mod hydra;
+
 use async_trait::async_trait;
 use failure::Fallible;
 use serde::{Deserialize, Serialize};
@@ -88,7 +90,7 @@ pub trait PooledLedgerTransaction {
 
 // TODO change this trait to fetch full history as TimeSeries instead of latest snapshot
 #[async_trait(?Send)]
-pub trait DidDocumentLedgerQueries {
+pub trait LedgerQueries {
     async fn validate<T: Signable>(
         &self, on_behalf_of: &Did, signer_id: Option<MKeyId>, signed: &Signed<T>,
     ) -> Fallible<ValidationStatus>;
@@ -102,46 +104,10 @@ pub trait DidDocumentLedgerQueries {
 }
 
 #[async_trait(?Send)]
-pub trait DidDocumentLedgerOperations {
+pub trait LedgerOperations {
     async fn send_transaction(
         &self, operations: &[OperationAttempt],
     ) -> Fallible<Box<PooledLedgerTransaction>>;
-}
-
-pub struct HydraDidLedger {
-    // TODO
-}
-
-#[async_trait(?Send)]
-impl DidDocumentLedgerQueries for HydraDidLedger {
-    async fn validate<T: Signable>(
-        &self, on_behalf_of: &Did, signer_id: Option<MKeyId>, signed: &Signed<T>,
-    ) -> Fallible<ValidationStatus> {
-        todo!()
-    }
-
-    async fn validate_timeproofed<T: Signable>(
-        &self, on_behalf_of: &Did, signer_id: Option<MKeyId>, signed: &AfterEnvelope<T>,
-    ) -> Fallible<ValidationStatus> {
-        todo!()
-    }
-
-    async fn before_proof_exists(&self, content: &ContentId) -> Fallible<bool> {
-        todo!()
-    }
-
-    async fn document(&self, did: &Did) -> Fallible<DidDocument> {
-        todo!()
-    }
-}
-
-#[async_trait(?Send)]
-impl DidDocumentLedgerOperations for HydraDidLedger {
-    async fn send_transaction(
-        &self, operations: &[OperationAttempt],
-    ) -> Fallible<Box<PooledLedgerTransaction>> {
-        todo!()
-    }
 }
 
 // TODO consider if this is needed in general? We could do this with a From-like wrapper trait.

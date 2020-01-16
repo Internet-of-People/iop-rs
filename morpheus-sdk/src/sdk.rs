@@ -2,16 +2,16 @@ use failure::Fallible;
 
 use crate::data::{did::Did, diddoc::Right};
 use crate::io::{
-    dist::did::{DidDocumentLedgerQueries, HydraDidLedger},
+    dist::did::{LedgerOperations, LedgerQueries},
     local::didvault::{DidVault, PersistentDidVault},
 };
 
-pub struct Client<V: DidVault, L: DidDocumentLedgerQueries> {
+pub struct Client<V: DidVault, L: LedgerQueries + LedgerOperations> {
     vault: V,
     ledger: L,
 }
 
-impl<V: DidVault, L: DidDocumentLedgerQueries> Client<V, L> {
+impl<V: DidVault, L: LedgerQueries + LedgerOperations> Client<V, L> {
     pub fn new(vault: V, ledger: L) -> Self {
         Self { vault, ledger }
     }
