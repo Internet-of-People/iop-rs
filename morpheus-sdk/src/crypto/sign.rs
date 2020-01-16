@@ -3,16 +3,18 @@ use failure::Fallible;
 use serde::{Deserialize, Serialize};
 
 use crate::crypto::hash::{Content, ContentId};
-use crate::data::diddoc::Authentication;
+use crate::data::diddoc::{Authentication, BlockHeight};
 use keyvault::{
     multicipher::{MPublicKey, MSignature},
     PublicKey,
 };
 
+// TODO signer trait maybe belongs more under crate::io::local
 #[async_trait(?Send)]
 pub trait Signer {
-    // TODO is it reasonable to assume that signing can always return the public key?
-    async fn sign(&self, data: &[u8], auth: &Authentication) -> Fallible<(MPublicKey, MSignature)>;
+    fn authentication(&self) -> &Authentication;
+
+    async fn sign(&self, data: &[u8]) -> Fallible<(MPublicKey, MSignature)>;
 }
 
 pub type Nonce = u32;
@@ -25,12 +27,13 @@ pub trait Signable: Content {
         Ok(content_id_bytes.to_owned())
     }
 
-    async fn sign(&self, signer: &dyn Signer, auth: &Authentication) -> Fallible<Signed<Self>> {
-        let (public_key, signature) = signer.sign(&self.content_to_sign()?, auth).await?;
+    async fn sign(&self, signer: &dyn Signer) -> Fallible<Signed<Self>> {
+        let (public_key, signature) = signer.sign(&self.content_to_sign()?).await?;
         Ok(Signed { message: self.clone(), public_key, signature })
     }
 }
 
+// TODO implement Hash for MPublicKey and MSignature
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
 pub struct Signed<T>
 where
@@ -71,14 +74,22 @@ where
 
 pub type BlockHash = ContentId;
 
+#[derive(Clone, Debug, Deserialize, Eq, Hash, PartialEq, Serialize)]
+pub struct AfterProof {
+    block_hash: BlockHash,
+    block_height: BlockHeight,
+}
+
+//impl Content for AfterProof {}
+//impl Signable for AfterProof {}
+
 // TODO Eq, PartialEq and maybe PartialOrd for AfterEnvelope
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct AfterEnvelope<T: Signable> {
     // TODO will contentId be fetched from the content or needs a separate field?
     //      should we just use the contentId here and provide another way to resolve the content from it?
     content: T,
-    block: BlockHash,
-    // TODO is a transactionId also needed here?
+    proof: AfterProof, // TODO is a transactionId also needed here?
 }
 
 impl<T: Signable> Content for AfterEnvelope<T> {}

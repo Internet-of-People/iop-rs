@@ -19,7 +19,7 @@ pub type Metadata = String;
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
 pub struct DidVaultRecord {
     bip32_idx: i32,
-    pubkey: multicipher::MPublicKey,
+    public_key: multicipher::MPublicKey,
     label: Label,
     metadata: Metadata,
     // document: DidDocument,
@@ -29,7 +29,7 @@ pub struct DidVaultRecord {
 
 impl DidVaultRecord {
     fn new(bip32_idx: i32, pubkey: multicipher::MPublicKey, label: Label) -> Self {
-        Self { bip32_idx, pubkey, label, metadata: Default::default() }
+        Self { bip32_idx, public_key: pubkey, label, metadata: Default::default() }
         // version: 0
         // document: DidDocument {}
     }
@@ -38,10 +38,13 @@ impl DidVaultRecord {
         self.bip32_idx
     }
     pub fn public_key(&self) -> multicipher::MPublicKey {
-        self.pubkey.to_owned()
+        self.public_key.to_owned()
+    }
+    pub fn key_id(&self) -> multicipher::MKeyId {
+        self.public_key.key_id()
     }
     pub fn did(&self) -> Did {
-        self.pubkey.key_id().into()
+        self.key_id().into()
     }
     pub fn label(&self) -> Label {
         self.label.to_owned()
@@ -61,6 +64,7 @@ impl DidVaultRecord {
 #[async_trait(?Send)]
 pub trait DidVault {
     fn dids(&self) -> Fallible<Vec<Did>>;
+
     fn get_active(&self) -> Fallible<Option<Did>>;
     async fn set_active(&mut self, did: &Did) -> Fallible<()>;
 
@@ -78,6 +82,8 @@ pub trait DidVault {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct InMemoryDidVault {
     seed: Seed,
+    // TODO remove redundancy of next_idx and derive it from records.len() instead
+    //      or decide to use sparse representation of records instead
     next_idx: usize,
     active_idx: Option<usize>,
     records: Vec<DidVaultRecord>,
@@ -113,7 +119,7 @@ impl InMemoryDidVault {
             .records
             .iter()
             .enumerate()
-            .filter(|(_idx, rec)| rec.pubkey.validate_id(&did.default_key_id()));
+            .filter(|(_idx, rec)| rec.public_key.validate_id(&did.default_key_id()));
         matches_it.map(|(idx, _rec)| idx).next()
     }
 
@@ -151,7 +157,7 @@ impl DidVault for InMemoryDidVault {
         let rec_opt = self
             .records
             .iter()
-            .filter(|rec| rec.pubkey.validate_id(&did.default_key_id()))
+            .filter(|rec| rec.public_key.validate_id(&did.default_key_id()))
             .cloned()
             .next();
         rec_opt.ok_or_else(|| format_err!("Vault does not contain DID {}", did))
@@ -183,7 +189,7 @@ impl DidVault for InMemoryDidVault {
             .ok_or_else(|| format_err!("Index {} is invalid in record", idx))?;
         ensure!(old_rec.bip32_idx == record.bip32_idx, "Implementation error: invariant failed");
         let pub_key = self.public_key(record.bip32_idx)?;
-        ensure!(old_rec.pubkey == pub_key, "Public key is immutable in record");
+        ensure!(old_rec.public_key == pub_key, "Public key is immutable in record");
 
         self.records[idx] = record;
         Ok(())

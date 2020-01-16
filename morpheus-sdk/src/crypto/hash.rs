@@ -4,7 +4,7 @@ use failure::Fallible;
 use multihash::Multihash;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
-// TODO Implement Eq, PartialEq, PartialOrd for ContentId
+#[derive(Eq, Hash, PartialEq)]
 pub struct ContentId {
     inner: Multihash,
 }
