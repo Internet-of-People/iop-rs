@@ -1,5 +1,5 @@
 use std::fs::File;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use async_trait::async_trait;
 use failure::{ensure, format_err, Fallible};
@@ -202,11 +202,12 @@ pub struct PersistentDidVault {
 }
 
 impl PersistentDidVault {
-    pub fn new(in_memory_vault: InMemoryDidVault, path: &PathBuf) -> Self {
-        Self { in_memory_vault, path: path.to_owned() }
+    pub fn new(in_memory_vault: InMemoryDidVault, path: impl AsRef<Path>) -> Self {
+        Self { in_memory_vault, path: path.as_ref().to_owned() }
     }
 
-    pub async fn load(path: &PathBuf) -> Fallible<Self> {
+    pub async fn load(path: impl AsRef<Path>) -> Fallible<Self> {
+        let path: &Path = path.as_ref();
         debug!("Loading DidVault from {:?}", path);
         let vault_file = File::open(path)?;
         let vault: InMemoryDidVault = serde_json::from_reader(&vault_file)?;
@@ -224,7 +225,7 @@ impl PersistentDidVault {
         Ok(Self::new(vault, path))
     }
 
-    async fn save(&mut self) -> Fallible<()> {
+    pub async fn save(&mut self) -> Fallible<()> {
         debug!("Saving profile vault to persist its state");
         if let Some(vault_dir) = self.path.parent() {
             debug!("Recursively Creating directory {:?}", vault_dir);

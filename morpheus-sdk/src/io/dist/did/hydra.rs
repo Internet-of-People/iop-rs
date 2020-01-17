@@ -17,6 +17,12 @@ pub struct HydraDidLedger {
     // TODO
 }
 
+impl HydraDidLedger {
+    pub fn new() -> Self {
+        Self {}
+    }
+}
+
 #[async_trait(?Send)]
 impl LedgerQueries for HydraDidLedger {
     async fn validate<T: Signable>(
