@@ -16,32 +16,58 @@ fn str_in<'a>(s: *const raw::c_char) -> Fallible<&'a str> {
     Ok(s)
 }
 
+fn string_out(s: String) -> *mut raw::c_char {
+    let c_str = ffi::CString::new(s).unwrap();
+    c_str.into_raw()
+}
+
 type Callback<T> = extern "C" fn(T) -> ();
 
 #[no_mangle]
-pub extern "C" fn init(success: Callback<*const raw::c_void>, error: Callback<*const raw::c_char>) -> () {
+pub extern "C" fn init_sdk(
+    callback: Callback<*mut imp::SdkContext>, error: Callback<*const raw::c_char>,
+) {
     match imp::SdkContext::new() {
-        Ok(ctx) => success(&ctx),
-        Err(e) => error(e.to_string()),
+        Ok(ctx) => callback(Box::into_raw(Box::new(ctx))),
+        Err(e) => error(string_out(e.to_string())),
     }
 }
 
 #[no_mangle]
-pub extern "C" fn create_vault(ctx: *mut imp::SdkContext, seed: *const raw::c_char, path: *const raw::c_char) -> bool {
+pub extern "C" fn create_vault(
+    ctx: *mut imp::SdkContext, seed: *const raw::c_char, path: *const raw::c_char,
+    callback: Callback<()>, error: Callback<*const raw::c_char>,
+) {
     let ctx = unsafe { &mut *ctx };
-    let may_fail = async { ctx.create_vault(str_in(seed)?, str_in(path)?).await };
-    match ctx.run(may_fail) {
-        Ok(()) => true,
-        Err(e) => false,
+    let (runtime, client) = (&mut ctx.runtime, &mut ctx.client);
+    let fallible_async =
+        async { imp::SdkContext::create_vault(client, str_in(seed)?, str_in(path)?).await };
+    match runtime.block_on(fallible_async) {
+        Ok(()) => callback(()),
+        Err(e) => error(string_out(e.to_string())),
     }
 }
 
 #[no_mangle]
-pub extern "C" fn load_vault(*mut SdkContext, path: *const raw::c_char) -> bool {
-    let may_fail = async { safe::load_vault(str_in(path)?).await };
-    match may_fail {
-        Ok(()) => true,
-        Err(e) => false,
+pub extern "C" fn load_vault(
+    ctx: *mut imp::SdkContext, path: *const raw::c_char, callback: Callback<()>,
+    error: Callback<*const raw::c_char>,
+) {
+    let mut ctx = unsafe { &mut *ctx };
+    let (runtime, client) = (&mut ctx.runtime, &mut ctx.client);
+    let fallible_async = async { imp::SdkContext::load_vault(client, str_in(path)?).await };
+    match runtime.block_on(fallible_async) {
+        Ok(()) => callback(()),
+        Err(e) => error(string_out(e.to_string())),
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn close_sdk(sdk: *mut imp::SdkContext) {
+    if !sdk.is_null() {
+        unsafe {
+            Box::from_raw(sdk);
+        }
     }
 }
 
@@ -57,42 +83,36 @@ mod imp {
     pub type StandardClient = Client<PersistentDidVault, HydraDidLedger>;
 
     pub struct SdkContext {
-        client: Option<StandardClient>,
-        runtime: tokio::runtime::Runtime,
+        pub client: Option<StandardClient>,
+        pub runtime: tokio::runtime::Runtime,
     }
 
     impl SdkContext {
         pub fn new() -> Fallible<Self> {
-            let client = Default::default();
             let runtime = tokio::runtime::Builder::new().basic_scheduler().enable_all().build()?;
-            Ok(Self {
-                client,
-                runtime
-            })
+            Ok(Self { client: Default::default(), runtime })
         }
 
-        pub fn run<R>(&mut self, f: &mut (dyn std::future::Future<Output = R> + Unpin)) -> R {
-            self.runtime.block_on(f)
-        }
-
-        pub async fn create_vault(&mut self, seed: &str, path: &str) -> Fallible<()> {
+        pub async fn create_vault(
+            client: &mut Option<StandardClient>, seed: &str, path: &str,
+        ) -> Fallible<()> {
             let seed = keyvault::Seed::from_bip39(seed)?;
-            let mem_vault =  InMemoryDidVault::new(seed);
-            let persistent_vault = PersistentDidVault::new(mem_vault, path);
-            persistent_vault.save().await;
-            self.set_client(persistent_vault);
-            Ok(())
-        }
-    
-        pub async fn load_vault(&mut self, path: &str) -> Fallible<()> {
-            let persistent_vault = PersistentDidVault::load(path).await?;
-            self.set_client(persistent_vault);
+            let mem_vault = InMemoryDidVault::new(seed);
+            let mut persistent_vault = PersistentDidVault::new(mem_vault, path);
+            persistent_vault.save().await?;
+            Self::set_client(client, persistent_vault);
             Ok(())
         }
 
-        fn set_client(&mut self, vault: PersistentDidVault) -> () {
+        pub async fn load_vault(client: &mut Option<StandardClient>, path: &str) -> Fallible<()> {
+            let persistent_vault = PersistentDidVault::load(path).await?;
+            Self::set_client(client, persistent_vault);
+            Ok(())
+        }
+
+        fn set_client(client: &mut Option<StandardClient>, vault: PersistentDidVault) -> () {
             let ledger = HydraDidLedger::new();
-            self.client.replace( StandardClient::new(vault, HydraDidLedger::new()) );
+            client.replace(StandardClient::new(vault, ledger));
         }
     }
 }
