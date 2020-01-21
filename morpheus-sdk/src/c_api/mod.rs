@@ -9,7 +9,7 @@ use std::ffi;
 use std::os::raw;
 // use std::panic::catch_unwind; // TODO consider panic unwinding strategies
 
-use failure::Fallible;
+use failure::{format_err, Fallible};
 
 fn str_in<'a>(s: *const raw::c_char) -> Fallible<&'a str> {
     let c_str = unsafe { ffi::CStr::from_ptr(s) };
@@ -22,23 +22,28 @@ fn string_out(s: String) -> *mut raw::c_char {
     c_str.into_raw()
 }
 
-type Callback<T> = extern "C" fn(T) -> ();
+#[repr(C)]
+pub struct RequestId {
+    _private_internal_layout: [u8; 0],
+}
+type Callback<T> = extern "C" fn(*mut RequestId, T) -> ();
 
-fn dispatch_result_to_c<R>(
-    res: Fallible<R>, success: Callback<R>, error: Callback<*const raw::c_char>,
+fn result_to_c<R>(
+    id: *mut RequestId, res: Fallible<R>, success: Callback<R>, error: Callback<*const raw::c_char>,
 ) {
     match res {
-        Ok(v) => success(v),
-        Err(e) => error(string_out(e.to_string())),
+        Ok(val) => success(id, val),
+        Err(err) => error(id, string_out(err.to_string())),
     }
 }
 
-fn dispatch_result_transformed_to_c<R, S, F: Fn(R) -> S>(
-    res: Fallible<R>, success: Callback<S>, error: Callback<*const raw::c_char>, to_c: F,
+fn result_transformed_to_c<R, S, F: Fn(R) -> S>(
+    id: *mut RequestId, res: Fallible<R>, success: Callback<S>,
+    error: Callback<*const raw::c_char>, transform: F,
 ) {
     match res {
-        Ok(v) => success(to_c(v)),
-        Err(e) => error(string_out(e.to_string())),
+        Ok(v) => success(id, transform(v)),
+        Err(e) => error(id, string_out(e.to_string())),
     }
 }
 
@@ -55,30 +60,31 @@ fn block_on<R>(fut: impl std::future::Future<Output = R>) -> R {
 
 #[no_mangle]
 pub extern "C" fn init_sdk(
-    success: Callback<*mut imp::SdkContext>, error: Callback<*const raw::c_char>,
+    id: *mut RequestId, success: Callback<*mut imp::SdkContext>,
+    error: Callback<*const raw::c_char>,
 ) {
     let result = imp::SdkContext::new();
-    dispatch_result_transformed_to_c(result, success, error, |ctx| Box::into_raw(Box::new(ctx)))
+    result_transformed_to_c(id, result, success, error, |ctx| Box::into_raw(Box::new(ctx)))
 }
 
 #[no_mangle]
 pub extern "C" fn create_vault(
     ctx: *mut imp::SdkContext, seed: *const raw::c_char, path: *const raw::c_char,
-    success: Callback<()>, error: Callback<*const raw::c_char>,
+    id: *mut RequestId, success: Callback<()>, error: Callback<*const raw::c_char>,
 ) {
     let ctx = unsafe { &mut *ctx };
     let result = block_on(async { ctx.create_vault(str_in(seed)?, str_in(path)?).await });
-    dispatch_result_to_c(result, success, error)
+    result_to_c(id, result, success, error)
 }
 
 #[no_mangle]
 pub extern "C" fn load_vault(
-    ctx: *mut imp::SdkContext, path: *const raw::c_char, success: Callback<()>,
+    ctx: *mut imp::SdkContext, path: *const raw::c_char, id: *mut RequestId, success: Callback<()>,
     error: Callback<*const raw::c_char>,
 ) {
     let ctx = unsafe { &mut *ctx };
     let result = block_on(async { ctx.load_vault(str_in(path)?).await });
-    dispatch_result_to_c(result, success, error)
+    result_to_c(id, result, success, error)
 }
 
 #[no_mangle]
