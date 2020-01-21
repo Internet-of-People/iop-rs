@@ -88,6 +88,18 @@ pub extern "C" fn load_vault(
 }
 
 #[no_mangle]
+pub extern "C" fn list_dids(
+    ctx: *mut imp::SdkContext, id: *mut RequestId, success: Callback<()>,
+    error: Callback<*const raw::c_char>,
+) {
+    let ctx = unsafe { &mut *ctx };
+    let result = block_on(async { ctx.list_dids().await });
+    // TODO we should return an array of strings somehow
+    let result = result.map(|dids| ());
+    result_to_c(id, result, success, error)
+}
+
+#[no_mangle]
 pub extern "C" fn close_sdk(sdk: *mut imp::SdkContext) {
     if !sdk.is_null() {
         unsafe {
@@ -100,6 +112,7 @@ mod imp {
     use failure::{err_msg, Fallible};
 
     use crate::{
+        data::did::Did,
         io::dist::did::{hydra::HydraDidLedger, LedgerOperations, LedgerQueries},
         io::local::didvault::{DidVault, InMemoryDidVault, PersistentDidVault},
         sdk::Client,
@@ -131,6 +144,10 @@ mod imp {
             let persistent_vault = PersistentDidVault::load(path).await?;
             self.client.set_vault(persistent_vault);
             Ok(())
+        }
+
+        pub async fn list_dids(&self) -> Fallible<Vec<Did>> {
+            self.client.vault()?.dids()
         }
     }
 }
