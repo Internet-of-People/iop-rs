@@ -9,7 +9,7 @@ use std::ffi;
 use std::os::raw;
 // use std::panic::catch_unwind; // TODO consider panic unwinding strategies
 
-use failure::{format_err, Fallible};
+use failure::Fallible;
 
 fn str_in<'a>(s: *const raw::c_char) -> Fallible<&'a str> {
     let c_str = unsafe { ffi::CStr::from_ptr(s) };
@@ -63,8 +63,8 @@ pub extern "C" fn init_sdk(
     id: *mut RequestId, success: Callback<*mut imp::SdkContext>,
     error: Callback<*const raw::c_char>,
 ) {
-    let result = imp::SdkContext::new();
-    result_transformed_to_c(id, result, success, error, |ctx| Box::into_raw(Box::new(ctx)))
+    let result = imp::SdkContext::default();
+    result_transformed_to_c(id, Ok(result), success, error, |ctx| Box::into_raw(Box::new(ctx)))
 }
 
 #[no_mangle]
@@ -97,43 +97,40 @@ pub extern "C" fn close_sdk(sdk: *mut imp::SdkContext) {
 }
 
 mod imp {
-    use failure::Fallible;
+    use failure::{err_msg, Fallible};
 
     use crate::{
-        io::dist::did::hydra::HydraDidLedger,
-        io::local::didvault::{InMemoryDidVault, PersistentDidVault},
+        io::dist::did::{hydra::HydraDidLedger, LedgerOperations, LedgerQueries},
+        io::local::didvault::{DidVault, InMemoryDidVault, PersistentDidVault},
         sdk::Client,
     };
 
-    pub type StandardClient = Client<PersistentDidVault, HydraDidLedger>;
+    pub type SdkContext = Sdk<PersistentDidVault, HydraDidLedger>;
 
-    pub struct SdkContext {
-        pub client: Option<StandardClient>,
+    pub struct Sdk<V: DidVault, L: LedgerQueries + LedgerOperations> {
+        pub client: Client<V, L>,
+    }
+
+    impl<V: DidVault, L: LedgerQueries + LedgerOperations> Default for Sdk<V, L> {
+        fn default() -> Self {
+            Self { client: Default::default() }
+        }
     }
 
     impl SdkContext {
-        pub fn new() -> Fallible<Self> {
-            Ok(Self { client: Default::default() })
-        }
-
         pub async fn create_vault(&mut self, seed: &str, path: &str) -> Fallible<()> {
             let seed = keyvault::Seed::from_bip39(seed)?;
             let mem_vault = InMemoryDidVault::new(seed);
             let mut persistent_vault = PersistentDidVault::new(mem_vault, path);
             persistent_vault.save().await?;
-            self.set_client(persistent_vault);
+            self.client.set_vault(persistent_vault);
             Ok(())
         }
 
         pub async fn load_vault(&mut self, path: &str) -> Fallible<()> {
             let persistent_vault = PersistentDidVault::load(path).await?;
-            self.set_client(persistent_vault);
+            self.client.set_vault(persistent_vault);
             Ok(())
-        }
-
-        fn set_client(&mut self, vault: PersistentDidVault) -> () {
-            let ledger = HydraDidLedger::new();
-            self.client.replace(StandardClient::new(vault, ledger));
         }
     }
 }
