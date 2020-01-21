@@ -3,7 +3,7 @@ use failure::Fallible;
 use crate::data::{did::Did, diddoc::Right};
 use crate::io::{
     dist::did::{LedgerOperations, LedgerQueries},
-    local::didvault::{DidVault, PersistentDidVault},
+    local::didvault::DidVault,
 };
 
 pub struct Client<V: DidVault, L: LedgerQueries + LedgerOperations> {

@@ -4,9 +4,10 @@
 // 3. sign content with the selected key
 // +1 maybe later: create a witness request
 
+use std::cell::RefCell;
 use std::ffi;
 use std::os::raw;
-use std::panic::catch_unwind;
+// use std::panic::catch_unwind; // TODO consider panic unwinding strategies
 
 use failure::Fallible;
 
@@ -23,43 +24,61 @@ fn string_out(s: String) -> *mut raw::c_char {
 
 type Callback<T> = extern "C" fn(T) -> ();
 
-#[no_mangle]
-pub extern "C" fn init_sdk(
-    callback: Callback<*mut imp::SdkContext>, error: Callback<*const raw::c_char>,
+fn dispatch_result_to_c<R>(
+    res: Fallible<R>, success: Callback<R>, error: Callback<*const raw::c_char>,
 ) {
-    match imp::SdkContext::new() {
-        Ok(ctx) => callback(Box::into_raw(Box::new(ctx))),
+    match res {
+        Ok(v) => success(v),
         Err(e) => error(string_out(e.to_string())),
     }
+}
+
+fn dispatch_result_transformed_to_c<R, S, F: Fn(R) -> S>(
+    res: Fallible<R>, success: Callback<S>, error: Callback<*const raw::c_char>, to_c: F,
+) {
+    match res {
+        Ok(v) => success(to_c(v)),
+        Err(e) => error(string_out(e.to_string())),
+    }
+}
+
+thread_local! {
+    static REACTOR: RefCell<tokio::runtime::Runtime> = RefCell::new(
+        tokio::runtime::Builder::new().enable_all().basic_scheduler().build()
+            .expect("Failed to initialize Tokio runtime")
+     );
+}
+
+fn block_on<R>(fut: impl std::future::Future<Output = R>) -> R {
+    REACTOR.with(|reactor| reactor.borrow_mut().block_on(fut))
+}
+
+#[no_mangle]
+pub extern "C" fn init_sdk(
+    success: Callback<*mut imp::SdkContext>, error: Callback<*const raw::c_char>,
+) {
+    let result = imp::SdkContext::new();
+    dispatch_result_transformed_to_c(result, success, error, |ctx| Box::into_raw(Box::new(ctx)))
 }
 
 #[no_mangle]
 pub extern "C" fn create_vault(
     ctx: *mut imp::SdkContext, seed: *const raw::c_char, path: *const raw::c_char,
-    callback: Callback<()>, error: Callback<*const raw::c_char>,
+    success: Callback<()>, error: Callback<*const raw::c_char>,
 ) {
     let ctx = unsafe { &mut *ctx };
-    let (runtime, client) = (&mut ctx.runtime, &mut ctx.client);
-    let fallible_async =
-        async { imp::SdkContext::create_vault(client, str_in(seed)?, str_in(path)?).await };
-    match runtime.block_on(fallible_async) {
-        Ok(()) => callback(()),
-        Err(e) => error(string_out(e.to_string())),
-    }
+    let result = block_on(async { ctx.create_vault(str_in(seed)?, str_in(path)?).await });
+    dispatch_result_to_c(result, success, error)
 }
 
 #[no_mangle]
 pub extern "C" fn load_vault(
-    ctx: *mut imp::SdkContext, path: *const raw::c_char, callback: Callback<()>,
+    ctx: *mut imp::SdkContext, path: *const raw::c_char, success: Callback<()>,
     error: Callback<*const raw::c_char>,
 ) {
-    let mut ctx = unsafe { &mut *ctx };
-    let (runtime, client) = (&mut ctx.runtime, &mut ctx.client);
-    let fallible_async = async { imp::SdkContext::load_vault(client, str_in(path)?).await };
-    match runtime.block_on(fallible_async) {
-        Ok(()) => callback(()),
-        Err(e) => error(string_out(e.to_string())),
-    }
+    let ctx = unsafe { &mut *ctx };
+    let result = block_on(async { ctx.load_vault(str_in(path)?).await });
+    dispatch_result_to_c(result, success, error)
 }
 
 #[no_mangle]
@@ -84,35 +103,31 @@ mod imp {
 
     pub struct SdkContext {
         pub client: Option<StandardClient>,
-        pub runtime: tokio::runtime::Runtime,
     }
 
     impl SdkContext {
         pub fn new() -> Fallible<Self> {
-            let runtime = tokio::runtime::Builder::new().basic_scheduler().enable_all().build()?;
-            Ok(Self { client: Default::default(), runtime })
+            Ok(Self { client: Default::default() })
         }
 
-        pub async fn create_vault(
-            client: &mut Option<StandardClient>, seed: &str, path: &str,
-        ) -> Fallible<()> {
+        pub async fn create_vault(&mut self, seed: &str, path: &str) -> Fallible<()> {
             let seed = keyvault::Seed::from_bip39(seed)?;
             let mem_vault = InMemoryDidVault::new(seed);
             let mut persistent_vault = PersistentDidVault::new(mem_vault, path);
             persistent_vault.save().await?;
-            Self::set_client(client, persistent_vault);
+            self.set_client(persistent_vault);
             Ok(())
         }
 
-        pub async fn load_vault(client: &mut Option<StandardClient>, path: &str) -> Fallible<()> {
+        pub async fn load_vault(&mut self, path: &str) -> Fallible<()> {
             let persistent_vault = PersistentDidVault::load(path).await?;
-            Self::set_client(client, persistent_vault);
+            self.set_client(persistent_vault);
             Ok(())
         }
 
-        fn set_client(client: &mut Option<StandardClient>, vault: PersistentDidVault) -> () {
+        fn set_client(&mut self, vault: PersistentDidVault) -> () {
             let ledger = HydraDidLedger::new();
-            client.replace(StandardClient::new(vault, ledger));
+            self.client.replace(StandardClient::new(vault, ledger));
         }
     }
 }

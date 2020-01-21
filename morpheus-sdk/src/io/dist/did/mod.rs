@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::crypto::{
     hash::{Content, ContentId},
-    sign::{AfterEnvelope, AfterProof, BlockHash, Signable, Signed, Signer},
+    sign::{AfterEnvelope, AfterProof, Signable, Signed, Signer},
 };
 use crate::data::{
     did::Did,
@@ -107,11 +107,11 @@ pub trait LedgerQueries {
 pub trait LedgerOperations {
     async fn send_transaction(
         &self, operations: &[OperationAttempt],
-    ) -> Fallible<Box<PooledLedgerTransaction>>;
+    ) -> Fallible<Box<dyn PooledLedgerTransaction>>;
 }
 
 // TODO consider if this is needed in general? We could do this with a From-like wrapper trait.
-pub type OwnDidDocumentFactory<T: OwnDidDocument> = FnOnce(Did, &dyn Signer) -> Fallible<T>;
+pub type OwnDidDocumentFactory<T: OwnDidDocument> = dyn FnOnce(Did, &dyn Signer) -> Fallible<T>;
 
 #[async_trait(?Send)]
 pub trait OwnDidDocument {
