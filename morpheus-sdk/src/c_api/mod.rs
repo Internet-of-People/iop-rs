@@ -28,22 +28,28 @@ pub struct RequestId {
 }
 type Callback<T> = extern "C" fn(*mut RequestId, T) -> ();
 
-fn result_to_c<R>(
-    id: *mut RequestId, res: Fallible<R>, success: Callback<R>, error: Callback<*const raw::c_char>,
-) {
-    match res {
-        Ok(val) => success(id, val),
-        Err(err) => error(id, string_out(err.to_string())),
-    }
+struct CallContext<T> {
+    id: *mut RequestId,
+    success: Callback<T>,
+    error: Callback<*const raw::c_char>,
 }
 
-fn result_transformed_to_c<R, S, F: Fn(R) -> S>(
-    id: *mut RequestId, res: Fallible<R>, success: Callback<S>,
-    error: Callback<*const raw::c_char>, transform: F,
-) {
-    match res {
-        Ok(v) => success(id, transform(v)),
-        Err(e) => error(id, string_out(e.to_string())),
+impl<T> CallContext<T> {
+    pub fn new(
+        id: *mut RequestId, success: Callback<T>, error: Callback<*const raw::c_char>,
+    ) -> Self {
+        Self { id, success, error }
+    }
+
+    pub fn run(self, f: impl FnOnce() -> Fallible<T>) {
+        match f() {
+            Ok(val) => (self.success)(self.id, val),
+            Err(err) => (self.error)(self.id, string_out(err.to_string())),
+        }
+    }
+
+    pub fn run_async(self, f: impl std::future::Future<Output = Fallible<T>>) {
+        self.run(|| block_on(f))
     }
 }
 
@@ -62,41 +68,46 @@ fn block_on<R>(fut: impl std::future::Future<Output = R>) -> R {
 pub extern "C" fn init_sdk(
     id: *mut RequestId, success: Callback<*mut imp::SdkContext>,
     error: Callback<*const raw::c_char>,
-) {
-    let result = imp::SdkContext::default();
-    result_transformed_to_c(id, Ok(result), success, error, |ctx| Box::into_raw(Box::new(ctx)))
+) -> () {
+    let fun = || {
+        let sdk = imp::SdkContext::default();
+        Fallible::Ok(Box::into_raw(Box::new(sdk)))
+    };
+    CallContext::new(id, success, error).run(fun)
 }
 
 #[no_mangle]
 pub extern "C" fn create_vault(
-    ctx: *mut imp::SdkContext, seed: *const raw::c_char, path: *const raw::c_char,
+    sdk: *mut imp::SdkContext, seed: *const raw::c_char, path: *const raw::c_char,
     id: *mut RequestId, success: Callback<()>, error: Callback<*const raw::c_char>,
-) {
-    let ctx = unsafe { &mut *ctx };
-    let result = block_on(async { ctx.create_vault(str_in(seed)?, str_in(path)?).await });
-    result_to_c(id, result, success, error)
+) -> () {
+    let sdk = unsafe { &mut *sdk };
+    let fut = async { sdk.create_vault(str_in(seed)?, str_in(path)?).await };
+    CallContext::new(id, success, error).run_async(fut)
 }
 
 #[no_mangle]
 pub extern "C" fn load_vault(
-    ctx: *mut imp::SdkContext, path: *const raw::c_char, id: *mut RequestId, success: Callback<()>,
+    sdk: *mut imp::SdkContext, path: *const raw::c_char, id: *mut RequestId, success: Callback<()>,
     error: Callback<*const raw::c_char>,
 ) {
-    let ctx = unsafe { &mut *ctx };
-    let result = block_on(async { ctx.load_vault(str_in(path)?).await });
-    result_to_c(id, result, success, error)
+    let sdk = unsafe { &mut *sdk };
+    let fut = async { sdk.load_vault(str_in(path)?).await };
+    CallContext::new(id, success, error).run_async(fut)
 }
 
 #[no_mangle]
 pub extern "C" fn list_dids(
-    ctx: *mut imp::SdkContext, id: *mut RequestId, success: Callback<()>,
+    sdk: *mut imp::SdkContext, id: *mut RequestId, success: Callback<()>,
     error: Callback<*const raw::c_char>,
 ) {
-    let ctx = unsafe { &mut *ctx };
-    let result = block_on(async { ctx.list_dids().await });
-    // TODO we should return an array of strings somehow
-    let result = result.map(|dids| ());
-    result_to_c(id, result, success, error)
+    let sdk = unsafe { &mut *sdk };
+    let fut = async {
+        let vec = sdk.list_dids().await;
+        // TODO we should return an array of strings somehow
+        vec.map(|dids| ())
+    };
+    CallContext::new(id, success, error).run_async(fut)
 }
 
 #[no_mangle]
@@ -109,7 +120,7 @@ pub extern "C" fn close_sdk(sdk: *mut imp::SdkContext) {
 }
 
 mod imp {
-    use failure::{err_msg, Fallible};
+    use failure::Fallible;
 
     use crate::{
         data::did::Did,
@@ -136,14 +147,12 @@ mod imp {
             let mem_vault = InMemoryDidVault::new(seed);
             let mut persistent_vault = PersistentDidVault::new(mem_vault, path);
             persistent_vault.save().await?;
-            self.client.set_vault(persistent_vault);
-            Ok(())
+            self.client.set_vault(persistent_vault)
         }
 
         pub async fn load_vault(&mut self, path: &str) -> Fallible<()> {
             let persistent_vault = PersistentDidVault::load(path).await?;
-            self.client.set_vault(persistent_vault);
-            Ok(())
+            self.client.set_vault(persistent_vault)
         }
 
         pub async fn list_dids(&self) -> Fallible<Vec<Did>> {
