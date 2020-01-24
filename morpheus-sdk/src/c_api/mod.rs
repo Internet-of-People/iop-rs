@@ -65,14 +65,20 @@ fn block_on<R>(fut: impl std::future::Future<Output = R>) -> R {
 }
 
 #[no_mangle]
-pub extern "C" fn ping(message: *const raw::c_char, delay_secs: u32, id: *mut RequestId, success: Callback<*mut raw::c_char>, error: Callback<*const raw::c_char>) -> () {
+pub extern "C" fn ping(
+    message: *const raw::c_char, delay_secs: u32, id: *mut RequestId,
+    success: Callback<*mut raw::c_char>, error: Callback<*const raw::c_char>,
+) -> () {
     let fut = async {
         let message = str_in(message)?;
         tokio::time::delay_for(std::time::Duration::from_secs(delay_secs.into())).await;
         if message.starts_with("fail") {
             return Fallible::Err(err_msg(message));
         }
-        let out = format!("From Rust: You sent '{}'. It works even with async operations involved.", message);
+        let out = format!(
+            "From Rust: You sent '{}'. It works even with async operations involved.",
+            message
+        );
         Fallible::Ok(string_out(out))
     };
     CallContext::new(id, success, error).run_async(fut)
@@ -112,14 +118,27 @@ pub extern "C" fn load_vault(
 
 #[no_mangle]
 pub extern "C" fn list_dids(
-    sdk: *mut imp::SdkContext, id: *mut RequestId, success: Callback<()>,
+    sdk: *mut imp::SdkContext, id: *mut RequestId, success: Callback<usize>,
     error: Callback<*const raw::c_char>,
 ) {
     let sdk = unsafe { &mut *sdk };
     let fut = async {
         let vec = sdk.list_dids().await;
         // TODO we should return an array of strings somehow
-        vec.map(|dids| ())
+        vec.map(|dids| dids.len())
+    };
+    CallContext::new(id, success, error).run_async(fut)
+}
+
+#[no_mangle]
+pub extern "C" fn create_did(
+    sdk: *mut imp::SdkContext, id: *mut RequestId, success: Callback<*mut raw::c_char>,
+    error: Callback<*const raw::c_char>,
+) {
+    let sdk = unsafe { &mut *sdk };
+    let fut = async {
+        let did = sdk.create_did().await?;
+        Fallible::Ok(string_out(did.to_string()))
     };
     CallContext::new(id, success, error).run_async(fut)
 }
@@ -171,6 +190,12 @@ mod imp {
 
         pub async fn list_dids(&self) -> Fallible<Vec<Did>> {
             self.client.vault()?.dids()
+        }
+
+        pub async fn create_did(&mut self) -> Fallible<Did> {
+            let vault = self.client.mut_vault()?;
+            let rec = vault.create(None).await?;
+            Ok(rec.did())
         }
     }
 }
