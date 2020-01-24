@@ -9,7 +9,7 @@ use std::ffi;
 use std::os::raw;
 // use std::panic::catch_unwind; // TODO consider panic unwinding strategies
 
-use failure::Fallible;
+use failure::{err_msg, Fallible};
 
 fn str_in<'a>(s: *const raw::c_char) -> Fallible<&'a str> {
     let c_str = unsafe { ffi::CStr::from_ptr(s) };
@@ -62,6 +62,20 @@ thread_local! {
 
 fn block_on<R>(fut: impl std::future::Future<Output = R>) -> R {
     REACTOR.with(|reactor| reactor.borrow_mut().block_on(fut))
+}
+
+#[no_mangle]
+pub extern "C" fn ping(message: *const raw::c_char, delay_secs: u32, id: *mut RequestId, success: Callback<*mut raw::c_char>, error: Callback<*const raw::c_char>) -> () {
+    let fut = async {
+        let message = str_in(message)?;
+        tokio::time::delay_for(std::time::Duration::from_secs(delay_secs.into())).await;
+        if message.starts_with("fail") {
+            return Fallible::Err(err_msg(message));
+        }
+        let out = format!("From Rust: You sent '{}'. It works even with async operations involved.", message);
+        Fallible::Ok(string_out(out))
+    };
+    CallContext::new(id, success, error).run_async(fut)
 }
 
 #[no_mangle]
