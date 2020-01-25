@@ -18,14 +18,21 @@ class CallContext extends Struct {
     ctx._complete(Result.error(message));
   }
 
-  factory CallContext.next() {
+  factory CallContext._next() {
     final r = allocate<CallContext>();
     return r.ref.._result = nullptr;
   }
 
-  Pointer<Result> _result;
+  static R run<R>(R Function(CallContext call) action) {
+    final call = CallContext._next();
+    try {
+      return action(call);
+    } finally {
+      call.dispose();
+    }
+  }
 
-  CallContext._();
+  Pointer<Result> _result;
 
   Pointer<CallContext> get id => addressOf;
   Pointer get callback => Pointer.fromFunction<NativeFuncCallback>(_callback);

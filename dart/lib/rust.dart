@@ -83,8 +83,7 @@ class RustSdk {
   RustSdk(this._sdk);
 
   void loadVault(String path) {
-    final call = CallContext.next();
-    try {
+    return CallContext.run((call) {
       native_load_vault(
         _sdk,
         Utf8.toUtf8(path),
@@ -93,14 +92,11 @@ class RustSdk {
         call.error,
       );
       return call.result().asVoid;
-    } finally {
-      call.dispose();
-    }
+    });
   }
 
   void createVault(String seed, String path) {
-    final call = CallContext.next();
-    try {
+    return CallContext.run((call) {
       native_create_vault(
         _sdk,
         Utf8.toUtf8(seed),
@@ -110,14 +106,11 @@ class RustSdk {
         call.error,
       );
       return call.result().asVoid;
-    } finally {
-      call.dispose();
-    }
+    });
   }
 
   List<String> listDids() {
-    final call = CallContext.next();
-    try {
+    return CallContext.run((call) {
       native_list_dids(
         _sdk,
         call.id,
@@ -127,14 +120,11 @@ class RustSdk {
       // final List<String> dids = call.result().asList();
       // return dids;
       return List.filled(call.result().asInteger, 'placeholder');
-    } finally {
-      call.dispose();
-    }
+    });
   }
 
   String createDid() {
-    final call = CallContext.next();
-    try {
+    return CallContext.run((call) {
       native_create_did(
         _sdk,
         call.id,
@@ -142,9 +132,7 @@ class RustSdk {
         call.error,
       );
       return call.result().asString;
-    } finally {
-      call.dispose();
-    }
+    });
   }
 
   void dispose() {
@@ -154,8 +142,7 @@ class RustSdk {
 
 class RustAPI {
   static String ping(String message, int delaySec) {
-    final call = CallContext.next();
-    try {
+    return CallContext.run((call) {
       native_ping(
         Utf8.toUtf8(message).cast(),
         delaySec,
@@ -164,23 +151,18 @@ class RustAPI {
         call.error,
       );
       return call.result().asString;
-    } finally {
-      call.dispose();
-    }
+    });
   }
 
   static RustSdk initSdk() {
-    final call = CallContext.next();
-    try {
+    return CallContext.run((call) {
       native_init_sdk(
         call.id,
         call.callback,
         call.error,
       );
       return RustSdk(call.result().asPointer());
-    } finally {
-      call.dispose();
-    }
+    });
   }
 
   // static List<String> listDids(_){
