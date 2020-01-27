@@ -60,6 +60,32 @@ typedef DartFuncCreateVault = void Function(
     Pointer callback,
     Pointer error);
 
+typedef NativeFuncFakeLedger = Void Function(
+  Pointer<Void> sdk,
+  Pointer<CallContext> requestId,
+  Pointer callback,
+  Pointer error,
+);
+typedef DartFuncFakeLedger = void Function(
+    Pointer<Void> sdk,
+    Pointer<CallContext> requestId,
+    Pointer callback,
+    Pointer error);
+
+typedef NativeFuncRealLedger = Void Function(
+  Pointer<Void> sdk,
+  Pointer<Utf8> url,
+  Pointer<CallContext> requestId,
+  Pointer callback,
+  Pointer error,
+);
+typedef DartFuncRealLedger = void Function(
+    Pointer<Void> sdk,
+    Pointer<Utf8> url,
+    Pointer<CallContext> requestId,
+    Pointer callback,
+    Pointer error);
+
 typedef NativeFuncListDids = Void Function(
   Pointer<Void> sdk,
   Pointer<CallContext> requestId,
@@ -78,6 +104,20 @@ typedef NativeFuncCreateDid = Void Function(
 typedef DartFuncCreateDid = void Function(Pointer<Void> sdk,
     Pointer<CallContext> requestId, Pointer callback, Pointer error);
 
+typedef NativeFuncGetDocument = Void Function(
+  Pointer<Void> sdk,
+  Pointer<Utf8> did,
+  Pointer<CallContext> requestId,
+  Pointer callback,
+  Pointer error,
+);
+typedef DartFuncGetDocument = void Function(
+    Pointer<Void> sdk,
+    Pointer<Utf8> did,
+    Pointer<CallContext> requestId,
+    Pointer callback,
+    Pointer error);
+
 final native_ping = lib.lookupFunction<NativeFuncPing, DartFuncPing>('ping');
 final native_init_sdk =
     lib.lookupFunction<NativeFuncInitSdk, DartFuncInitSdk>('init_sdk');
@@ -87,10 +127,16 @@ final native_load_vault =
     lib.lookupFunction<NativeFuncLoadVault, DartFuncLoadVault>('load_vault');
 final native_create_vault = lib
     .lookupFunction<NativeFuncCreateVault, DartFuncCreateVault>('create_vault');
+final native_fake_ledger =  lib
+    .lookupFunction<NativeFuncFakeLedger, DartFuncFakeLedger>('fake_ledger');
+final native_real_ledger =  lib
+    .lookupFunction<NativeFuncRealLedger, DartFuncRealLedger>('real_ledger');
 final native_list_dids =
     lib.lookupFunction<NativeFuncListDids, DartFuncListDids>('list_dids');
 final native_create_did =
     lib.lookupFunction<NativeFuncCreateDid, DartFuncCreateDid>('create_did');
+final native_get_document = lib
+    .lookupFunction<NativeFuncGetDocument, DartFuncGetDocument>('get_document');
 
 class RustSdk {
   final Pointer<Void> _sdk;
@@ -136,6 +182,36 @@ class RustSdk {
     });
   }
 
+  void fakeLedger() {
+    return CallContext.run((call) {
+      native_fake_ledger(
+        _sdk,
+        call.id,
+        call.callback,
+        call.error,
+      );
+      return call.result().asVoid;
+    });
+  }
+
+  void realLedger(String url) {
+    return CallContext.run((call) {
+      final nativeUrl = Utf8.toUtf8(url);
+      try {
+        native_real_ledger(
+          _sdk,
+          nativeUrl,
+          call.id,
+          call.callback,
+          call.error,
+        );
+        return call.result().asVoid;
+      } finally {
+        free(nativeUrl);
+      }
+    });
+  }
+
   List<String> listDids() {
     return CallContext.run((call) {
       native_list_dids(
@@ -157,6 +233,22 @@ class RustSdk {
         call.error,
       );
       return call.result().asString;
+    });
+  }
+
+  String getDocument(String did) {
+    return CallContext.run((call) {
+      final nativeDid = Utf8.toUtf8(did);
+      try {
+        native_get_document(
+          _sdk,
+          nativeDid,
+          call.id,
+          call.callback,
+          call.error,
+        );
+        return call.result().asString;
+      } finally {}
     });
   }
 

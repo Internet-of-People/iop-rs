@@ -1,5 +1,5 @@
-pub mod fake;
-pub mod hydra;
+mod fake;
+mod hydra;
 
 use async_trait::async_trait;
 use failure::Fallible;
@@ -14,6 +14,9 @@ use crate::data::{
     diddoc::{Authentication, BlockHeight, DidDocument, Right},
 };
 use keyvault::multicipher::MKeyId;
+
+pub use fake::FakeDidLedger;
+pub use hydra::HydraDidLedger;
 
 #[derive(Clone, Debug, Deserialize, Eq, Hash, Ord, PartialOrd, PartialEq, Serialize)]
 pub enum ValidationStatus {
@@ -111,8 +114,9 @@ pub trait LedgerOperations {
     ) -> Fallible<Box<dyn PooledLedgerTransaction>>;
 }
 
-// TODO consider if this is needed in general? We could do this with a From-like wrapper trait.
-pub type OwnDidDocumentFactory<T: OwnDidDocument> = dyn FnOnce(Did, &dyn Signer) -> Fallible<T>;
+pub trait OwnDidDocumentFactory<T: OwnDidDocument, S: Signer> {
+    fn from(did: Did, signer: S) -> Fallible<T>;
+}
 
 #[async_trait(?Send)]
 pub trait OwnDidDocument {

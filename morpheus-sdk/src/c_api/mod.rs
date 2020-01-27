@@ -10,6 +10,7 @@ use std::os::raw;
 // use std::panic::catch_unwind; // TODO consider panic unwinding strategies
 
 use failure::{err_msg, Fallible};
+use serde_json;
 
 fn str_in<'a>(s: *const raw::c_char) -> Fallible<&'a str> {
     let c_str = unsafe { ffi::CStr::from_ptr(s) };
@@ -122,6 +123,48 @@ pub extern "C" fn load_vault(
     CallContext::new(id, success, error).run_async(fut)
 }
 
+#[no_mangle]
+pub extern "C" fn fake_ledger(
+    sdk: *mut imp::SdkContext, id: *mut RequestId, success: Callback<*const raw::c_void>,
+    error: Callback<*const raw::c_char>,
+) {
+    let sdk = unsafe { &mut *sdk };
+    let fut = async {
+        sdk.fake_ledger().await?;
+        Ok(std::ptr::null())
+    };
+    CallContext::new(id, success, error).run_async(fut)
+}
+
+#[no_mangle]
+pub extern "C" fn real_ledger(
+    sdk: *mut imp::SdkContext, url: *const raw::c_char, id: *mut RequestId,
+    success: Callback<*const raw::c_void>, error: Callback<*const raw::c_char>,
+) {
+    let sdk = unsafe { &mut *sdk };
+    let fut = async {
+        sdk.real_ledger(str_in(url)?).await?;
+        Ok(std::ptr::null())
+    };
+    CallContext::new(id, success, error).run_async(fut)
+}
+
+#[no_mangle]
+pub extern "C" fn get_document(
+    sdk: *mut imp::SdkContext, did: *const raw::c_char, id: *mut RequestId,
+    success: Callback<*mut raw::c_char>, error: Callback<*const raw::c_char>,
+) {
+    let sdk = unsafe { &mut *sdk };
+    let fut = async {
+        let did_str = str_in(did)?;
+        let did = did_str.parse()?;
+        let document = sdk.get_document(&did).await?;
+        let json = serde_json::to_string(&document)?;
+        Ok(string_out(json))
+    };
+    CallContext::new(id, success, error).run_async(fut)
+}
+
 #[repr(C)]
 pub struct RawSlice<T> {
     first: *mut T,
@@ -177,16 +220,16 @@ pub extern "C" fn close_sdk(sdk: *mut imp::SdkContext) {
 }
 
 mod imp {
-    use failure::Fallible;
+    use failure::{err_msg, Fallible};
 
     use crate::{
-        data::did::Did,
-        io::dist::did::{hydra::HydraDidLedger, LedgerOperations, LedgerQueries},
+        data::{did::Did, diddoc::DidDocument},
+        io::dist::did::{/*HydraDidLedger, */ FakeDidLedger, LedgerOperations, LedgerQueries},
         io::local::didvault::{DidVault, InMemoryDidVault, PersistentDidVault},
         sdk::Client,
     };
 
-    pub type SdkContext = Sdk<PersistentDidVault, HydraDidLedger>;
+    pub type SdkContext = Sdk<PersistentDidVault, FakeDidLedger>;
 
     pub struct Sdk<V: DidVault, L: LedgerQueries + LedgerOperations> {
         pub client: Client<V, L>,
@@ -212,6 +255,15 @@ mod imp {
             self.client.set_vault(persistent_vault)
         }
 
+        pub async fn fake_ledger(&mut self) -> Fallible<()> {
+            self.client.set_ledger(FakeDidLedger::new())?;
+            Ok(())
+        }
+
+        pub async fn real_ledger(&mut self, _url: &str) -> Fallible<()> {
+            Err(err_msg("Not implemented yet"))
+        }
+
         pub async fn list_dids(&self) -> Fallible<Vec<Did>> {
             self.client.vault()?.dids()
         }
@@ -220,6 +272,10 @@ mod imp {
             let vault = self.client.mut_vault()?;
             let rec = vault.create(None).await?;
             Ok(rec.did())
+        }
+
+        pub async fn get_document(&self, did: &Did) -> Fallible<DidDocument> {
+            self.client.ledger()?.document(did).await
         }
     }
 }

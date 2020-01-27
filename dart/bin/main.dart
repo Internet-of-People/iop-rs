@@ -44,6 +44,11 @@ void main(List<String> arguments) {
 
       final dids = sdk.listDids();
       print('Dids: ${dids.join(',')}');
+
+      sdk.fakeLedger();
+
+      final doc1 = sdk.getDocument(dids[0]);
+      print('first document: \n$doc1');
     } catch (e) {
       print('Error using SDK: $e');
     } finally {
