@@ -3,6 +3,21 @@ import 'package:ffi/ffi.dart';
 
 import './ffi.dart';
 
+// I would love to use reflection to have something like this instead of the 100 lines that follow it.
+//
+// abstract class MorpheusSdk {
+//   Void ping(Pointer<Utf8> message, Int32 delay, Pointer<CallContext> requestId, Pointer callback, Pointer error);
+//   Pointer<Void> init_sdk(Pointer<CallContext> requestId, Pointer callback, Pointer error);
+//   Void close_sdk(Pointer<Void> sdk);
+//   Void load_vault(Pointer<Void> sdk, Pointer<Utf8> path, Pointer<CallContext> requestId, Pointer callback, Pointer error);
+//   Void create_vault(Pointer<Void> sdk, Pointer<Utf8> seed, Pointer<Utf8> path, Pointer<CallContext> requestId, Pointer callback, Pointer error);
+//   Void list_dids(Pointer<Void> sdk, Pointer<CallContext> requestId, Pointer callback, Pointer error);
+//   Void create_did(Pointer<Void> sdk, Pointer<CallContext> requestId, Pointer callback, Pointer error);
+// }
+// final lib = DynamicLibrary.open('../target/debug/libmorpheus_sdk.so');
+// final morpheusSdk = NativeLibrary.createProxy<MorpheusSdk>(lib);
+// morpheusSdk.ping(...);
+
 const path = '../target/debug/libmorpheus_sdk.so';
 DynamicLibrary lib = DynamicLibrary.open(path);
 
@@ -84,28 +99,40 @@ class RustSdk {
 
   void loadVault(String path) {
     return CallContext.run((call) {
-      native_load_vault(
-        _sdk,
-        Utf8.toUtf8(path),
-        call.id,
-        call.callback,
-        call.error,
-      );
-      return call.result().asVoid;
+      final nativePath = Utf8.toUtf8(path);
+      try {
+        native_load_vault(
+          _sdk,
+          nativePath,
+          call.id,
+          call.callback,
+          call.error,
+        );
+        return call.result().asVoid;
+      } finally {
+        free(nativePath);
+      }
     });
   }
 
   void createVault(String seed, String path) {
     return CallContext.run((call) {
-      native_create_vault(
-        _sdk,
-        Utf8.toUtf8(seed),
-        Utf8.toUtf8(path),
-        call.id,
-        call.callback,
-        call.error,
-      );
-      return call.result().asVoid;
+      final nativeSeed = Utf8.toUtf8(seed);
+      final nativePath = Utf8.toUtf8(path);
+      try {
+        native_create_vault(
+          _sdk,
+          nativeSeed,
+          nativePath,
+          call.id,
+          call.callback,
+          call.error,
+        );
+        return call.result().asVoid;
+      } finally {
+        free(nativePath);
+        free(nativeSeed);
+      }
     });
   }
 
@@ -117,9 +144,9 @@ class RustSdk {
         call.callback,
         call.error,
       );
-      // final List<String> dids = call.result().asList();
-      // return dids;
-      return List.filled(call.result().asInteger, 'placeholder');
+      final List<String> dids = call.result().asList();
+      return dids;
+      // return List.filled(call.result().asInteger, 'placeholder');
     });
   }
 
@@ -143,14 +170,19 @@ class RustSdk {
 class RustAPI {
   static String ping(String message, int delaySec) {
     return CallContext.run((call) {
-      native_ping(
-        Utf8.toUtf8(message).cast(),
-        delaySec,
-        call.id,
-        call.callback,
-        call.error,
-      );
-      return call.result().asString;
+      final nativeMessage = Utf8.toUtf8(message);
+      try {
+        native_ping(
+          nativeMessage,
+          delaySec,
+          call.id,
+          call.callback,
+          call.error,
+        );
+        return call.result().asString;
+      } finally {
+        free(nativeMessage);
+      }
     });
   }
 

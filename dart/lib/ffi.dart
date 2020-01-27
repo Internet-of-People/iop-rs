@@ -71,19 +71,34 @@ class Result extends Struct {
   }
 
   Pointer get _value {
-    return (_error == nullptr) ? _success : throw Utf8.fromUtf8(_error);
+    return _error == nullptr ? _success : throw Utf8.fromUtf8(_error);
   }
 
-  String get asString => Utf8.fromUtf8(_value.cast());
-  Pointer<T> asPointer<T extends NativeType>() => _value.cast();
-  // List<T> asList<T>() => _value;
+  String get asString {
+    final result = Utf8.fromUtf8(_value.cast());
+    return result;
+  }
+
+  /// Taking ownership of the pointer from the result
+  Pointer<T> asPointer<T extends NativeType>() {
+    final result = _value;
+    _success = nullptr;
+    return result.cast();
+  }
+
+  List<T> asList<T>() {
+    // return _value;
+    throw UnimplementedError('asList');
+  }
+
   void get asVoid => _value;
+
   int get asInteger => _value.address;
 
   void dispose() {
-    // if (_success != nullptr) {
-    //   free(_success);
-    // }
+    if (_success != nullptr) {
+      free(_success);
+    }
     if (_error != nullptr) {
       free(_error);
     }

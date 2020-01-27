@@ -73,13 +73,13 @@ pub extern "C" fn ping(
         let message = str_in(message)?;
         tokio::time::delay_for(std::time::Duration::from_secs(delay_secs.into())).await;
         if message.starts_with("fail") {
-            return Fallible::Err(err_msg(message));
+            return Err(err_msg(message));
         }
         let out = format!(
             "From Rust: You sent '{}'. It works even with async operations involved.",
             message
         );
-        Fallible::Ok(string_out(out))
+        Ok(string_out(out))
     };
     CallContext::new(id, success, error).run_async(fut)
 }
@@ -91,7 +91,7 @@ pub extern "C" fn init_sdk(
 ) -> () {
     let fun = || {
         let sdk = imp::SdkContext::default();
-        Fallible::Ok(Box::into_raw(Box::new(sdk)))
+        Ok(Box::into_raw(Box::new(sdk)))
     };
     CallContext::new(id, success, error).run(fun)
 }
@@ -99,20 +99,26 @@ pub extern "C" fn init_sdk(
 #[no_mangle]
 pub extern "C" fn create_vault(
     sdk: *mut imp::SdkContext, seed: *const raw::c_char, path: *const raw::c_char,
-    id: *mut RequestId, success: Callback<()>, error: Callback<*const raw::c_char>,
+    id: *mut RequestId, success: Callback<*const raw::c_void>, error: Callback<*const raw::c_char>,
 ) -> () {
     let sdk = unsafe { &mut *sdk };
-    let fut = async { sdk.create_vault(str_in(seed)?, str_in(path)?).await };
+    let fut = async {
+        sdk.create_vault(str_in(seed)?, str_in(path)?).await?;
+        Ok(std::ptr::null())
+    };
     CallContext::new(id, success, error).run_async(fut)
 }
 
 #[no_mangle]
 pub extern "C" fn load_vault(
-    sdk: *mut imp::SdkContext, path: *const raw::c_char, id: *mut RequestId, success: Callback<()>,
+    sdk: *mut imp::SdkContext, path: *const raw::c_char, id: *mut RequestId, success: Callback<*const raw::c_void>,
     error: Callback<*const raw::c_char>,
 ) {
     let sdk = unsafe { &mut *sdk };
-    let fut = async { sdk.load_vault(str_in(path)?).await };
+    let fut = async {
+        sdk.load_vault(str_in(path)?).await?;
+        Ok(std::ptr::null())
+    };
     CallContext::new(id, success, error).run_async(fut)
 }
 
@@ -138,7 +144,7 @@ pub extern "C" fn create_did(
     let sdk = unsafe { &mut *sdk };
     let fut = async {
         let did = sdk.create_did().await?;
-        Fallible::Ok(string_out(did.to_string()))
+        Ok(string_out(did.to_string()))
     };
     CallContext::new(id, success, error).run_async(fut)
 }
