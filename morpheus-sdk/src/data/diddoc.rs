@@ -27,6 +27,12 @@ pub struct KeyData {
     revoked: bool,
 }
 
+impl KeyData {
+    fn from_auth(authentication: Authentication) -> Self {
+        Self { authentication, valid_from_block: None, valid_until_block: None, revoked: false }
+    }
+}
+
 #[derive(Clone, Debug, Deserialize, Eq, Hash, PartialEq, PartialOrd, Serialize)]
 pub struct KeyRightPair {
     right: Right,
@@ -58,14 +64,14 @@ pub struct DidDocument {
 }
 
 impl DidDocument {
-    //    pub fn default(did: &Did) -> Self {
-    //        let default_key = KeyData::new(Authentication::KeyId(did.key_id()), None);
-    //        Self {
-    //            did: did.to_owned(),
-    //            keys: vec![default_key],
-    //            rights: Default::default(),
-    //            services: Default::default(),
-    //            tombstoned: Default::default(),
-    //        }
-    //    }
+    pub fn implicit(did: &Did) -> Self {
+        let default_key = KeyData::from_auth(Authentication::KeyId(did.default_key_id()));
+        Self {
+            did: did.to_owned(),
+            keys: vec![default_key],
+            rights: Default::default(),
+            services: Default::default(),
+            tombstoned: Default::default(),
+        }
+    }
 }
