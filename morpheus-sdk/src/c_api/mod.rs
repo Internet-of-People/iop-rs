@@ -111,8 +111,8 @@ pub extern "C" fn create_vault(
 
 #[no_mangle]
 pub extern "C" fn load_vault(
-    sdk: *mut imp::SdkContext, path: *const raw::c_char, id: *mut RequestId, success: Callback<*const raw::c_void>,
-    error: Callback<*const raw::c_char>,
+    sdk: *mut imp::SdkContext, path: *const raw::c_char, id: *mut RequestId,
+    success: Callback<*const raw::c_void>, error: Callback<*const raw::c_char>,
 ) {
     let sdk = unsafe { &mut *sdk };
     let fut = async {
@@ -122,16 +122,34 @@ pub extern "C" fn load_vault(
     CallContext::new(id, success, error).run_async(fut)
 }
 
+#[repr(C)]
+pub struct RawSlice<T> {
+    first: *mut T,
+    length: usize,
+}
+
+impl<T> From<&mut [T]> for RawSlice<T> {
+    fn from(slice: &mut [T]) -> Self {
+        let first = slice.as_mut_ptr();
+        let length = slice.len();
+        Self { first, length }
+    }
+}
+
 #[no_mangle]
 pub extern "C" fn list_dids(
-    sdk: *mut imp::SdkContext, id: *mut RequestId, success: Callback<usize>,
-    error: Callback<*const raw::c_char>,
+    sdk: *mut imp::SdkContext, id: *mut RequestId,
+    success: Callback<*mut RawSlice<*mut raw::c_char>>, error: Callback<*const raw::c_char>,
 ) {
     let sdk = unsafe { &mut *sdk };
     let fut = async {
-        let vec = sdk.list_dids().await;
-        // TODO we should return an array of strings somehow
-        vec.map(|dids| dids.len())
+        let did_vec = sdk.list_dids().await?;
+        let cptr_box_slice =
+            did_vec.iter().map(|did| string_out(did.to_string())).collect::<Box<[_]>>();
+        let raw_box_slice = Box::into_raw(cptr_box_slice);
+        let raw_slice: RawSlice<*mut raw::c_char> = unsafe { &mut *raw_box_slice }.into();
+        //unsafe { Box::from_raw(raw_box_slice) };
+        Ok(Box::into_raw(Box::new(raw_slice)))
     };
     CallContext::new(id, success, error).run_async(fut)
 }

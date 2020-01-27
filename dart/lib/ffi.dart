@@ -1,11 +1,33 @@
 import 'dart:ffi';
-import 'dart:typed_data';
 import 'package:ffi/ffi.dart';
 
 typedef NativeFuncCallback = Void Function(
     Pointer<CallContext> requestId, Pointer result);
 typedef NativeFuncErrback = Void Function(
     Pointer<CallContext> requestId, Pointer<Utf8> result);
+
+class NativeSlice extends Struct {
+  Pointer<Pointer> _ptr;
+
+  @IntPtr()
+  int _length;
+
+  factory NativeSlice.fromParts(Pointer<Pointer> ptr, int length) {
+    final result = allocate<NativeSlice>();
+    return result.ref
+      .._ptr = ptr
+      .._length = length;
+  }
+
+  int get length => _length;
+
+  Pointer<T> at<T extends NativeType>(int index) {
+    if (index >= _length) {
+      throw IndexError(index, this);
+    }
+    return _ptr[index].cast();
+  }
+}
 
 class CallContext extends Struct {
   static void _callback(Pointer<CallContext> requestId, Pointer result) {
@@ -86,9 +108,21 @@ class Result extends Struct {
     return result.cast();
   }
 
-  List<T> asList<T>() {
-    // return _value;
-    throw UnimplementedError('asList');
+  List<String> asStringList() {
+    final slicePtr = asPointer<NativeSlice>();
+    try {
+      final slice = slicePtr.ref;
+      return List.generate(slice.length, (i) {
+        final nativeStr = slice.at<Utf8>(i);
+        try {
+          return Utf8.fromUtf8(nativeStr);
+        } finally {
+          free(nativeStr);
+        }
+      }, growable: false);
+    } finally {
+      free(slicePtr);
+    }
   }
 
   void get asVoid => _value;

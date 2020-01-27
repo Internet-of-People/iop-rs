@@ -144,9 +144,7 @@ class RustSdk {
         call.callback,
         call.error,
       );
-      final List<String> dids = call.result().asList();
-      return dids;
-      // return List.filled(call.result().asInteger, 'placeholder');
+      return call.result().asStringList();
     });
   }
 
