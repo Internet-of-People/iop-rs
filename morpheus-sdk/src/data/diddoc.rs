@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::string::ToString;
 
 use serde::{Deserialize, Serialize};
 
@@ -17,14 +18,23 @@ pub enum Authentication {
     PublicKey(multicipher::MPublicKey),
 }
 
+impl ToString for Authentication {
+    fn to_string(&self) -> String {
+        match self {
+            Self::KeyId(id) => id.to_string(),
+            Self::PublicKey(key) => key.to_string(),
+        }
+    }
+}
+
 pub type BlockHeight = usize;
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
 pub struct KeyData {
-    authentication: Authentication,
-    valid_from_block: Option<BlockHeight>, // TODO should be timestamp on the long term
-    valid_until_block: Option<BlockHeight>, // TODO should be timestamp on the long term
-    revoked: bool,
+    pub(crate) authentication: Authentication,
+    pub(crate) valid_from_block: Option<BlockHeight>, // TODO should be timestamp on the long term
+    pub(crate) valid_until_block: Option<BlockHeight>, // TODO should be timestamp on the long term
+    pub(crate) revoked: bool,
 }
 
 impl KeyData {
@@ -35,8 +45,8 @@ impl KeyData {
 
 #[derive(Clone, Debug, Deserialize, Eq, Hash, PartialEq, PartialOrd, Serialize)]
 pub struct KeyRightPair {
-    right: Right,
-    key_index: usize,
+    pub(crate) right: Right,
+    pub(crate) key_index: usize,
 }
 
 #[derive(Clone, Debug, Deserialize, Eq, Hash, PartialEq, PartialOrd, Serialize)]
@@ -47,20 +57,20 @@ pub enum ServiceType {
 #[derive(Clone, Debug, Deserialize, Eq, Hash, PartialEq, PartialOrd, Serialize)]
 pub struct Service {
     #[serde(rename = "type")]
-    type_: ServiceType,
-    name: String,
-    service_endpoint: String, // TODO should we use multiaddr::Multiaddr here and thus add CID-dependency?
+    pub(crate) type_: ServiceType,
+    pub(crate) name: String,
+    pub(crate) service_endpoint: String, // TODO should we use multiaddr::Multiaddr here and thus add CID-dependency?
 }
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
 pub struct DidDocument {
     #[serde(rename = "id")]
-    did: Did,
-    keys: Vec<KeyData>,
+    pub(crate) did: Did,
+    pub(crate) keys: Vec<KeyData>,
     // TODO should this be Vec<KeyRightPair> instead?
-    rights: HashMap<Right, Vec<usize>>, // right -> key_indices
-    services: Vec<Service>,
-    tombstoned: bool,
+    pub(crate) rights: HashMap<Right, Vec<usize>>, // right -> key_indices
+    pub(crate) services: Vec<Service>,
+    pub(crate) tombstoned: bool,
 }
 
 impl DidDocument {

@@ -220,10 +220,16 @@ pub extern "C" fn close_sdk(sdk: *mut imp::SdkContext) {
 }
 
 mod imp {
+    use std::collections::HashMap;
+
     use failure::{err_msg, Fallible};
+    use serde::{Deserialize, Serialize};
 
     use crate::{
-        data::{did::Did, diddoc::DidDocument},
+        data::{
+            did::Did,
+            diddoc::{BlockHeight, DidDocument, KeyData, Right, Service},
+        },
         io::dist::did::{/*HydraDidLedger, */ FakeDidLedger, LedgerOperations, LedgerQueries},
         io::local::didvault::{DidVault, InMemoryDidVault, PersistentDidVault},
         sdk::Client,
@@ -238,6 +244,60 @@ mod imp {
     impl<V: DidVault, L: LedgerQueries + LedgerOperations> Default for Sdk<V, L> {
         fn default() -> Self {
             Self { client: Default::default() }
+        }
+    }
+
+    #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+    pub struct ApiKeyData {
+        authentication: String,
+        valid_from_block: Option<BlockHeight>, // TODO should be timestamp on the long term
+        valid_until_block: Option<BlockHeight>, // TODO should be timestamp on the long term
+        revoked: bool,
+    }
+
+    impl From<KeyData> for ApiKeyData {
+        fn from(src: KeyData) -> Self {
+            Self {
+                authentication: src.authentication.to_string(),
+                valid_from_block: src.valid_from_block,
+                valid_until_block: src.valid_until_block,
+                revoked: src.revoked,
+            }
+        }
+    }
+
+    impl From<&KeyData> for ApiKeyData {
+        fn from(src: &KeyData) -> Self {
+            src.to_owned().into()
+        }
+    }
+
+    #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+    pub struct ApiDidDocument {
+        #[serde(rename = "id")]
+        did: String,
+        keys: Vec<ApiKeyData>,
+        // TODO should this be Vec<KeyRightPair> instead?
+        rights: HashMap<Right, Vec<usize>>, // right -> key_indices
+        services: Vec<Service>,
+        tombstoned: bool,
+    }
+
+    impl From<DidDocument> for ApiDidDocument {
+        fn from(src: DidDocument) -> Self {
+            Self {
+                did: src.did.to_string(),
+                keys: src.keys.iter().map(|item| item.into()).collect(),
+                rights: src.rights,
+                services: src.services,
+                tombstoned: src.tombstoned,
+            }
+        }
+    }
+
+    impl From<&DidDocument> for ApiDidDocument {
+        fn from(src: &DidDocument) -> Self {
+            src.to_owned().into()
         }
     }
 
@@ -274,8 +334,9 @@ mod imp {
             Ok(rec.did())
         }
 
-        pub async fn get_document(&self, did: &Did) -> Fallible<DidDocument> {
-            self.client.ledger()?.document(did).await
+        pub async fn get_document(&self, did: &Did) -> Fallible<ApiDidDocument> {
+            let doc = self.client.ledger()?.document(did).await?;
+            Ok(doc.into())
         }
     }
 }
