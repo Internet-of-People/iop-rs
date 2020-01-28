@@ -18,9 +18,6 @@ import './ffi.dart';
 // final morpheusSdk = NativeLibrary.createProxy<MorpheusSdk>(lib);
 // morpheusSdk.ping(...);
 
-const path = '../target/debug/libmorpheus_sdk.so';
-DynamicLibrary lib = DynamicLibrary.open(path);
-
 typedef NativeFuncPing = Void Function(Pointer<Utf8> message, Int32 delay,
     Pointer<CallContext> requestId, Pointer callback, Pointer error);
 typedef DartFuncPing = void Function(Pointer<Utf8> message, int delay,
@@ -118,36 +115,39 @@ typedef DartFuncGetDocument = void Function(
     Pointer callback,
     Pointer error);
 
-final native_ping = lib.lookupFunction<NativeFuncPing, DartFuncPing>('ping');
-final native_init_sdk =
-    lib.lookupFunction<NativeFuncInitSdk, DartFuncInitSdk>('init_sdk');
-final native_close_sdk =
-    lib.lookupFunction<NativeFuncCloseSdk, DartFuncCloseSdk>('close_sdk');
-final native_load_vault =
-    lib.lookupFunction<NativeFuncLoadVault, DartFuncLoadVault>('load_vault');
-final native_create_vault = lib
-    .lookupFunction<NativeFuncCreateVault, DartFuncCreateVault>('create_vault');
-final native_fake_ledger =  lib
-    .lookupFunction<NativeFuncFakeLedger, DartFuncFakeLedger>('fake_ledger');
-final native_real_ledger =  lib
-    .lookupFunction<NativeFuncRealLedger, DartFuncRealLedger>('real_ledger');
-final native_list_dids =
-    lib.lookupFunction<NativeFuncListDids, DartFuncListDids>('list_dids');
-final native_create_did =
-    lib.lookupFunction<NativeFuncCreateDid, DartFuncCreateDid>('create_did');
-final native_get_document = lib
-    .lookupFunction<NativeFuncGetDocument, DartFuncGetDocument>('get_document');
+class NativeAPI {
+  final DartFuncCloseSdk native_close_sdk;
+  final DartFuncLoadVault native_load_vault;
+  final DartFuncCreateVault native_create_vault;
+  final DartFuncFakeLedger native_fake_ledger;
+  final DartFuncRealLedger native_real_ledger;
+  final DartFuncListDids native_list_dids;
+  final DartFuncCreateDid native_create_did;
+  final DartFuncGetDocument native_get_document;
+
+  NativeAPI(
+    this.native_close_sdk,
+    this.native_load_vault,
+    this.native_create_vault,
+    this.native_fake_ledger,
+    this.native_real_ledger,
+    this.native_list_dids,
+    this.native_create_did,
+    this.native_get_document,
+  );
+}
 
 class RustSdk {
   final Pointer<Void> _sdk;
+  final NativeAPI _api;
 
-  RustSdk(this._sdk);
+  RustSdk(this._sdk, this._api);
 
   void loadVault(String path) {
     return CallContext.run((call) {
       final nativePath = Utf8.toUtf8(path);
       try {
-        native_load_vault(
+        _api.native_load_vault(
           _sdk,
           nativePath,
           call.id,
@@ -166,7 +166,7 @@ class RustSdk {
       final nativeSeed = Utf8.toUtf8(seed);
       final nativePath = Utf8.toUtf8(path);
       try {
-        native_create_vault(
+        _api.native_create_vault(
           _sdk,
           nativeSeed,
           nativePath,
@@ -184,7 +184,7 @@ class RustSdk {
 
   void fakeLedger() {
     return CallContext.run((call) {
-      native_fake_ledger(
+      _api.native_fake_ledger(
         _sdk,
         call.id,
         call.callback,
@@ -198,7 +198,7 @@ class RustSdk {
     return CallContext.run((call) {
       final nativeUrl = Utf8.toUtf8(url);
       try {
-        native_real_ledger(
+        _api.native_real_ledger(
           _sdk,
           nativeUrl,
           call.id,
@@ -214,7 +214,7 @@ class RustSdk {
 
   List<String> listDids() {
     return CallContext.run((call) {
-      native_list_dids(
+      _api.native_list_dids(
         _sdk,
         call.id,
         call.callback,
@@ -226,7 +226,7 @@ class RustSdk {
 
   String createDid() {
     return CallContext.run((call) {
-      native_create_did(
+      _api.native_create_did(
         _sdk,
         call.id,
         call.callback,
@@ -240,7 +240,7 @@ class RustSdk {
     return CallContext.run((call) {
       final nativeDid = Utf8.toUtf8(did);
       try {
-        native_get_document(
+        _api.native_get_document(
           _sdk,
           nativeDid,
           call.id,
@@ -253,12 +253,12 @@ class RustSdk {
   }
 
   void dispose() {
-    native_close_sdk(_sdk);
+    _api.native_close_sdk(_sdk);
   }
 }
 
 class RustAPI {
-  static String ping(String message, int delaySec) {
+  /*static String ping(String message, int delaySec) {
     return CallContext.run((call) {
       final nativeMessage = Utf8.toUtf8(message);
       try {
@@ -274,16 +274,31 @@ class RustAPI {
         free(nativeMessage);
       }
     });
-  }
+  }*/
 
-  static RustSdk initSdk() {
+  static RustSdk initSdk(String libPath) {
+    final lib = DynamicLibrary.open(libPath);
+    //final native_ping = lib.lookupFunction<NativeFuncPing, DartFuncPing>('ping');
+    final native_init_sdk = lib.lookupFunction<NativeFuncInitSdk, DartFuncInitSdk>('init_sdk');
+
+    final api = NativeAPI(
+      lib.lookupFunction<NativeFuncCloseSdk, DartFuncCloseSdk>('close_sdk'),
+      lib.lookupFunction<NativeFuncLoadVault, DartFuncLoadVault>('load_vault'),
+      lib.lookupFunction<NativeFuncCreateVault, DartFuncCreateVault>('create_vault'),
+      lib.lookupFunction<NativeFuncFakeLedger, DartFuncFakeLedger>('fake_ledger'),
+      lib.lookupFunction<NativeFuncRealLedger, DartFuncRealLedger>('real_ledger'),
+      lib.lookupFunction<NativeFuncListDids, DartFuncListDids>('list_dids'),
+      lib.lookupFunction<NativeFuncCreateDid, DartFuncCreateDid>('create_did'),
+      lib.lookupFunction<NativeFuncGetDocument, DartFuncGetDocument>('get_document'),
+    );
+
     return CallContext.run((call) {
       native_init_sdk(
         call.id,
         call.callback,
         call.error,
       );
-      return RustSdk(call.result().asPointer());
+      return RustSdk(call.result().asPointer(), api);
     });
   }
 
