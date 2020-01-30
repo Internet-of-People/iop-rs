@@ -6,7 +6,10 @@ use failure::{ensure, format_err, Fallible};
 use log::*;
 use serde::{Deserialize, Serialize};
 
-use crate::data::did::*;
+use crate::{
+    crypto::sign::{PrivateKeySigner, Signer},
+    data::{auth::Authentication, did::*},
+};
 use keyvault::{
     ed25519::{Ed25519, EdExtPrivateKey},
     multicipher, ExtendedPrivateKey, ExtendedPublicKey, KeyDerivationCrypto, PublicKey, Seed,
@@ -68,8 +71,10 @@ pub trait DidVault {
     fn get_active(&self) -> Fallible<Option<Did>>;
     async fn set_active(&mut self, did: &Did) -> Fallible<()>;
 
-    fn record_by_did(&self, did: &Did) -> Fallible<DidVaultRecord>;
-    //    async fn restore_id(&mut self, did: &Did) -> Fallible<()>;
+    fn record_by_auth(&self, auth: &Authentication) -> Fallible<DidVaultRecord>;
+    // async fn restore_id(&mut self, did: &Did) -> Fallible<()>;
+    fn signer_by_auth(&self, auth: &Authentication) -> Fallible<Box<dyn Signer>>;
+
     async fn create(&mut self, label: Option<Label>) -> Fallible<DidVaultRecord>;
     async fn update(&mut self, record: DidVaultRecord) -> Fallible<()>;
 }
@@ -108,11 +113,11 @@ impl InMemoryDidVault {
         Ok(key.into())
     }
 
-    // fn private_key(&self, idx: i32) -> Fallible<multicipher::MPrivateKey> {
-    //     let did_xsk = self.morpheus_xsk()?.derive_hardened_child(idx)?;
-    //     let key = did_xsk.as_private_key();
-    //     Ok(key.into())
-    // }
+    fn private_key(&self, idx: i32) -> Fallible<multicipher::MPrivateKey> {
+        let did_xsk = self.morpheus_xsk()?.derive_hardened_child(idx)?;
+        let key = did_xsk.as_private_key();
+        Ok(key.into())
+    }
 
     fn index_of_did(&self, did: &Did) -> Option<usize> {
         let matches_it = self
@@ -153,14 +158,24 @@ impl DidVault for InMemoryDidVault {
         Ok(())
     }
 
-    fn record_by_did(&self, did: &Did) -> Fallible<DidVaultRecord> {
+    fn record_by_auth(&self, auth: &Authentication) -> Fallible<DidVaultRecord> {
         let rec_opt = self
             .records
             .iter()
-            .filter(|rec| rec.public_key.validate_id(&did.default_key_id()))
+            .filter(|rec| match auth {
+                Authentication::KeyId(id) => rec.public_key.validate_id(&id),
+                Authentication::PublicKey(pk) => rec.public_key == *pk,
+            })
             .cloned()
             .next();
-        rec_opt.ok_or_else(|| format_err!("Vault does not contain DID {}", did))
+        rec_opt.ok_or_else(|| format_err!("Vault does not contain {:?}", auth))
+    }
+
+    fn signer_by_auth(&self, auth: &Authentication) -> Fallible<Box<dyn Signer>> {
+        let bip32_idx = self.record_by_auth(auth)?.bip32_idx;
+        let secret_key = self.private_key(bip32_idx)?;
+        let signer = PrivateKeySigner::new(secret_key, auth.to_owned());
+        Ok(Box::new(signer))
     }
 
     async fn create(&mut self, label_opt: Option<Label>) -> Fallible<DidVaultRecord> {
@@ -254,8 +269,12 @@ impl DidVault for PersistentDidVault {
         self.save().await
     }
 
-    fn record_by_did(&self, did: &Did) -> Fallible<DidVaultRecord> {
-        self.in_memory_vault.record_by_did(did)
+    fn record_by_auth(&self, auth: &Authentication) -> Fallible<DidVaultRecord> {
+        self.in_memory_vault.record_by_auth(auth)
+    }
+
+    fn signer_by_auth(&self, auth: &Authentication) -> Fallible<Box<dyn Signer>> {
+        self.in_memory_vault.signer_by_auth(auth)
     }
 
     async fn create(&mut self, label_opt: Option<Label>) -> Fallible<DidVaultRecord> {

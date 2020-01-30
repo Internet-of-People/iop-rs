@@ -10,8 +10,9 @@ use crate::crypto::{
     sign::{AfterEnvelope, AfterProof, Signable, Signed, Signer},
 };
 use crate::data::{
+    auth::Authentication,
     did::Did,
-    diddoc::{Authentication, BlockHeight, DidDocument, Right},
+    diddoc::{BlockHeight, DidDocument, Right},
 };
 use keyvault::multicipher::MKeyId;
 

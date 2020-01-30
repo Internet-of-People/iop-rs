@@ -149,22 +149,6 @@ pub extern "C" fn real_ledger(
     CallContext::new(id, success, error).run_async(fut)
 }
 
-#[no_mangle]
-pub extern "C" fn get_document(
-    sdk: *mut imp::SdkContext, did: *const raw::c_char, id: *mut RequestId,
-    success: Callback<*mut raw::c_char>, error: Callback<*const raw::c_char>,
-) {
-    let sdk = unsafe { &mut *sdk };
-    let fut = async {
-        let did_str = str_in(did)?;
-        let did = did_str.parse()?;
-        let document = sdk.get_document(&did).await?;
-        let json = serde_json::to_string(&document)?;
-        Ok(string_out(json))
-    };
-    CallContext::new(id, success, error).run_async(fut)
-}
-
 #[repr(C)]
 pub struct RawSlice<T> {
     first: *mut T,
@@ -211,6 +195,40 @@ pub extern "C" fn create_did(
 }
 
 #[no_mangle]
+pub extern "C" fn get_document(
+    sdk: *mut imp::SdkContext, did: *const raw::c_char, id: *mut RequestId,
+    success: Callback<*mut raw::c_char>, error: Callback<*const raw::c_char>,
+) {
+    let sdk = unsafe { &mut *sdk };
+    let fut = async {
+        let did_str = str_in(did)?;
+        let did = did_str.parse()?;
+        let document = sdk.get_document(&did).await?;
+        let json = serde_json::to_string(&document)?;
+        Ok(string_out(json))
+    };
+    CallContext::new(id, success, error).run_async(fut)
+}
+
+#[no_mangle]
+pub extern "C" fn sign_witness_request(
+    sdk: *mut imp::SdkContext, req: *const raw::c_char, auth: *const raw::c_char,
+    id: *mut RequestId, success: Callback<*mut raw::c_char>, error: Callback<*const raw::c_char>,
+) {
+    let sdk = unsafe { &mut *sdk };
+    let fut = async {
+        let req_str = str_in(req)?;
+        //let req = req_str.parse()?;
+        let auth_str = str_in(auth)?;
+        let auth = serde_json::from_str(auth_str)?;
+        let signed_request = sdk.sign_witness_request(req_str.as_bytes(), &auth).await?;
+        let json = serde_json::to_string(&signed_request)?;
+        Ok(string_out(json))
+    };
+    CallContext::new(id, success, error).run_async(fut)
+}
+
+#[no_mangle]
 pub extern "C" fn close_sdk(sdk: *mut imp::SdkContext) {
     if !sdk.is_null() {
         unsafe {
@@ -220,16 +238,11 @@ pub extern "C" fn close_sdk(sdk: *mut imp::SdkContext) {
 }
 
 mod imp {
-    use std::collections::HashMap;
-
-    use failure::{err_msg, Fallible};
-    use serde::{Deserialize, Serialize};
+    use failure::Fallible;
 
     use crate::{
-        data::{
-            did::Did,
-            diddoc::{BlockHeight, DidDocument, KeyData, Right, Service},
-        },
+        crypto::sign::{Signable, Signed},
+        data::{auth::Authentication, did::Did, diddoc::DidDocument},
         io::dist::did::{HydraDidLedger, /*FakeDidLedger, */ LedgerOperations, LedgerQueries},
         io::local::didvault::{DidVault, InMemoryDidVault, PersistentDidVault},
         sdk::Client,
@@ -286,6 +299,15 @@ mod imp {
         pub async fn get_document(&self, did: &Did) -> Fallible<DidDocument> {
             let doc = self.client.ledger()?.document(did).await?;
             Ok(doc)
+        }
+
+        // TODO REQUEST MUST BE TYPED
+        pub async fn sign_witness_request(
+            &self, req: &[u8], auth: &Authentication,
+        ) -> Fallible<Signed<Vec<u8>>> {
+            let vault = self.client.vault()?;
+            let signer = vault.signer_by_auth(auth)?;
+            req.to_owned().sign(signer.as_ref()).await
         }
     }
 }

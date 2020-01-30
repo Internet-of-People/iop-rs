@@ -8,12 +8,9 @@ use hyper::{
 use super::*;
 use crate::crypto::{
     hash::ContentId,
-    sign::{AfterEnvelope, AfterProof, BlockHash, Signable, Signed, Signer},
+    sign::{AfterEnvelope, Signable, Signed},
 };
-use crate::data::{
-    did::Did,
-    diddoc::{Authentication, BlockHeight, DidDocument, Right},
-};
+use crate::data::{did::Did, diddoc::DidDocument};
 use keyvault::multicipher::MKeyId;
 
 pub struct HydraDidLedger {

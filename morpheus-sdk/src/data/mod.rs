@@ -1,3 +1,4 @@
+pub mod auth;
 pub mod claim;
 pub mod did;
 pub mod diddoc;

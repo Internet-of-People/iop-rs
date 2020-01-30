@@ -3,10 +3,11 @@ use failure::Fallible;
 use serde::{Deserialize, Serialize};
 
 use crate::crypto::hash::{Content, ContentId};
-use crate::data::diddoc::{Authentication, BlockHeight};
+use crate::data::auth::Authentication;
+use crate::data::diddoc::BlockHeight;
 use keyvault::{
-    multicipher::{MPublicKey, MSignature},
-    PublicKey,
+    multicipher::{MPrivateKey, MPublicKey, MSignature},
+    PrivateKey, PublicKey,
 };
 
 // TODO signer trait maybe belongs more under crate::io::local
@@ -14,7 +15,33 @@ use keyvault::{
 pub trait Signer {
     fn authentication(&self) -> &Authentication;
 
-    async fn sign(&self, data: &[u8]) -> Fallible<(MPublicKey, MSignature)>;
+    // TODO MUST BE CHANGED to have separated special-purpose signer functions
+    //      so that the user can receive a confirmation dialog with relevant semantics
+    //      fn sign(&self, req: &WitnessRequest) -> Fallible<Signed<WitnessRequest>>
+    async fn sign(&self, data: Vec<u8>) -> Fallible<(MPublicKey, MSignature)>;
+}
+
+pub struct PrivateKeySigner {
+    private_key: MPrivateKey,
+    authentication: Authentication,
+}
+
+impl PrivateKeySigner {
+    pub fn new(private_key: MPrivateKey, authentication: Authentication) -> Self {
+        Self { private_key, authentication }
+    }
+}
+
+#[async_trait(?Send)]
+impl Signer for PrivateKeySigner {
+    fn authentication(&self) -> &Authentication {
+        &self.authentication
+    }
+
+    async fn sign(&self, data: Vec<u8>) -> Fallible<(MPublicKey, MSignature)> {
+        let signature = self.private_key.sign(&data);
+        Ok((self.private_key.public_key(), signature))
+    }
 }
 
 pub type Nonce = u32;
@@ -28,10 +55,15 @@ pub trait Signable: Content {
     }
 
     async fn sign(&self, signer: &dyn Signer) -> Fallible<Signed<Self>> {
-        let (public_key, signature) = signer.sign(&self.content_to_sign()?).await?;
+        let (public_key, signature) = signer.sign(self.content_to_sign()?).await?;
         Ok(Signed { message: self.clone(), public_key, signature })
     }
 }
+
+impl Signable for &[u8] {}
+impl Signable for Vec<u8> {}
+impl Signable for &str {}
+impl Signable for String {}
 
 // TODO implement Hash for MPublicKey and MSignature
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]

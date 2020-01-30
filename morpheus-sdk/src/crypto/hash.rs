@@ -110,3 +110,8 @@ pub trait Content: Serialize + Clone + Sized {
         Ok(calculated_hash == content_id.inner)
     }
 }
+
+impl Content for &[u8] {}
+impl Content for Vec<u8> {}
+impl Content for &str {}
+impl Content for String {}
