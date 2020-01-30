@@ -219,9 +219,9 @@ pub extern "C" fn sign_witness_request(
     let fut = async {
         let req_str = str_in(req)?;
         //let req = req_str.parse()?;
-        let auth_str = str_in(auth)?;
-        let auth = serde_json::from_str(auth_str)?;
-        let signed_request = sdk.sign_witness_request(req_str.as_bytes(), &auth).await?;
+        let auth_str = format!("{:?}", str_in(auth)?);
+        let auth = serde_json::from_str(&auth_str)?;
+        let signed_request = sdk.sign_witness_request(req_str.to_owned(), &auth).await?;
         let json = serde_json::to_string(&signed_request)?;
         Ok(string_out(json))
     };
@@ -303,11 +303,11 @@ mod imp {
 
         // TODO REQUEST MUST BE TYPED
         pub async fn sign_witness_request(
-            &self, req: &[u8], auth: &Authentication,
-        ) -> Fallible<Signed<Vec<u8>>> {
+            &self, req: String, auth: &Authentication,
+        ) -> Fallible<Signed<String>> {
             let vault = self.client.vault()?;
             let signer = vault.signer_by_auth(auth)?;
-            req.to_owned().sign(signer.as_ref()).await
+            req.sign(signer.as_ref()).await
         }
     }
 }

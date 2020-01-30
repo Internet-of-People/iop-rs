@@ -50,6 +50,9 @@ void main(List<String> arguments) {
 
       final doc1 = sdk.getDocument(dids[0]);
       print('first document: \n$doc1');
+
+      final signedWitnessRequest = sdk.signWitnessRequest('Józsi hol vagy? ☹', 'iezbeWGSY2dqcUBqT8K7R14xr');
+      print('Signed Witness Request:\n$signedWitnessRequest');
     } catch (e) {
       print('Error using SDK: $e');
     } finally {

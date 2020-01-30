@@ -66,11 +66,8 @@ typedef NativeFuncFakeLedger = Void Function(
   Pointer callback,
   Pointer error,
 );
-typedef DartFuncFakeLedger = void Function(
-    Pointer<Void> sdk,
-    Pointer<CallContext> requestId,
-    Pointer callback,
-    Pointer error);
+typedef DartFuncFakeLedger = void Function(Pointer<Void> sdk,
+    Pointer<CallContext> requestId, Pointer callback, Pointer error);
 
 typedef NativeFuncRealLedger = Void Function(
   Pointer<Void> sdk,
@@ -79,12 +76,8 @@ typedef NativeFuncRealLedger = Void Function(
   Pointer callback,
   Pointer error,
 );
-typedef DartFuncRealLedger = void Function(
-    Pointer<Void> sdk,
-    Pointer<Utf8> url,
-    Pointer<CallContext> requestId,
-    Pointer callback,
-    Pointer error);
+typedef DartFuncRealLedger = void Function(Pointer<Void> sdk, Pointer<Utf8> url,
+    Pointer<CallContext> requestId, Pointer callback, Pointer error);
 
 typedef NativeFuncListDids = Void Function(
   Pointer<Void> sdk,
@@ -112,31 +105,51 @@ typedef NativeFuncGetDocument = Void Function(
   Pointer error,
 );
 typedef DartFuncGetDocument = void Function(
-    Pointer<Void> sdk,
-    Pointer<Utf8> did,
-    Pointer<CallContext> requestId,
-    Pointer callback,
-    Pointer error);
+  Pointer<Void> sdk,
+  Pointer<Utf8> did,
+  Pointer<CallContext> requestId,
+  Pointer callback,
+  Pointer error,
+);
+
+typedef NativeFuncSignWitnessRequest = Void Function(
+  Pointer<Void> sdk,
+  Pointer<Utf8> witnessRequest,
+  Pointer<Utf8> auth,
+  Pointer<CallContext> requestId,
+  Pointer callback,
+  Pointer error,
+);
+typedef DartFuncSignWitnessRequest = void Function(
+  Pointer<Void> sdk,
+  Pointer<Utf8> witnessRequest,
+  Pointer<Utf8> auth,
+  Pointer<CallContext> requestId,
+  Pointer callback,
+  Pointer error,
+);
 
 class NativeAPI {
-  final DartFuncCloseSdk native_close_sdk;
-  final DartFuncLoadVault native_load_vault;
-  final DartFuncCreateVault native_create_vault;
-  final DartFuncFakeLedger native_fake_ledger;
-  final DartFuncRealLedger native_real_ledger;
-  final DartFuncListDids native_list_dids;
-  final DartFuncCreateDid native_create_did;
-  final DartFuncGetDocument native_get_document;
+  final DartFuncCloseSdk close_sdk;
+  final DartFuncLoadVault load_vault;
+  final DartFuncCreateVault create_vault;
+  final DartFuncFakeLedger fake_ledger;
+  final DartFuncRealLedger real_ledger;
+  final DartFuncListDids list_dids;
+  final DartFuncCreateDid create_did;
+  final DartFuncGetDocument get_document;
+  final DartFuncSignWitnessRequest sign_witness_request;
 
   NativeAPI(
-    this.native_close_sdk,
-    this.native_load_vault,
-    this.native_create_vault,
-    this.native_fake_ledger,
-    this.native_real_ledger,
-    this.native_list_dids,
-    this.native_create_did,
-    this.native_get_document,
+    this.close_sdk,
+    this.load_vault,
+    this.create_vault,
+    this.fake_ledger,
+    this.real_ledger,
+    this.list_dids,
+    this.create_did,
+    this.get_document,
+    this.sign_witness_request,
   );
 }
 
@@ -150,7 +163,7 @@ class RustSdk {
     return CallContext.run((call) {
       final nativePath = Utf8.toUtf8(path);
       try {
-        _api.native_load_vault(
+        _api.load_vault(
           _sdk,
           nativePath,
           call.id,
@@ -169,7 +182,7 @@ class RustSdk {
       final nativeSeed = Utf8.toUtf8(seed);
       final nativePath = Utf8.toUtf8(path);
       try {
-        _api.native_create_vault(
+        _api.create_vault(
           _sdk,
           nativeSeed,
           nativePath,
@@ -187,7 +200,7 @@ class RustSdk {
 
   void fakeLedger() {
     return CallContext.run((call) {
-      _api.native_fake_ledger(
+      _api.fake_ledger(
         _sdk,
         call.id,
         call.callback,
@@ -201,7 +214,7 @@ class RustSdk {
     return CallContext.run((call) {
       final nativeUrl = Utf8.toUtf8(url);
       try {
-        _api.native_real_ledger(
+        _api.real_ledger(
           _sdk,
           nativeUrl,
           call.id,
@@ -217,7 +230,7 @@ class RustSdk {
 
   List<String> listDids() {
     return CallContext.run((call) {
-      _api.native_list_dids(
+      _api.list_dids(
         _sdk,
         call.id,
         call.callback,
@@ -229,7 +242,7 @@ class RustSdk {
 
   String createDid() {
     return CallContext.run((call) {
-      _api.native_create_did(
+      _api.create_did(
         _sdk,
         call.id,
         call.callback,
@@ -243,7 +256,7 @@ class RustSdk {
     return CallContext.run((call) {
       final nativeDid = Utf8.toUtf8(did);
       try {
-        _api.native_get_document(
+        _api.get_document(
           _sdk,
           nativeDid,
           call.id,
@@ -251,12 +264,35 @@ class RustSdk {
           call.error,
         );
         return call.result().asString;
-      } finally {}
+      } finally {
+        free(nativeDid);
+      }
+    });
+  }
+
+  String signWitnessRequest(String witnessRequest, String authentication) {
+    return CallContext.run((call) {
+      final nativeWitnessRequest = Utf8.toUtf8(witnessRequest);
+      final nativeAuthentication = Utf8.toUtf8(authentication);
+      try {
+        _api.sign_witness_request(
+          _sdk,
+          nativeWitnessRequest,
+          nativeAuthentication,
+          call.id,
+          call.callback,
+          call.error,
+        );
+        return call.result().asString;
+      } finally {
+        free(nativeAuthentication);
+        free(nativeWitnessRequest);
+      }
     });
   }
 
   void dispose() {
-    _api.native_close_sdk(_sdk);
+    _api.close_sdk(_sdk);
   }
 }
 
@@ -265,7 +301,7 @@ class RustAPI {
     return CallContext.run((call) {
       final nativeMessage = Utf8.toUtf8(message);
       try {
-        native_ping(
+        ping(
           nativeMessage,
           delaySec,
           call.id,
@@ -281,22 +317,28 @@ class RustAPI {
 
   static RustSdk initSdk(String libPath) {
     final lib = DynamicLibrary.open(libPath);
-    //final native_ping = lib.lookupFunction<NativeFuncPing, DartFuncPing>('ping');
-    final native_init_sdk = lib.lookupFunction<NativeFuncInitSdk, DartFuncInitSdk>('init_sdk');
+    //final ping = lib.lookupFunction<NativeFuncPing, DartFuncPing>('ping');
+    final init_sdk =
+        lib.lookupFunction<NativeFuncInitSdk, DartFuncInitSdk>('init_sdk');
 
     final api = NativeAPI(
       lib.lookupFunction<NativeFuncCloseSdk, DartFuncCloseSdk>('close_sdk'),
       lib.lookupFunction<NativeFuncLoadVault, DartFuncLoadVault>('load_vault'),
-      lib.lookupFunction<NativeFuncCreateVault, DartFuncCreateVault>('create_vault'),
-      lib.lookupFunction<NativeFuncFakeLedger, DartFuncFakeLedger>('fake_ledger'),
-      lib.lookupFunction<NativeFuncRealLedger, DartFuncRealLedger>('real_ledger'),
+      lib.lookupFunction<NativeFuncCreateVault, DartFuncCreateVault>(
+          'create_vault'),
+      lib.lookupFunction<NativeFuncFakeLedger, DartFuncFakeLedger>(
+          'fake_ledger'),
+      lib.lookupFunction<NativeFuncRealLedger, DartFuncRealLedger>(
+          'real_ledger'),
       lib.lookupFunction<NativeFuncListDids, DartFuncListDids>('list_dids'),
       lib.lookupFunction<NativeFuncCreateDid, DartFuncCreateDid>('create_did'),
-      lib.lookupFunction<NativeFuncGetDocument, DartFuncGetDocument>('get_document'),
+      lib.lookupFunction<NativeFuncGetDocument, DartFuncGetDocument>(
+          'get_document'),
+      lib.lookupFunction<NativeFuncSignWitnessRequest, DartFuncSignWitnessRequest>('sign_witness_request'),
     );
 
     return CallContext.run((call) {
-      native_init_sdk(
+      init_sdk(
         call.id,
         call.callback,
         call.error,

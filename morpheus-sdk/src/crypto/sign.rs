@@ -5,6 +5,7 @@ use serde::{Deserialize, Serialize};
 use crate::crypto::hash::{Content, ContentId};
 use crate::data::auth::Authentication;
 use crate::data::diddoc::BlockHeight;
+use crate::data::serde_string;
 use keyvault::{
     multicipher::{MPrivateKey, MPublicKey, MSignature},
     PrivateKey, PublicKey,
@@ -60,10 +61,26 @@ pub trait Signable: Content {
     }
 }
 
-impl Signable for &[u8] {}
-impl Signable for Vec<u8> {}
-impl Signable for &str {}
-impl Signable for String {}
+impl Signable for &[u8] {
+    fn content_to_sign(&self) -> Fallible<Vec<u8>> {
+        Ok((*self).to_owned())
+    }
+}
+impl Signable for Vec<u8> {
+    fn content_to_sign(&self) -> Fallible<Vec<u8>> {
+        Ok(self.clone())
+    }
+}
+impl Signable for &str {
+    fn content_to_sign(&self) -> Fallible<Vec<u8>> {
+        Ok(self.as_bytes().to_owned())
+    }
+}
+impl Signable for String {
+    fn content_to_sign(&self) -> Fallible<Vec<u8>> {
+        Ok(self.as_bytes().to_owned())
+    }
+}
 
 // TODO implement Hash for MPublicKey and MSignature
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
@@ -72,7 +89,9 @@ where
     T: Signable,
 {
     message: T,
+    #[serde(with = "serde_string")]
     public_key: MPublicKey,
+    #[serde(with = "serde_string")]
     signature: MSignature,
     // TODO is it OK here or should be given somewhere else?
     // TODO ClaimPresentation might be needed to prove proper right of delegated signing.
