@@ -7,12 +7,15 @@ import './ffi.dart';
 //
 // abstract class MorpheusSdk {
 //   Void ping(Pointer<Utf8> message, Int32 delay, Pointer<CallContext> requestId, Pointer callback, Pointer error);
-//   Pointer<Void> init_sdk(Pointer<CallContext> requestId, Pointer callback, Pointer error);
+//   Void init_sdk(Pointer<CallContext> requestId, Pointer callback, Pointer error);
 //   Void close_sdk(Pointer<Void> sdk);
 //   Void load_vault(Pointer<Void> sdk, Pointer<Utf8> path, Pointer<CallContext> requestId, Pointer callback, Pointer error);
 //   Void create_vault(Pointer<Void> sdk, Pointer<Utf8> seed, Pointer<Utf8> path, Pointer<CallContext> requestId, Pointer callback, Pointer error);
+//   Void fake_ledger(Pointer<Void> sdk, Pointer<CallContext> requestId, Pointer callback, Pointer error);
+//   Void real_ledger(Pointer<Void> sdk, Pointer<Utf8> url, Pointer<CallContext> requestId, Pointer callback, Pointer error);
 //   Void list_dids(Pointer<Void> sdk, Pointer<CallContext> requestId, Pointer callback, Pointer error);
 //   Void create_did(Pointer<Void> sdk, Pointer<CallContext> requestId, Pointer callback, Pointer error);
+//   Void get_document(Pointer<Void> sdk, Pointer<Utf8> did, Pointer<CallContext> requestId, Pointer callback, Pointer error);
 // }
 // final lib = DynamicLibrary.open('../target/debug/libmorpheus_sdk.so');
 // final morpheusSdk = NativeLibrary.createProxy<MorpheusSdk>(lib);
@@ -23,9 +26,9 @@ typedef NativeFuncPing = Void Function(Pointer<Utf8> message, Int32 delay,
 typedef DartFuncPing = void Function(Pointer<Utf8> message, int delay,
     Pointer<CallContext> requestId, Pointer callback, Pointer error);
 
-typedef NativeFuncInitSdk = Pointer<Void> Function(
+typedef NativeFuncInitSdk = Void Function(
     Pointer<CallContext> requestId, Pointer callback, Pointer error);
-typedef DartFuncInitSdk = Pointer<Void> Function(
+typedef DartFuncInitSdk = void Function(
     Pointer<CallContext> requestId, Pointer callback, Pointer error);
 
 typedef NativeFuncCloseSdk = Void Function(Pointer<Void> sdk);

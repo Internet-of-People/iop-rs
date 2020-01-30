@@ -9,6 +9,7 @@ edition = "2018"
 async-trait = "*"
 failure = "*"
 futures = "*"
+hyper = "*"
 keyvault = { git="https://github.com/Internet-of-People/mercury-rust", branch="develop" }
 log = "*"
 #multiaddr = "*"

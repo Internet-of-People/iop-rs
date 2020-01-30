@@ -45,7 +45,8 @@ void main(List<String> arguments) {
       final dids = sdk.listDids();
       print('Dids: ${dids.join(',')}');
 
-      sdk.fakeLedger();
+      // sdk.fakeLedger();
+      sdk.realLedger('http://35.187.56.222:4703');
 
       final doc1 = sdk.getDocument(dids[0]);
       print('first document: \n$doc1');

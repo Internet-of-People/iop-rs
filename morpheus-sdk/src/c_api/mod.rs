@@ -230,12 +230,12 @@ mod imp {
             did::Did,
             diddoc::{BlockHeight, DidDocument, KeyData, Right, Service},
         },
-        io::dist::did::{/*HydraDidLedger, */ FakeDidLedger, LedgerOperations, LedgerQueries},
+        io::dist::did::{HydraDidLedger, /*FakeDidLedger, */ LedgerOperations, LedgerQueries},
         io::local::didvault::{DidVault, InMemoryDidVault, PersistentDidVault},
         sdk::Client,
     };
 
-    pub type SdkContext = Sdk<PersistentDidVault, FakeDidLedger>;
+    pub type SdkContext = Sdk<PersistentDidVault, HydraDidLedger>;
 
     pub struct Sdk<V: DidVault, L: LedgerQueries + LedgerOperations> {
         pub client: Client<V, L>,
@@ -244,60 +244,6 @@ mod imp {
     impl<V: DidVault, L: LedgerQueries + LedgerOperations> Default for Sdk<V, L> {
         fn default() -> Self {
             Self { client: Default::default() }
-        }
-    }
-
-    #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
-    pub struct ApiKeyData {
-        authentication: String,
-        valid_from_block: Option<BlockHeight>, // TODO should be timestamp on the long term
-        valid_until_block: Option<BlockHeight>, // TODO should be timestamp on the long term
-        revoked: bool,
-    }
-
-    impl From<KeyData> for ApiKeyData {
-        fn from(src: KeyData) -> Self {
-            Self {
-                authentication: src.authentication.to_string(),
-                valid_from_block: src.valid_from_block,
-                valid_until_block: src.valid_until_block,
-                revoked: src.revoked,
-            }
-        }
-    }
-
-    impl From<&KeyData> for ApiKeyData {
-        fn from(src: &KeyData) -> Self {
-            src.to_owned().into()
-        }
-    }
-
-    #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
-    pub struct ApiDidDocument {
-        #[serde(rename = "id")]
-        did: String,
-        keys: Vec<ApiKeyData>,
-        // TODO should this be Vec<KeyRightPair> instead?
-        rights: HashMap<Right, Vec<usize>>, // right -> key_indices
-        services: Vec<Service>,
-        tombstoned: bool,
-    }
-
-    impl From<DidDocument> for ApiDidDocument {
-        fn from(src: DidDocument) -> Self {
-            Self {
-                did: src.did.to_string(),
-                keys: src.keys.iter().map(|item| item.into()).collect(),
-                rights: src.rights,
-                services: src.services,
-                tombstoned: src.tombstoned,
-            }
-        }
-    }
-
-    impl From<&DidDocument> for ApiDidDocument {
-        fn from(src: &DidDocument) -> Self {
-            src.to_owned().into()
         }
     }
 
@@ -316,12 +262,15 @@ mod imp {
         }
 
         pub async fn fake_ledger(&mut self) -> Fallible<()> {
-            self.client.set_ledger(FakeDidLedger::new())?;
-            Ok(())
+            todo!();
+            // self.client.set_ledger(FakeDidLedger::new())?;
+            // Ok(())
         }
 
-        pub async fn real_ledger(&mut self, _url: &str) -> Fallible<()> {
-            Err(err_msg("Not implemented yet"))
+        pub async fn real_ledger(&mut self, url: &str) -> Fallible<()> {
+            self.client.set_ledger(HydraDidLedger::new(url))?;
+            Ok(())
+            // Err(err_msg("Not implemented yet"))
         }
 
         pub async fn list_dids(&self) -> Fallible<Vec<Did>> {
@@ -334,9 +283,9 @@ mod imp {
             Ok(rec.did())
         }
 
-        pub async fn get_document(&self, did: &Did) -> Fallible<ApiDidDocument> {
+        pub async fn get_document(&self, did: &Did) -> Fallible<DidDocument> {
             let doc = self.client.ledger()?.document(did).await?;
-            Ok(doc.into())
+            Ok(doc)
         }
     }
 }
