@@ -7,14 +7,13 @@ use serde::{Deserialize, Serialize};
 
 use crate::crypto::{
     hash::{Content, ContentId},
-    sign::{AfterEnvelope, AfterProof, Signable, Signed, Signer},
+    sign::{AfterProof, Signable, Signed, Signer},
 };
 use crate::data::{
     auth::Authentication,
     did::Did,
     diddoc::{BlockHeight, DidDocument, Right},
 };
-use keyvault::multicipher::MKeyId;
 
 pub use fake::FakeDidLedger;
 pub use hydra::HydraDidLedger;
@@ -96,15 +95,7 @@ pub trait PooledLedgerTransaction {
 // TODO change this trait to fetch full history as TimeSeries instead of latest snapshot
 #[async_trait(?Send)]
 pub trait LedgerQueries {
-    async fn validate<T: Signable>(
-        &self, on_behalf_of: &Did, signer_id: Option<MKeyId>, signed: &Signed<T>,
-    ) -> Fallible<ValidationStatus>;
-
-    async fn validate_timeproofed<T: Signable>(
-        &self, on_behalf_of: &Did, signer_id: Option<MKeyId>, signed: &AfterEnvelope<T>,
-    ) -> Fallible<ValidationStatus>;
-
-    async fn before_proof_exists(&self, content: &ContentId) -> Fallible<bool>;
+    async fn before_proof(&self, content: &ContentId) -> Fallible<Option<BlockHeight>>;
     async fn document(&self, did: &Did) -> Fallible<DidDocument>;
 }
 

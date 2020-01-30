@@ -4,12 +4,8 @@ use async_trait::async_trait;
 use failure::{err_msg, Fallible};
 
 use super::*;
-use crate::crypto::{
-    hash::ContentId,
-    sign::{AfterEnvelope, Signable, Signed},
-};
+use crate::crypto::hash::ContentId;
 use crate::data::{did::Did, diddoc::DidDocument};
-use keyvault::multicipher::MKeyId;
 
 pub struct FakeDidLedger {
     demo_docs: HashMap<Did, DidDocument>,
@@ -30,29 +26,7 @@ impl FakeDidLedger {
 
 #[async_trait(?Send)]
 impl LedgerQueries for FakeDidLedger {
-    async fn validate<T: Signable>(
-        &self, on_behalf_of: &Did, _signer_id: Option<MKeyId>, _signed: &Signed<T>,
-    ) -> Fallible<ValidationStatus> {
-        let status = if self.demo_docs.contains_key(on_behalf_of) {
-            ValidationStatus::Valid
-        } else {
-            ValidationStatus::Invalid
-        };
-        Ok(status)
-    }
-
-    async fn validate_timeproofed<T: Signable>(
-        &self, on_behalf_of: &Did, _signer_id: Option<MKeyId>, _signed: &AfterEnvelope<T>,
-    ) -> Fallible<ValidationStatus> {
-        let status = if self.demo_docs.contains_key(on_behalf_of) {
-            ValidationStatus::Valid
-        } else {
-            ValidationStatus::MaybeValid
-        };
-        Ok(status)
-    }
-
-    async fn before_proof_exists(&self, _content: &ContentId) -> Fallible<bool> {
+    async fn before_proof(&self, _content: &ContentId) -> Fallible<Option<BlockHeight>> {
         todo!()
     }
 

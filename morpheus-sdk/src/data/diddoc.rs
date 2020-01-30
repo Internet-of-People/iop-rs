@@ -4,8 +4,9 @@ use serde::{Deserialize, Serialize};
 
 use crate::data::auth::Authentication;
 use crate::data::{did::Did, serde_string};
+use crate::io::dist::did::ValidationStatus;
 
-#[derive(Clone, Debug, Deserialize, Eq, Hash, PartialEq, PartialOrd, Serialize)]
+#[derive(Clone, Copy, Debug, Deserialize, Eq, Hash, PartialEq, PartialOrd, Serialize)]
 pub enum Right {
     #[serde(rename = "update")]
     Update,
@@ -76,6 +77,28 @@ impl DidDocument {
             at_height: Default::default(),
             tombstoned: Default::default(),
         }
+    }
+
+    pub fn has_right(
+        &self, auth: &Authentication, right: Right, _after_height: BlockHeight,
+        _before_height: BlockHeight,
+    ) -> ValidationStatus {
+        // TODO if we'll have a history in the document, this whole logic changes
+        if self.tombstoned {
+            return ValidationStatus::Invalid;
+        }
+        let keys_with_right = match self.rights.get(&right) {
+            Some(key) => key,
+            None => return ValidationStatus::Invalid,
+        };
+        for key_idx in keys_with_right.iter() {
+            let key = &self.keys[*key_idx];
+            if key.authentication == *auth && !key.revoked {
+                // TODO check block heights against optional values present in KeyData
+                return ValidationStatus::MaybeValid;
+            }
+        }
+        ValidationStatus::Invalid
     }
 }
 
