@@ -1,11 +1,11 @@
-use wasm_bindgen::prelude::*;
-
+//use wasm_bindgen::prelude::*;
+//
 //fn err_to_js<E: ToString>(e: E) -> JsValue {
 //    JsValue::from(e.to_string())
 //}
 //
 //#[wasm_bindgen]
-//pub struct Sdk {
+//pub struct KeyId {
 //    inner: keyvault::multicipher::MKeyId,
 //}
 //

@@ -12,7 +12,6 @@ futures = "*"
 hyper = "*"
 keyvault = { git="https://github.com/Internet-of-People/mercury-rust", branch="develop" }
 log = "*"
-#multiaddr = "*"
 multibase = "*"
 multihash = "*"
 serde = "*"
@@ -20,6 +19,7 @@ serde_bytes = "*"
 serde_json = "*"
 tokio = { version="*", features=["full"] }
 wasm-bindgen = { version = "*", features = ["serde-serialize"] }
+
 
 [dev-dependencies]
 tempfile = "*"
