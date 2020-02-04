@@ -244,7 +244,7 @@ mod imp {
         crypto::sign::{Signable, Signed},
         data::{auth::Authentication, did::Did, diddoc::DidDocument},
         io::dist::did::{HydraDidLedger, /*FakeDidLedger, */ LedgerOperations, LedgerQueries},
-        io::local::didvault::{DidVault, InMemoryDidVault, PersistentDidVault},
+        io::local::didvault::{DidVault, FilePersister, InMemoryDidVault, PersistentDidVault},
         sdk::Client,
     };
 
@@ -264,13 +264,15 @@ mod imp {
         pub async fn create_vault(&mut self, seed: &str, path: &str) -> Fallible<()> {
             let seed = keyvault::Seed::from_bip39(seed)?;
             let mem_vault = InMemoryDidVault::new(seed);
-            let mut persistent_vault = PersistentDidVault::new(mem_vault, path);
+            let file_persister = Box::new(FilePersister::new(&path));
+            let mut persistent_vault = PersistentDidVault::new(mem_vault, file_persister);
             persistent_vault.save().await?;
             self.client.set_vault(persistent_vault)
         }
 
         pub async fn load_vault(&mut self, path: &str) -> Fallible<()> {
-            let persistent_vault = PersistentDidVault::load(path).await?;
+            let file_persister = Box::new(FilePersister::new(&path));
+            let persistent_vault = PersistentDidVault::load(file_persister).await?;
             self.client.set_vault(persistent_vault)
         }
 

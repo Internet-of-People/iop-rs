@@ -213,19 +213,17 @@ impl DidVault for InMemoryDidVault {
 
 pub struct PersistentDidVault {
     in_memory_vault: InMemoryDidVault,
-    path: PathBuf,
+    persister: Box<dyn Persister>,
 }
 
 impl PersistentDidVault {
-    pub fn new(in_memory_vault: InMemoryDidVault, path: impl AsRef<Path>) -> Self {
-        Self { in_memory_vault, path: path.as_ref().to_owned() }
+    pub fn new(in_memory_vault: InMemoryDidVault, persister: Box<dyn Persister>) -> Self {
+        Self { in_memory_vault, persister }
     }
 
-    pub async fn load(path: impl AsRef<Path>) -> Fallible<Self> {
-        let path: &Path = path.as_ref();
-        debug!("Loading DidVault from {:?}", path);
-        let vault_file = File::open(path)?;
-        let vault: InMemoryDidVault = serde_json::from_reader(&vault_file)?;
+    pub async fn load(persister: Box<dyn Persister>) -> Fallible<Self> {
+        let reader = persister.reader()?;
+        let vault: InMemoryDidVault = serde_json::from_reader(reader)?;
         //let vault: Self = bincode::deserialize_from(vault_file)?;
         if let Some(active) = vault.active_idx {
             ensure!(active < vault.next_idx, "active_idx cannot exceed last profile index");
@@ -237,18 +235,12 @@ impl PersistentDidVault {
             HashSet::from_iter(vault.records.iter().map(|rec| rec.label.to_owned()));
         ensure!(vault.records.len() == unique_labels.len(), "all labels must be unique");
 
-        Ok(Self::new(vault, path))
+        Ok(Self::new(vault, persister))
     }
 
     pub async fn save(&mut self) -> Fallible<()> {
-        debug!("Saving profile vault to persist its state");
-        if let Some(vault_dir) = self.path.parent() {
-            debug!("Recursively Creating directory {:?}", vault_dir);
-            std::fs::create_dir_all(vault_dir)?;
-        }
-
-        let vault_file = File::create(&self.path)?;
-        serde_json::to_writer_pretty(&vault_file, &self.in_memory_vault)?;
+        let writer = self.persister.writer()?;
+        serde_json::to_writer_pretty(writer, &self.in_memory_vault)?;
         //bincode::serialize_into(vault_file, self)?;
         Ok(())
     }
@@ -289,6 +281,40 @@ impl DidVault for PersistentDidVault {
     }
 }
 
+pub trait Persister {
+    fn reader(&self) -> Fallible<Box<dyn std::io::Read>>;
+    fn writer(&self) -> Fallible<Box<dyn std::io::Write>>;
+}
+
+pub struct FilePersister {
+    path: PathBuf,
+}
+
+impl FilePersister {
+    pub fn new(path: &impl AsRef<Path>) -> Self {
+        Self { path: path.as_ref().to_owned() }
+    }
+}
+
+impl Persister for FilePersister {
+    fn reader(&self) -> Fallible<Box<dyn std::io::Read>> {
+        debug!("Loading DidVault from {:?}", self.path);
+        let vault_file = File::open(&self.path)?;
+        Ok(Box::new(vault_file))
+    }
+
+    fn writer(&self) -> Fallible<Box<dyn std::io::Write>> {
+        debug!("Saving profile vault to persist its state");
+        if let Some(vault_dir) = self.path.parent() {
+            debug!("Recursively Creating directory {:?}", vault_dir);
+            std::fs::create_dir_all(vault_dir)?;
+        }
+
+        let vault_file = File::create(&self.path)?;
+        Ok(Box::new(vault_file))
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -326,13 +352,15 @@ mod tests {
     async fn persistent_vault() -> Fallible<()> {
         let tmp_dir = tempfile::tempdir()?.into_path();
         let tmp_file = tmp_dir.join("morpheus-testvault.dat");
+        let file_persister = Box::new(FilePersister::new(&tmp_file));
+        let file_persister_clone = Box::new(FilePersister::new(&tmp_file));
         //let tmp_file_str = tmp_file.into_os_string().into_string()?;
         let mem_vault = in_memory_vault_instance()?;
-        let mut persistent_vault = PersistentDidVault::new(mem_vault, &tmp_file);
+        let mut persistent_vault = PersistentDidVault::new(mem_vault, file_persister);
         test_vault(&mut persistent_vault).await?;
 
         let mem_vault = &persistent_vault.in_memory_vault;
-        let loaded_vault = PersistentDidVault::load(&tmp_file).await?;
+        let loaded_vault = PersistentDidVault::load(file_persister_clone).await?;
         let loaded_mem_vault = &loaded_vault.in_memory_vault;
         assert_eq!(loaded_mem_vault.active_idx, mem_vault.active_idx);
         assert_eq!(loaded_mem_vault.next_idx, mem_vault.next_idx);
