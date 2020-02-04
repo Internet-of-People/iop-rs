@@ -1,12 +1,5 @@
-// TODO provide a C API that allows
-// 1. selecting a DID from a vault
-// 2. selecting a key for a DID
-// 3. sign content with the selected key
-// +1 maybe later: create a witness request
-
 mod call_context;
 mod convert;
-mod sdk;
 mod unsafe_fut;
 
 use std::os::raw;
@@ -14,9 +7,9 @@ use std::os::raw;
 
 use serde_json;
 
+use crate::sdk::SdkContext;
 use call_context::{CallContext, Callback, RequestId};
 use convert::RawSlice;
-use sdk::SdkContext;
 
 #[no_mangle]
 pub extern "C" fn init_sdk(
@@ -28,27 +21,6 @@ pub extern "C" fn init_sdk(
     };
     CallContext::new(id, success, error).run(fun)
 }
-
-//#[no_mangle]
-//pub extern "C" fn ping(
-//    sdk: *mut SdkContext, message: *const raw::c_char, delay_secs: u32, id: *mut RequestId,
-//    success: Callback<*mut raw::c_char>, error: Callback<*const raw::c_char>,
-//) -> () {
-//    let sdk = unsafe { &mut *sdk };
-//    let fut = async move {
-//        let message = convert::str_in(message)?;
-//        tokio::time::delay_for(std::time::Duration::from_secs(delay_secs.into())).await;
-//        if message.starts_with("fail") {
-//            failure::bail!(message);
-//        }
-//        let out = format!(
-//            "From Rust: You sent '{}'. It works even with async operations involved.",
-//            message
-//        );
-//        Ok(convert::string_out(out))
-//    };
-//    CallContext::new(id, success, error).run_async(sdk.reactor(), fut)
-//}
 
 #[no_mangle]
 pub extern "C" fn create_vault(
