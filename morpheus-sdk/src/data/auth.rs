@@ -1,15 +1,31 @@
 use std::convert::TryFrom;
+use std::str::FromStr;
 
 use failure::{err_msg, Fallible};
 use serde::{Deserialize, Serialize};
 
 use keyvault::multicipher;
 
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[derive(Clone, Debug, Deserialize, Eq, Serialize)]
 #[serde(try_from = "MAuthentication", into = "MAuthentication")]
 pub enum Authentication {
     KeyId(multicipher::MKeyId),
     PublicKey(multicipher::MPublicKey),
+}
+
+impl PartialEq for Authentication {
+    fn eq(&self, other: &Self) -> bool {
+        match self {
+            Authentication::KeyId(id) => match other {
+                Authentication::KeyId(other_id) => *id == *other_id,
+                Authentication::PublicKey(other_key) => other_key.validate_id(id),
+            },
+            Authentication::PublicKey(key) => match other {
+                Authentication::KeyId(other_id) => key.validate_id(other_id),
+                Authentication::PublicKey(other_key) => *key == *other_key,
+            },
+        }
+    }
 }
 
 #[derive(Deserialize, Serialize)]
@@ -48,5 +64,12 @@ impl ToString for Authentication {
             Self::KeyId(id) => id.to_string(),
             Self::PublicKey(key) => key.to_string(),
         }
+    }
+}
+
+impl FromStr for Authentication {
+    type Err = failure::Error;
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Self::try_from(MAuthentication(s.to_owned()))
     }
 }

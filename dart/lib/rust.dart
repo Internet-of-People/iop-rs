@@ -129,6 +129,45 @@ typedef DartFuncSignWitnessRequest = void Function(
   Pointer error,
 );
 
+typedef NativeFuncHasRightAt = Void Function(
+  Pointer<Void> sdk,
+  Pointer<Utf8> did,
+  Pointer<Utf8> auth,
+  Pointer<Utf8> right,
+  Uint64 height,
+  Pointer<CallContext> requestId,
+  Pointer callback,
+  Pointer error,
+);
+typedef DartFuncHasRightAt = void Function(
+  Pointer<Void> sdk,
+  Pointer<Utf8> did,
+  Pointer<Utf8> auth,
+  Pointer<Utf8> right,
+  int height,
+  Pointer<CallContext> requestId,
+  Pointer callback,
+  Pointer error,
+);
+
+typedef NativeFuncIsTombstonedAt = Void Function(
+  Pointer<Void> sdk,
+  Pointer<Utf8> did,
+  Uint64 height,
+  Pointer<CallContext> requestId,
+  Pointer callback,
+  Pointer error,
+);
+typedef DartFuncIsTombstonedAt = void Function(
+  Pointer<Void> sdk,
+  Pointer<Utf8> did,
+  int height,
+  Pointer<CallContext> requestId,
+  Pointer callback,
+  Pointer error,
+);
+
+
 class NativeAPI {
   final DartFuncCloseSdk close_sdk;
   final DartFuncLoadVault load_vault;
@@ -139,6 +178,8 @@ class NativeAPI {
   final DartFuncCreateDid create_did;
   final DartFuncGetDocument get_document;
   final DartFuncSignWitnessRequest sign_witness_request;
+  final DartFuncHasRightAt has_right_at;
+  final DartFuncIsTombstonedAt is_tombstoned_at;
 
   NativeAPI(
     this.close_sdk,
@@ -150,6 +191,8 @@ class NativeAPI {
     this.create_did,
     this.get_document,
     this.sign_witness_request,
+    this.has_right_at,
+    this.is_tombstoned_at,
   );
 }
 
@@ -291,6 +334,50 @@ class RustSdk {
     });
   }
 
+  bool hasRightAt(String did, String auth, String right, int height) {
+    return CallContext.run((call) {
+      final nativeDid = Utf8.toUtf8(did);
+      final nativeAuth = Utf8.toUtf8(auth);
+      final nativeRight = Utf8.toUtf8(right);
+      try {
+        _api.has_right_at(
+          _sdk,
+          nativeDid,
+          nativeAuth,
+          nativeRight,
+          height,
+          call.id,
+          call.callback,
+          call.error,
+        );
+        return call.result().asBool();
+      } finally {
+        free(nativeDid);
+        free(nativeAuth);
+        free(nativeRight);
+      }
+    });
+  }
+
+  bool isTombstonedAt(String did, int height) {
+      return CallContext.run((call) {
+        final nativeDid = Utf8.toUtf8(did);
+        try {
+          _api.is_tombstoned_at(
+            _sdk,
+            nativeDid,
+            height,
+            call.id,
+            call.callback,
+            call.error,
+          );
+          return call.result().asBool();
+        } finally {
+          free(nativeDid);
+        }
+      });
+    }
+
   void dispose() {
     _api.close_sdk(_sdk);
   }
@@ -332,9 +419,10 @@ class RustAPI {
           'real_ledger'),
       lib.lookupFunction<NativeFuncListDids, DartFuncListDids>('list_dids'),
       lib.lookupFunction<NativeFuncCreateDid, DartFuncCreateDid>('create_did'),
-      lib.lookupFunction<NativeFuncGetDocument, DartFuncGetDocument>(
-          'get_document'),
+      lib.lookupFunction<NativeFuncGetDocument, DartFuncGetDocument>('get_document'),
       lib.lookupFunction<NativeFuncSignWitnessRequest, DartFuncSignWitnessRequest>('sign_witness_request'),
+      lib.lookupFunction<NativeFuncHasRightAt, DartFuncHasRightAt>('has_right_at'),
+      lib.lookupFunction<NativeFuncIsTombstonedAt, DartFuncIsTombstonedAt>('is_tombstoned_at'),
     );
 
     return CallContext.run((call) {

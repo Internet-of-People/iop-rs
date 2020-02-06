@@ -127,7 +127,15 @@ class Result extends Struct {
 
   void get asVoid => _value;
 
-  int get asInteger => _value.address;
+  bool asBool() {
+      final intPtr = asPointer<Uint8>();
+      try {
+        final value = intPtr.value;
+        return value != 0;
+      } finally {
+        free(intPtr);
+      }
+    }
 
   void dispose() {
     if (_success != nullptr) {

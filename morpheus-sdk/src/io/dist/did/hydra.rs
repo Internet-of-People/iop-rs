@@ -53,6 +53,9 @@ impl LedgerQueries for HydraDidLedger {
         }
         let bytes = hyper::body::to_bytes(body).await?;
 
+        let body_str = String::from_utf8(bytes.to_vec())?;
+        println!("Got response: {}", body_str);
+
         let doc: DidDocument = serde_json::from_slice(&bytes)?;
 
         Ok(doc)

@@ -18,7 +18,6 @@ serde = "*"
 serde_bytes = "*"
 serde_json = "*"
 tokio = { version="*", features=["full"] }
-wasm-bindgen = { version = "*", features = ["serde-serialize"] }
 
 
 [dev-dependencies]

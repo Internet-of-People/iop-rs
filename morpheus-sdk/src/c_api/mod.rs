@@ -7,6 +7,7 @@ use std::os::raw;
 
 use serde_json;
 
+use crate::data::diddoc::BlockHeight;
 use crate::sdk::SdkContext;
 use call_context::{CallContext, Callback, RequestId};
 use convert::RawSlice;
@@ -135,6 +136,47 @@ pub extern "C" fn sign_witness_request(
         let signed_request = sdk.sign_witness_request(req_str.to_owned(), &auth)?;
         let json = serde_json::to_string(&signed_request)?;
         Ok(convert::string_out(json))
+    };
+    CallContext::new(id, success, error).run(fun)
+}
+
+// TODO consider type mapping of Right to C and maybe adding list_rights()
+
+#[no_mangle]
+pub extern "C" fn has_right_at(
+    sdk: *mut SdkContext, did: *const raw::c_char, auth: *const raw::c_char,
+    right: *const raw::c_char, height: u64, id: *mut RequestId,
+    success: Callback<*mut raw::c_uchar>, error: Callback<*const raw::c_char>,
+) {
+    let sdk = unsafe { &mut *sdk };
+    let fun = || {
+        let did_str = convert::str_in(did)?;
+        let did = did_str.parse()?;
+        let auth_str = convert::str_in(auth)?;
+        let auth = auth_str.parse()?;
+        let right_str = convert::str_in(right)?;
+        let right = right_str.parse()?;
+        let document = sdk.get_document(&did)?;
+        let height = height as BlockHeight;
+        let has_right = document.has_right_at(&auth, right, height)?;
+        Ok(convert::bool_out(has_right))
+    };
+    CallContext::new(id, success, error).run(fun)
+}
+
+#[no_mangle]
+pub extern "C" fn is_tombstoned_at(
+    sdk: *mut SdkContext, did: *const raw::c_char, height: u64, id: *mut RequestId,
+    success: Callback<*mut raw::c_uchar>, error: Callback<*const raw::c_char>,
+) {
+    let sdk = unsafe { &mut *sdk };
+    let fun = || {
+        let did_str = convert::str_in(did)?;
+        let did = did_str.parse()?;
+        let document = sdk.get_document(&did)?;
+        let height = height as BlockHeight;
+        let tombstoned = document.is_tombstoned_at(height)?;
+        Ok(convert::bool_out(tombstoned))
     };
     CallContext::new(id, success, error).run(fun)
 }

@@ -45,14 +45,20 @@ void main(List<String> arguments) {
       final dids = sdk.listDids();
       print('Dids: ${dids.join(',')}');
 
+      final signedWitnessRequest = sdk.signWitnessRequest('Józsi hol vagy? ☹', 'iezbeWGSY2dqcUBqT8K7R14xr');
+      print('Signed Witness Request:\n$signedWitnessRequest');
+
       // sdk.fakeLedger();
       sdk.realLedger('http://35.187.56.222:4703');
 
-      final doc1 = sdk.getDocument(dids[0]);
-      print('first document: \n$doc1');
+      // final doc1 = sdk.getDocument(dids[0]);
+      // print('first document: \n$doc1');
 
-      final signedWitnessRequest = sdk.signWitnessRequest('Józsi hol vagy? ☹', 'iezbeWGSY2dqcUBqT8K7R14xr');
-      print('Signed Witness Request:\n$signedWitnessRequest');
+      final isTombstoned = sdk.isTombstonedAt(dids[0], 126);
+      print('tombstoned: ${isTombstoned}');
+
+      final hasRight = sdk.hasRightAt(dids[0], 'iezbeWGSY2dqcUBqT8K7R14xr', '"impersonate"', 126);
+      print('did has right: ${hasRight}');
     } catch (e) {
       print('Error using SDK: $e');
     } finally {

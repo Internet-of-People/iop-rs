@@ -14,6 +14,11 @@ pub fn string_out(s: String) -> *mut raw::c_char {
     c_str.into_raw()
 }
 
+pub fn bool_out(b: bool) -> *mut raw::c_uchar {
+    let heap_byte = Box::new(b as u8);
+    Box::into_raw(heap_byte)
+}
+
 #[repr(C)]
 pub struct RawSlice<T> {
     first: *mut T,
