@@ -131,7 +131,7 @@ where
         Ok(valid)
     }
 
-    fn validate_with_did(
+    pub fn validate_with_did(
         &self, on_behalf_of: &DidDocument, signer_id: Option<MKeyId>,
     ) -> Fallible<ValidationStatus> {
         let auth = match signer_id.as_ref() {
