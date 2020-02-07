@@ -57,7 +57,7 @@ void main(List<String> arguments) {
       final isTombstoned = sdk.isTombstonedAt(dids[0], 126);
       print('tombstoned: ${isTombstoned}');
 
-      final hasRight = sdk.hasRightAt(dids[0], 'iezbeWGSY2dqcUBqT8K7R14xr', '"impersonate"', 126);
+      final hasRight = sdk.hasRightAt(dids[0], 'iezbeWGSY2dqcUBqT8K7R14xr', 'impersonate', 126);
       print('did has right: ${hasRight}');
     } catch (e) {
       print('Error using SDK: $e');

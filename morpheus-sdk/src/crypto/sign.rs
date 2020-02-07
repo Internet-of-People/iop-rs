@@ -4,8 +4,9 @@ use serde::{Deserialize, Serialize};
 
 use crate::crypto::hash::{Content, ContentId};
 use crate::data::auth::Authentication;
-use crate::data::diddoc::BlockHeight;
+use crate::data::diddoc::{BlockHeight, DidDocument};
 use crate::data::serde_string;
+use crate::io::dist::did::ValidationStatus;
 use keyvault::{
     multicipher::{MKeyId, MPrivateKey, MPublicKey, MSignature},
     PrivateKey, PublicKey,
@@ -130,23 +131,21 @@ where
         Ok(valid)
     }
 
-    //    pub fn validate_with_did(
-    //        &self, on_behalf_of: &DidDocument, signer_id: Option<MKeyId>,
-    //    ) -> Fallible<ValidationStatus> {
-    //        let auth = match signer_id.as_ref() {
-    //            Some(id) => Authentication::KeyId(id.to_owned()),
-    //            None => Authentication::PublicKey(self.public_key.to_owned()),
-    //        };
-    //        if !self.validate_with_keyid(signer_id)? {
-    //            return Ok(ValidationStatus::Invalid);
-    //        }
-    //        Ok(on_behalf_of.has_right(
-    //            &auth,
-    //            Right::Impersonation,
-    //            1,
-    //            on_behalf_of.queried_at_height,
-    //        ))
-    //    }
+    pub fn validate_with_did(
+        &self, _on_behalf_of: &DidDocument, signer_id: Option<MKeyId>,
+    ) -> Fallible<ValidationStatus> {
+        let _auth = match signer_id.as_ref() {
+            Some(id) => Authentication::KeyId(id.to_owned()),
+            None => Authentication::PublicKey(self.public_key.to_owned()),
+        };
+        if !self.validate_with_keyid(signer_id)? {
+            return Ok(ValidationStatus::Invalid);
+        }
+
+        // TODO validate against a block RANGE, for Valid status signer provably needs rights during the WHOLE range
+        // Ok(on_behalf_of.has_right(&auth, Right::Impersonation, 1, on_behalf_of.queried_at_height))
+        todo!()
+    }
 }
 
 pub type BlockHash = ContentId;

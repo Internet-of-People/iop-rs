@@ -6,6 +6,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::data::auth::Authentication;
 use crate::data::{did::Did, serde_string};
+use failure::_core::fmt::{Display, Error, Formatter};
 
 #[derive(Clone, Copy, Debug, Deserialize, Eq, Hash, PartialEq, PartialOrd, Serialize)]
 pub enum Right {
@@ -15,16 +16,22 @@ pub enum Right {
     Impersonation,
 }
 
-impl ToString for Right {
-    fn to_string(&self) -> String {
-        serde_json::to_string(self).unwrap()
+impl Display for Right {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
+        let value =
+            serde_json::to_value(self).expect("Implementation error: Right is not serializable");
+        match value {
+            serde_json::Value::String(s) => write!(f, "{}", s)?,
+            _ => panic!("Implementation error: unexpected Right serialization"),
+        };
+        Ok(())
     }
 }
 
 impl FromStr for Right {
     type Err = failure::Error;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        Ok(serde_json::from_str(s)?)
+        Ok(serde_json::from_value(serde_json::Value::String(s.to_owned()))?)
     }
 }
 
