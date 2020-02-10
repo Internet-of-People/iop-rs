@@ -46,7 +46,20 @@ impl Signer for PrivateKeySigner {
     }
 }
 
-pub type Nonce = u32;
+// NOTE  multibase-encoded random content, e.g. 'urvU8F6HmEol5zOmHh_nnS1RiX5r3T2t9U_d_kQY7ZC-I"
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[serde(transparent)]
+pub struct Nonce(String);
+
+impl Nonce {
+    pub fn new() -> Self {
+        use rand::{thread_rng, RngCore};
+        let mut arr = [0u8; 33];
+        thread_rng().fill_bytes(&mut arr[..]);
+        let encoded = multibase::encode(multibase::Base::Base64UrlUpperNoPad, &arr[..]);
+        Self(encoded)
+    }
+}
 
 #[async_trait(?Send)]
 pub trait Signable: Content {
@@ -58,7 +71,7 @@ pub trait Signable: Content {
 
     async fn sign(&self, signer: &dyn Signer) -> Fallible<Signed<Self>> {
         let (public_key, signature) = signer.sign(self.content_to_sign()?).await?;
-        Ok(Signed { message: self.clone(), public_key, signature })
+        Ok(Signed { content: self.clone(), public_key, signature, nonce: None })
     }
 }
 
@@ -85,31 +98,29 @@ impl Signable for String {
 
 // TODO implement Hash for MPublicKey and MSignature
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[serde(from = "SignatureSerializationFormat<T>", into = "SignatureSerializationFormat<T>")]
 pub struct Signed<T>
 where
     T: Signable,
 {
-    message: T,
-    #[serde(with = "serde_string")]
+    content: T,
     public_key: MPublicKey,
-    #[serde(with = "serde_string")]
     signature: MSignature,
-    // TODO is it OK here or should be given somewhere else?
+    nonce: Option<Nonce>,
     // TODO ClaimPresentation might be needed to prove proper right of delegated signing.
     // on_behalf_of: Did,
-    // TODO consider adding a nonce here
 }
 
 impl<T> Signed<T>
 where
     T: Signable,
 {
-    pub fn new(public_key: MPublicKey, message: T, signature: MSignature) -> Self {
-        Self { public_key, message, signature }
+    pub fn new(public_key: MPublicKey, content: T, signature: MSignature) -> Self {
+        Self { public_key, content, signature, nonce: None }
     }
 
     pub fn message(&self) -> &T {
-        &self.message
+        &self.content
     }
     pub fn public_key(&self) -> &MPublicKey {
         &self.public_key
@@ -119,7 +130,7 @@ where
     }
 
     pub fn validate(&self) -> Fallible<bool> {
-        let valid = self.public_key.verify(&self.message.content_to_sign()?, &self.signature);
+        let valid = self.public_key.verify(&self.content.content_to_sign()?, &self.signature);
         Ok(valid)
     }
 
@@ -148,11 +159,50 @@ where
     }
 }
 
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+struct SignatureTuple {
+    #[serde(with = "serde_string", rename = "publicKey")]
+    public_key: MPublicKey,
+    #[serde(with = "serde_string")]
+    bytes: MSignature,
+}
+
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+pub struct SignatureSerializationFormat<T> {
+    signature: SignatureTuple,
+    content: T,
+    #[serde(skip_serializing_if = "Option::is_none", default)]
+    nonce: Option<Nonce>,
+}
+
+impl<T: Signable> From<Signed<T>> for SignatureSerializationFormat<T> {
+    fn from(src: Signed<T>) -> Self {
+        SignatureSerializationFormat {
+            content: src.content,
+            signature: SignatureTuple { public_key: src.public_key, bytes: src.signature },
+            nonce: src.nonce,
+        }
+    }
+}
+
+impl<T: Signable> From<SignatureSerializationFormat<T>> for Signed<T> {
+    fn from(src: SignatureSerializationFormat<T>) -> Self {
+        Signed {
+            content: src.content,
+            public_key: src.signature.public_key,
+            signature: src.signature.bytes,
+            nonce: src.nonce,
+        }
+    }
+}
+
 pub type BlockHash = ContentId;
 
 #[derive(Clone, Debug, Deserialize, Eq, Hash, PartialEq, Serialize)]
 pub struct AfterProof {
+    #[serde(rename = "blockHash")]
     block_hash: BlockHash,
+    #[serde(rename = "blockHeight")]
     block_height: BlockHeight,
 }
 

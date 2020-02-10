@@ -14,6 +14,7 @@ keyvault = { git="https://github.com/Internet-of-People/mercury-rust", branch="d
 log = "*"
 multibase = "*"
 multihash = "*"
+rand = "0.7.3"
 serde = "*"
 serde_bytes = "*"
 serde_json = "*"
