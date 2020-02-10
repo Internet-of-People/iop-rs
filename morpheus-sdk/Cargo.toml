@@ -17,6 +17,7 @@ multihash = "*"
 serde = "*"
 serde_bytes = "*"
 serde_json = "*"
+tiny-keccak = "*"
 tokio = { version="*", features=["full"] }
 
 
