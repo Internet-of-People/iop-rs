@@ -1,4 +1,4 @@
-// TODO Json for intermediary schema format
+// TODO use something like a ContentId for schema Ids
 pub type MorpheusSchema = String;
 
-pub type MorpheusValue = String;
+pub type MorpheusValue = serde_json::Value;

@@ -45,7 +45,8 @@ void main(List<String> arguments) {
       final dids = sdk.listDids();
       print('Dids: ${dids.join(',')}');
 
-      final signedWitnessRequest = sdk.signWitnessRequest('Józsi hol vagy? ☹', 'iezbeWGSY2dqcUBqT8K7R14xr');
+      final witnessRequest = '{"claim":{"subject":"did:morpheus:ezbeWGSY2dqcUBqT8K7R14xr","content":{"address":"adsf","placeOfBirth":{"country":"sdf","city":"adsf"},"dateOfBirth":"13/02/2002"}},"claimant":"did:morpheus:ezbeWGSY2dqcUBqT8K7R14xr#0","processId":"Digitalize ID card","evidence":{},"nonce":"uOANCT6WfyvEqvZkT8+5WFgubadCdJdiuNjVDpcAdXFzh"}';
+      final signedWitnessRequest = sdk.signWitnessRequest(witnessRequest, 'iezbeWGSY2dqcUBqT8K7R14xr');
       print('Signed Witness Request:\n$signedWitnessRequest');
 
       // sdk.fakeLedger();

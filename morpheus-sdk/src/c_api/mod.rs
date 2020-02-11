@@ -130,10 +130,10 @@ pub extern "C" fn sign_witness_request(
     let sdk = unsafe { &mut *sdk };
     let fun = || {
         let req_str = convert::str_in(req)?;
-        //let req = req_str.parse()?;
+        let req = serde_json::from_str(req_str)?;
         let auth_str = format!("{:?}", convert::str_in(auth)?);
         let auth = serde_json::from_str(&auth_str)?;
-        let signed_request = sdk.sign_witness_request(req_str.to_owned(), &auth)?;
+        let signed_request = sdk.sign_witness_request(&req, &auth)?;
         let json = serde_json::to_string(&signed_request)?;
         Ok(convert::string_out(json))
     };

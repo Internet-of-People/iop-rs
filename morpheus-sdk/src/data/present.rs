@@ -15,7 +15,7 @@ pub struct License {
 impl Content for License {}
 impl Signable for License {}
 
-#[derive(Clone, Debug, Deserialize, Eq, Hash, PartialEq, PartialOrd, Serialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct ClaimPresentation {
     // TODO how to represent Merkle-tree and other data here?
     // a collection of claims, potentially on different subjects

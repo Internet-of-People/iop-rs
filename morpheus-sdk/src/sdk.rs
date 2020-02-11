@@ -3,7 +3,7 @@ use failure::Fallible;
 use crate::{
     client::Client,
     crypto::sign::{Signable, Signed},
-    data::{auth::Authentication, did::Did, diddoc::DidDocument},
+    data::{auth::Authentication, claim::WitnessRequest, did::Did, diddoc::DidDocument},
     io::dist::did::{HydraDidLedger, /*FakeDidLedger, */ LedgerOperations, LedgerQueries},
     io::local::didvault::{DidVault, FilePersister, InMemoryDidVault, PersistentDidVault},
 };
@@ -41,8 +41,8 @@ impl<V: DidVault, L: LedgerQueries + LedgerOperations> Sdk<V, L> {
 
     // TODO REQUEST MUST BE TYPED
     pub fn sign_witness_request(
-        &mut self, req: String, auth: &Authentication,
-    ) -> Fallible<Signed<String>> {
+        &mut self, req: &WitnessRequest, auth: &Authentication,
+    ) -> Fallible<Signed<WitnessRequest>> {
         let vault = self.client.vault()?;
         self.reactor.block_on(async {
             let signer = vault.signer_by_auth(auth)?;

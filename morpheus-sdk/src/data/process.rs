@@ -1,12 +1,9 @@
 use serde::{Deserialize, Serialize};
 
-use crate::crypto::{
-    hash::{Content, ContentId},
-    sign::Signable,
-};
+use crate::crypto::{hash::Content, sign::Signable};
 use crate::data::schema::MorpheusSchema;
 
-pub type ProcessId = ContentId;
+pub type ProcessId = String; // TODO use something like a ContentId here
 
 #[derive(Clone, Debug, Deserialize, Eq, Hash, PartialEq, PartialOrd, Serialize)]
 pub struct Process {
