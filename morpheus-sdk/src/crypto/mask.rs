@@ -1,3 +1,5 @@
+use failure::{bail, Fallible};
+
 pub fn canonical_json(data: &serde_json::Value) -> serde_json::Result<String> {
     match data {
         serde_json::Value::Array(arr) => {
@@ -35,7 +37,7 @@ pub fn hashed(content: &str) -> String {
     format!("cj{}", mask)
 }
 
-pub fn json_digest(data: &serde_json::Value) -> serde_json::Result<String> {
+pub fn hash_json_value(data: &serde_json::Value) -> serde_json::Result<String> {
     match data {
         serde_json::Value::Array(_) | serde_json::Value::Object(_) => {
             let canonical_json = canonical_json(data)?;
@@ -47,12 +49,12 @@ pub fn json_digest(data: &serde_json::Value) -> serde_json::Result<String> {
     }
 }
 
-pub fn mask_json_value(data: &serde_json::Value) -> serde_json::Result<serde_json::Value> {
+pub fn digest_json_value(data: &serde_json::Value) -> serde_json::Result<serde_json::Value> {
     match data {
         serde_json::Value::Array(arr) => {
             let mut canonical_json_items = Vec::new();
             for item in arr {
-                let masked_item = mask_json_value(item)?;
+                let masked_item = digest_json_value(item)?;
                 canonical_json_items.push(serde_json::to_string(&masked_item)?);
             }
             let flattened_array = format!("[{}]", canonical_json_items.join(","));
@@ -68,7 +70,7 @@ pub fn mask_json_value(data: &serde_json::Value) -> serde_json::Result<serde_jso
             for key in keys {
                 let value = obj.get(key).expect("serde_json keys() impl error");
                 let canonical_key = canonical_json(&serde_json::Value::String(key.to_owned()))?;
-                let masked_val = mask_json_value(value)?;
+                let masked_val = digest_json_value(value)?;
                 let entry = format!("{}:{}", canonical_key, serde_json::to_string(&masked_val)?);
                 canonical_json_entries.push(entry);
             }
@@ -83,9 +85,17 @@ pub fn mask_json_value(data: &serde_json::Value) -> serde_json::Result<serde_jso
     }
 }
 
-pub fn mask<T: serde::Serialize>(data: &T) -> serde_json::Result<String> {
+pub fn json_digest<T: serde::Serialize>(data: &T) -> Fallible<String> {
     let json_value = serde_json::to_value(&data)?;
-    serde_json::to_string(&mask_json_value(&json_value)?)
+    let digest_json = match &json_value {
+        serde_json::Value::Object(_obj) => digest_json_value(&json_value),
+        serde_json::Value::Array(_arr) => digest_json_value(&json_value),
+        _ => bail!("Json digest is currently implemented only for composite types"),
+    }?;
+    match digest_json {
+        serde_json::Value::String(digest) => return Ok(digest),
+        _ => bail!("Implementation error: digest should always return a string"),
+    }
 }
 
 #[cfg(test)]
@@ -95,49 +105,54 @@ mod tests {
     use failure::Fallible;
     use serde::{Deserialize, Serialize};
 
-    #[derive(Deserialize, Serialize)]
+    #[derive(Clone, Debug, Deserialize, Serialize)]
     struct TestData {
         b: u32,
         a: u32,
+    }
+
+    #[derive(Clone, Debug, Deserialize, Serialize)]
+    struct CompositeTestData<T> {
+        z: Option<T>,
+        y: Option<T>,
     }
 
     #[test]
     fn masking() -> Fallible<()> {
         let test_obj = TestData { b: 1, a: 2 };
         {
-            let masked = mask(&test_obj)?;
-            assert_eq!(masked, r#""cjumTq1s6Tn6xkXolxHj4LmAo7DAb-zoPLhEa1BvpovAFU""#);
+            let masked = json_digest(&test_obj)?;
+            assert_eq!(masked, "cjumTq1s6Tn6xkXolxHj4LmAo7DAb-zoPLhEa1BvpovAFU");
         }
         {
-            let masked = mask(&[&test_obj, &test_obj])?;
-            assert_eq!(masked, r#""cjuGkDpb1HL7F8xFKDFVj3felfKZzjrJy92-108uuPixNw""#);
+            let masked = json_digest(&[&test_obj, &test_obj])?;
+            assert_eq!(masked, "cjuGkDpb1HL7F8xFKDFVj3felfKZzjrJy92-108uuPixNw");
         }
         {
-            let masked = mask(&(&test_obj, "cjumTq1s6Tn6xkXolxHj4LmAo7DAb-zoPLhEa1BvpovAFU"))?;
-            assert_eq!(masked, r#""cjuGkDpb1HL7F8xFKDFVj3felfKZzjrJy92-108uuPixNw""#);
+            let masked =
+                json_digest(&(&test_obj, "cjumTq1s6Tn6xkXolxHj4LmAo7DAb-zoPLhEa1BvpovAFU"))?;
+            assert_eq!(masked, "cjuGkDpb1HL7F8xFKDFVj3felfKZzjrJy92-108uuPixNw");
         }
         {
-            let masked = mask(&[
+            let masked = json_digest(&[
                 "cjumTq1s6Tn6xkXolxHj4LmAo7DAb-zoPLhEa1BvpovAFU",
                 "cjumTq1s6Tn6xkXolxHj4LmAo7DAb-zoPLhEa1BvpovAFU",
             ])?;
-            assert_eq!(masked, r#""cjuGkDpb1HL7F8xFKDFVj3felfKZzjrJy92-108uuPixNw""#);
+            assert_eq!(masked, "cjuGkDpb1HL7F8xFKDFVj3felfKZzjrJy92-108uuPixNw");
+        }
+        {
+            let comp = CompositeTestData { z: Some(test_obj.clone()), y: Some(test_obj.clone()) };
+            let masked = json_digest(&comp)?;
+            assert_eq!(masked, "cjubdcpA0FfHhD8yEpDzZ8vS5sm7yxkrX_wAJgmke2bWRQ");
+        }
+        {
+            let comp = CompositeTestData {
+                z: Some("cjumTq1s6Tn6xkXolxHj4LmAo7DAb-zoPLhEa1BvpovAFU".to_owned()),
+                y: Some("cjumTq1s6Tn6xkXolxHj4LmAo7DAb-zoPLhEa1BvpovAFU".to_owned()),
+            };
+            let masked = json_digest(&comp)?;
+            assert_eq!(masked, "cjubdcpA0FfHhD8yEpDzZ8vS5sm7yxkrX_wAJgmke2bWRQ");
         }
         Ok(())
     }
 }
-
-//const o = {b: 1, a: 2}
-//> jsonDigest([o, o])
-//{"a":2,"b":1}
-//{"a":2,"b":1}
-//'["cjumTq1s6Tn6xkXolxHj4LmAo7DAb-zoPLhEa1BvpovAFU","cjumTq1s6Tn6xkXolxHj4LmAo7DAb-zoPLhEa1BvpovAFU"]'
-//> jsonDigest({z: o, y: o})
-//{"a":2,"b":1}
-//{"a":2,"b":1}
-//{"y":"cjumTq1s6Tn6xkXolxHj4LmAo7DAb-zoPLhEa1BvpovAFU","z":"cjumTq1s6Tn6xkXolxHj4LmAo7DAb-zoPLhEa1BvpovAFU"}
-//'"cjubdcpA0FfHhD8yEpDzZ8vS5sm7yxkrX_wAJgmke2bWRQ"'
-//> jsonDigest({z: o, y: 'cjumTq1s6Tn6xkXolxHj4LmAo7DAb-zoPLhEa1BvpovAFU'})
-//{"a":2,"b":1}
-//{"y":"cjumTq1s6Tn6xkXolxHj4LmAo7DAb-zoPLhEa1BvpovAFU","z":"cjumTq1s6Tn6xkXolxHj4LmAo7DAb-zoPLhEa1BvpovAFU"}
-//'"cjubdcpA0FfHhD8yEpDzZ8vS5sm7yxkrX_wAJgmke2bWRQ"'

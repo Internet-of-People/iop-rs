@@ -65,8 +65,7 @@ impl Nonce {
 pub trait Signable: Content {
     fn content_to_sign(&self) -> Fallible<Vec<u8>> {
         let content_id = self.content_id()?;
-        let content_id_bytes: &[u8] = (&content_id).into();
-        Ok(content_id_bytes.to_owned())
+        Ok(content_id.into_bytes())
     }
 
     async fn sign(&self, signer: &dyn Signer) -> Fallible<Signed<Self>> {
@@ -75,16 +74,6 @@ pub trait Signable: Content {
     }
 }
 
-impl Signable for &[u8] {
-    fn content_to_sign(&self) -> Fallible<Vec<u8>> {
-        Ok((*self).to_owned())
-    }
-}
-impl Signable for Vec<u8> {
-    fn content_to_sign(&self) -> Fallible<Vec<u8>> {
-        Ok(self.clone())
-    }
-}
 impl Signable for &str {
     fn content_to_sign(&self) -> Fallible<Vec<u8>> {
         Ok(self.as_bytes().to_owned())
