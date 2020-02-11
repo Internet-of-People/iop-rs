@@ -18,7 +18,7 @@ rand = "0.7"
 serde = "*"
 serde_bytes = "*"
 serde_json = "*"
-tiny-keccak = "*"
+tiny-keccak = "1"
 tokio = { version="*", features=["full"] }
 
 
