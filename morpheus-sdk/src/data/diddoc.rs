@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::fmt::{Display, Formatter};
 use std::str::FromStr;
 
 use failure::{bail, ensure, format_err, Fallible};
@@ -6,7 +7,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::data::auth::Authentication;
 use crate::data::{did::Did, serde_string};
-use failure::_core::fmt::{Display, Error, Formatter};
+use crate::io::dist::did::ValidationResult;
 
 #[derive(Clone, Copy, Debug, Deserialize, Eq, Hash, PartialEq, PartialOrd, Serialize)]
 pub enum Right {
@@ -17,14 +18,13 @@ pub enum Right {
 }
 
 impl Display for Right {
-    fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), Error> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         let value =
             serde_json::to_value(self).expect("Implementation error: Right is not serializable");
         match value {
-            serde_json::Value::String(s) => write!(f, "{}", s)?,
+            serde_json::Value::String(s) => write!(f, "{}", s),
             _ => panic!("Implementation error: unexpected Right serialization"),
-        };
-        Ok(())
+        }
     }
 }
 
@@ -202,6 +202,39 @@ impl DidDocument {
         }
 
         Ok(false)
+    }
+
+    pub fn has_right_between(
+        &self, auth: &Authentication, right: Right, from: BlockHeight, until: BlockHeight,
+    ) -> Fallible<ValidationResult> {
+        ensure!(from <= until, "Invalid block range {}-{}", from, until);
+        self.ensure_known_height(until)?;
+
+        todo!()
+
+        //        if let Some(tombstoned_at_height) = self.tombstoned_at_height {
+        //            if tombstoned_at_height <= height {
+        //                return Ok(false);
+        //            }
+        //        }
+        //        let keys_with_right = match self.rights.get(&right) {
+        //            Some(key) => key,
+        //            None => return Ok(false),
+        //        };
+        //
+        //        for key_right in keys_with_right.iter() {
+        //            let key = self.key(&key_right.key_link)?;
+        //            if !key.is_valid_at(height) {
+        //                continue;
+        //            }
+        //            if key.authentication != *auth {
+        //                continue;
+        //            }
+        //
+        //            return key_right.is_true_at(height);
+        //        }
+        //
+        //        Ok(false)
     }
 }
 
