@@ -3,7 +3,12 @@ use failure::Fallible;
 use crate::{
     client::Client,
     crypto::sign::{Signable, Signed},
-    data::{auth::Authentication, claim::{WitnessRequest, WitnessStatement}, did::Did, diddoc::DidDocument},
+    data::{
+        auth::Authentication,
+        claim::{WitnessRequest, WitnessStatement},
+        did::Did,
+        diddoc::DidDocument,
+    },
     io::dist::did::{HydraDidLedger, /*FakeDidLedger, */ LedgerOperations, LedgerQueries},
     io::local::didvault::{DidVault, FilePersister, InMemoryDidVault, PersistentDidVault},
 };

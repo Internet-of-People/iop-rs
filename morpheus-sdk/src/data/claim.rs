@@ -35,12 +35,21 @@ impl Signable for WitnessRequest {}
 // TODO Eq, PartialEq and maybe PartialOrd for WitnessStatement
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct WitnessStatement {
-    #[serde(with = "serde_string", rename = "publicKey")]
+    #[serde(with = "serde_string", rename = "processId")]
     process_id: ProcessId,
     claim: Claim,
-    witness: Did,
-    constraints: MorpheusValue,
+    constraints: Constraints,
     nonce: Nonce, // TODO nonce was also added to Signed<T>, remove this later
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+pub struct Constraints {
+    after: Option<String>,
+    before: Option<String>,
+    witness: String, // TODO should be an AuthenticationLink on the long term
+    #[serde(with = "serde_string")]
+    authority: Did,
+    content: MorpheusValue,
 }
 
 impl Content for WitnessStatement {}

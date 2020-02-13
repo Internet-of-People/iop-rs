@@ -49,6 +49,10 @@ void main(List<String> arguments) {
       final signedWitnessRequest = sdk.signWitnessRequest(witnessRequest, 'iezbeWGSY2dqcUBqT8K7R14xr');
       print('Signed Witness Request:\n$signedWitnessRequest');
 
+      final witnessStatement = '{"claim":{"subject":"did:morpheus:ezbeWGSY2dqcUBqT8K7R14xr","content":{"address":"Strasse","dateOfBirth":"16/02/2002","placeOfBirth":{"city":"Berlin","country":"Germany"}}},"processId":"cjunI8lB1BEtampkcvotOpF-zr1XmsCRNvntciGl3puOkg","constraints":{"after":"2020-02-13T13:23:56.319668","before":"2021-02-13T00:00:00.000","witness":"did:morpheus:ezbeWGSY2dqcUBqT8K7R14xr#0","authority":"did:morpheus:ezbeWGSY2dqcUBqT8K7R14xr","content":null},"nonce":"abcde"}';
+      final signedWitnessStatement = sdk.signWitnessStatement(witnessStatement, 'iezbeWGSY2dqcUBqT8K7R14xr');
+      print('Signed Witness Statement:\n$signedWitnessStatement');
+
       // sdk.fakeLedger();
       sdk.realLedger('http://35.187.56.222:4703');
 
