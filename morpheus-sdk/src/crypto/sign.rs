@@ -49,7 +49,7 @@ impl Signer for PrivateKeySigner {
 // NOTE  multibase-encoded random content, e.g. 'urvU8F6HmEol5zOmHh_nnS1RiX5r3T2t9U_d_kQY7ZC-I"
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
 #[serde(transparent)]
-pub struct Nonce(String);
+pub struct Nonce(pub String);
 
 impl Nonce {
     pub fn new() -> Self {

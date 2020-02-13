@@ -28,6 +28,9 @@ void main(List<String> arguments) {
   try {
     final sdk = RustAPI.initSdk('../target/debug/libmorpheus_sdk.so');
     try {
+      final nonce = sdk.generateNonce();
+      print("Generated nonce: $nonce");
+
       final vaultPath =
           '${Platform.environment['HOME']}/.config/prometheus/did_vault.dat';
       try {

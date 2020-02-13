@@ -88,12 +88,8 @@ typedef NativeFuncListDids = Void Function(
 typedef DartFuncListDids = void Function(Pointer<Void> sdk,
     Pointer<CallContext> requestId, Pointer callback, Pointer error);
 
-typedef NativeFuncCreateDid = Void Function(
-  Pointer<Void> sdk,
-  Pointer<CallContext> requestId,
-  Pointer callback,
-  Pointer error,
-);
+typedef NativeFuncCreateDid = Void Function(Pointer<Void> sdk,
+    Pointer<CallContext> requestId, Pointer callback, Pointer error);
 typedef DartFuncCreateDid = void Function(Pointer<Void> sdk,
     Pointer<CallContext> requestId, Pointer callback, Pointer error);
 
@@ -111,6 +107,11 @@ typedef DartFuncGetDocument = void Function(
   Pointer callback,
   Pointer error,
 );
+
+typedef NativeFuncGenerateNonce = Void Function(Pointer<Void> sdk,
+    Pointer<CallContext> requestId, Pointer callback, Pointer error);
+typedef DartFuncGenerateNonce = void Function(Pointer<Void> sdk,
+    Pointer<CallContext> requestId, Pointer callback, Pointer error);
 
 typedef NativeFuncSignWitnessRequest = Void Function(
   Pointer<Void> sdk,
@@ -194,6 +195,7 @@ class NativeAPI {
   final DartFuncListDids list_dids;
   final DartFuncCreateDid create_did;
   final DartFuncGetDocument get_document;
+  final DartFuncGenerateNonce generate_nonce;
   final DartFuncSignWitnessRequest sign_witness_request;
   final DartFuncSignWitnessStatement sign_witness_statement;
   final DartFuncHasRightAt has_right_at;
@@ -208,6 +210,7 @@ class NativeAPI {
     this.list_dids,
     this.create_did,
     this.get_document,
+    this.generate_nonce,
     this.sign_witness_request,
     this.sign_witness_statement,
     this.has_right_at,
@@ -329,6 +332,20 @@ class RustSdk {
       } finally {
         free(nativeDid);
       }
+    });
+  }
+
+  String generateNonce() {
+    return CallContext.run((call) {
+      _api.generate_nonce(
+        _sdk,
+        call.id,
+        call.callback,
+        call.error,
+      );
+      return call
+          .result()
+          .asString;
     });
   }
 
@@ -460,6 +477,7 @@ class RustAPI {
       lib.lookupFunction<NativeFuncListDids, DartFuncListDids>('list_dids'),
       lib.lookupFunction<NativeFuncCreateDid, DartFuncCreateDid>('create_did'),
       lib.lookupFunction<NativeFuncGetDocument, DartFuncGetDocument>('get_document'),
+      lib.lookupFunction<NativeFuncGenerateNonce, DartFuncGenerateNonce>('generate_nonce'),
       lib.lookupFunction<NativeFuncSignWitnessRequest, DartFuncSignWitnessRequest>('sign_witness_request'),
       lib.lookupFunction<NativeFuncSignWitnessStatement, DartFuncSignWitnessStatement>('sign_witness_statement'),
       lib.lookupFunction<NativeFuncHasRightAt, DartFuncHasRightAt>('has_right_at'),

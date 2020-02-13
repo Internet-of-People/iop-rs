@@ -7,6 +7,7 @@ use std::os::raw;
 
 use serde_json;
 
+use crate::crypto::sign::Nonce;
 use crate::data::diddoc::BlockHeight;
 use crate::sdk::SdkContext;
 use call_context::{CallContext, Callback, RequestId};
@@ -118,6 +119,18 @@ pub extern "C" fn get_document(
         let document = sdk.get_document(&did)?;
         let json = serde_json::to_string(&document)?;
         Ok(convert::string_out(json))
+    };
+    CallContext::new(id, success, error).run(fun)
+}
+
+#[no_mangle]
+pub extern "C" fn generate_nonce(
+    _sdk: *mut SdkContext, id: *mut RequestId, success: Callback<*mut raw::c_char>,
+    error: Callback<*const raw::c_char>,
+) {
+    let fun = || {
+        let nonce = Nonce::new();
+        Ok(convert::string_out(nonce.0))
     };
     CallContext::new(id, success, error).run(fun)
 }
