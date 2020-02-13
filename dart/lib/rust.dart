@@ -129,6 +129,23 @@ typedef DartFuncSignWitnessRequest = void Function(
   Pointer error,
 );
 
+typedef NativeFuncSignWitnessStatement = Void Function(
+  Pointer<Void> sdk,
+  Pointer<Utf8> witnessStatement,
+  Pointer<Utf8> auth,
+  Pointer<CallContext> requestId,
+  Pointer callback,
+  Pointer error,
+);
+typedef DartFuncSignWitnessStatement = void Function(
+  Pointer<Void> sdk,
+  Pointer<Utf8> witnessStatement,
+  Pointer<Utf8> auth,
+  Pointer<CallContext> requestId,
+  Pointer callback,
+  Pointer error,
+);
+
 typedef NativeFuncHasRightAt = Void Function(
   Pointer<Void> sdk,
   Pointer<Utf8> did,
@@ -178,6 +195,7 @@ class NativeAPI {
   final DartFuncCreateDid create_did;
   final DartFuncGetDocument get_document;
   final DartFuncSignWitnessRequest sign_witness_request;
+  final DartFuncSignWitnessStatement sign_witness_statement;
   final DartFuncHasRightAt has_right_at;
   final DartFuncIsTombstonedAt is_tombstoned_at;
 
@@ -191,6 +209,7 @@ class NativeAPI {
     this.create_did,
     this.get_document,
     this.sign_witness_request,
+    this.sign_witness_statement,
     this.has_right_at,
     this.is_tombstoned_at,
   );
@@ -334,6 +353,27 @@ class RustSdk {
     });
   }
 
+  String signWitnessStatement(String witnessStatement, String authentication) {
+    return CallContext.run((call) {
+      final nativeWitnessStatement = Utf8.toUtf8(witnessStatement);
+      final nativeAuthentication = Utf8.toUtf8(authentication);
+      try {
+        _api.sign_witness_statement(
+          _sdk,
+          nativeWitnessStatement,
+          nativeAuthentication,
+          call.id,
+          call.callback,
+          call.error,
+        );
+        return call.result().asString;
+      } finally {
+        free(nativeAuthentication);
+        free(nativeWitnessStatement);
+      }
+    });
+  }
+
   bool hasRightAt(String did, String auth, String right, int height) {
     return CallContext.run((call) {
       final nativeDid = Utf8.toUtf8(did);
@@ -421,6 +461,7 @@ class RustAPI {
       lib.lookupFunction<NativeFuncCreateDid, DartFuncCreateDid>('create_did'),
       lib.lookupFunction<NativeFuncGetDocument, DartFuncGetDocument>('get_document'),
       lib.lookupFunction<NativeFuncSignWitnessRequest, DartFuncSignWitnessRequest>('sign_witness_request'),
+      lib.lookupFunction<NativeFuncSignWitnessStatement, DartFuncSignWitnessStatement>('sign_witness_statement'),
       lib.lookupFunction<NativeFuncHasRightAt, DartFuncHasRightAt>('has_right_at'),
       lib.lookupFunction<NativeFuncIsTombstonedAt, DartFuncIsTombstonedAt>('is_tombstoned_at'),
     );

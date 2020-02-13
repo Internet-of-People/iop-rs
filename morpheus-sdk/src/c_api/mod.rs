@@ -140,6 +140,24 @@ pub extern "C" fn sign_witness_request(
     CallContext::new(id, success, error).run(fun)
 }
 
+#[no_mangle]
+pub extern "C" fn sign_witness_statement(
+    sdk: *mut SdkContext, stmnt: *const raw::c_char, auth: *const raw::c_char, id: *mut RequestId,
+    success: Callback<*mut raw::c_char>, error: Callback<*const raw::c_char>,
+) {
+    let sdk = unsafe { &mut *sdk };
+    let fun = || {
+        let stmnt_str = convert::str_in(stmnt)?;
+        let stmnt = serde_json::from_str(stmnt_str)?;
+        let auth_str = format!("{:?}", convert::str_in(auth)?);
+        let auth = serde_json::from_str(&auth_str)?;
+        let signed_stmnt = sdk.sign_witness_statement(&stmnt, &auth)?;
+        let json = serde_json::to_string(&signed_stmnt)?;
+        Ok(convert::string_out(json))
+    };
+    CallContext::new(id, success, error).run(fun)
+}
+
 // TODO consider type mapping of Right to C and maybe adding list_rights()
 
 #[no_mangle]

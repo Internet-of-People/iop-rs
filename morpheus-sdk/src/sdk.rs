@@ -3,7 +3,7 @@ use failure::Fallible;
 use crate::{
     client::Client,
     crypto::sign::{Signable, Signed},
-    data::{auth::Authentication, claim::WitnessRequest, did::Did, diddoc::DidDocument},
+    data::{auth::Authentication, claim::{WitnessRequest, WitnessStatement}, did::Did, diddoc::DidDocument},
     io::dist::did::{HydraDidLedger, /*FakeDidLedger, */ LedgerOperations, LedgerQueries},
     io::local::didvault::{DidVault, FilePersister, InMemoryDidVault, PersistentDidVault},
 };
@@ -39,7 +39,6 @@ impl<V: DidVault, L: LedgerQueries + LedgerOperations> Sdk<V, L> {
         self.reactor.block_on(async { Ok(ledger.document(did).await?) })
     }
 
-    // TODO REQUEST MUST BE TYPED
     pub fn sign_witness_request(
         &mut self, req: &WitnessRequest, auth: &Authentication,
     ) -> Fallible<Signed<WitnessRequest>> {
@@ -47,6 +46,16 @@ impl<V: DidVault, L: LedgerQueries + LedgerOperations> Sdk<V, L> {
         self.reactor.block_on(async {
             let signer = vault.signer_by_auth(auth)?;
             req.sign(signer.as_ref()).await
+        })
+    }
+
+    pub fn sign_witness_statement(
+        &mut self, stmt: &WitnessStatement, auth: &Authentication,
+    ) -> Fallible<Signed<WitnessStatement>> {
+        let vault = self.client.vault()?;
+        self.reactor.block_on(async {
+            let signer = vault.signer_by_auth(auth)?;
+            stmt.sign(signer.as_ref()).await
         })
     }
 
