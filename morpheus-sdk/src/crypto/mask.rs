@@ -33,7 +33,7 @@ pub fn hashed(content: &str) -> String {
     let mut hash_output = [0u8; 32];
     hasher.update(content.as_bytes());
     hasher.finalize(&mut hash_output);
-    let mask = multibase::encode(multibase::Base::Base64UrlUpperNoPad, &hash_output);
+    let mask = multibase::encode(multibase::Base::Base64Url, &hash_output);
     format!("cj{}", mask)
 }
 

@@ -56,7 +56,7 @@ impl Nonce {
         use rand::{thread_rng, RngCore};
         let mut arr = [0u8; 33];
         thread_rng().fill_bytes(&mut arr[..]);
-        let encoded = multibase::encode(multibase::Base::Base64UrlUpperNoPad, &arr[..]);
+        let encoded = multibase::encode(multibase::Base::Base64Url, &arr[..]);
         Self(encoded)
     }
 }
