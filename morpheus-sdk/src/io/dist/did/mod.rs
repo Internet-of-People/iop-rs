@@ -19,49 +19,6 @@ pub use fake::FakeDidLedger;
 pub use hydra::HydraDidLedger;
 
 #[derive(Clone, Debug, Deserialize, Eq, Hash, Ord, PartialOrd, PartialEq, Serialize)]
-pub enum ValidationStatus {
-    /// All possible checks are done and passed.
-    Valid,
-    /// Some checks could not be performed for lack of information, all others passed.
-    /// E.g. Signatures are valid, but no timestamps are present so
-    /// they could have been created outside the time period in which the signer key was valid.
-    MaybeValid,
-    /// Any step of validation failed.
-    Invalid,
-}
-
-#[derive(Clone, Debug, Deserialize, Eq, Hash, Ord, PartialOrd, PartialEq, Serialize)]
-pub enum ValidationIssueSeverity {
-    Warning,
-    Error,
-}
-
-#[derive(Clone, Debug, Deserialize, Eq, Hash, Ord, PartialOrd, PartialEq, Serialize)]
-pub struct ValidationIssue {
-    code: u32,
-    reason: String,
-    severity: ValidationIssueSeverity,
-}
-
-#[derive(Clone, Debug, Deserialize, Eq, Hash, Ord, PartialOrd, PartialEq, Serialize)]
-pub struct ValidationResult {
-    issues: Vec<ValidationIssue>,
-}
-
-impl ValidationResult {
-    pub fn status(&self) -> ValidationStatus {
-        let has_error = self.issues.iter().any(|it| it.severity == ValidationIssueSeverity::Error);
-        if has_error {
-            ValidationStatus::Invalid
-        } else if !self.issues.is_empty() {
-            ValidationStatus::MaybeValid
-        } else {
-            ValidationStatus::Valid
-        }
-    }
-}
-
-#[derive(Clone, Debug, Deserialize, Eq, Hash, Ord, PartialOrd, PartialEq, Serialize)]
 pub enum SignableOperationAttempt {
     AddKey,
     RevokeKey,
@@ -82,7 +39,6 @@ impl Signable for SignableOperationAttempts {}
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
 pub enum OperationAttempt {
     RegisterBeforeProof,
-    RevokeBeforeProof,
     Signed(Signed<SignableOperationAttempts>),
 }
 

@@ -6,8 +6,11 @@ use failure::{bail, ensure, format_err, Fallible};
 use serde::{Deserialize, Serialize};
 
 use crate::data::auth::Authentication;
-use crate::data::{did::Did, serde_string};
-use crate::io::dist::did::ValidationResult;
+use crate::data::{
+    did::Did,
+    serde_string,
+    validation::{ValidationIssueSeverity as Severity, ValidationResult},
+};
 
 #[derive(Clone, Copy, Debug, Deserialize, Eq, Hash, PartialEq, PartialOrd, Serialize)]
 pub enum Right {
@@ -36,6 +39,26 @@ impl FromStr for Right {
 }
 
 pub type BlockHeight = usize;
+
+pub fn is_in_opt_range(
+    height: BlockHeight, from_inc: Option<BlockHeight>, until_exc: Option<BlockHeight>,
+) -> bool {
+    if let Some(from) = from_inc {
+        if height < from {
+            return false;
+        }
+    }
+    if let Some(until) = until_exc {
+        if until <= height {
+            return false;
+        }
+    }
+    true
+}
+
+pub fn is_in_range(height: BlockHeight, from_inc: BlockHeight, until_exc: BlockHeight) -> bool {
+    is_in_opt_range(height, Some(from_inc), Some(until_exc))
+}
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
 pub struct KeyData {
@@ -204,37 +227,124 @@ impl DidDocument {
         Ok(false)
     }
 
-    pub fn has_right_between(
+    // TODO reconsider and thoroughly check if until should be inclusive or exclusive and if implementation matches
+    pub fn validate_right_between(
         &self, auth: &Authentication, right: Right, from: BlockHeight, until: BlockHeight,
     ) -> Fallible<ValidationResult> {
         ensure!(from <= until, "Invalid block range {}-{}", from, until);
         self.ensure_known_height(until)?;
 
-        todo!()
+        let mut result: ValidationResult = Default::default();
 
-        //        if let Some(tombstoned_at_height) = self.tombstoned_at_height {
-        //            if tombstoned_at_height <= height {
-        //                return Ok(false);
-        //            }
-        //        }
-        //        let keys_with_right = match self.rights.get(&right) {
-        //            Some(key) => key,
-        //            None => return Ok(false),
-        //        };
-        //
-        //        for key_right in keys_with_right.iter() {
-        //            let key = self.key(&key_right.key_link)?;
-        //            if !key.is_valid_at(height) {
-        //                continue;
-        //            }
-        //            if key.authentication != *auth {
-        //                continue;
-        //            }
-        //
-        //            return key_right.is_true_at(height);
-        //        }
-        //
-        //        Ok(false)
+        if self.is_tombstoned_at(from)? {
+            result.add_issue(Severity::Error, "DID was tombstoned before given period");
+        }
+        if let Some(tombstone_height) = self.tombstoned_at_height {
+            if is_in_range(tombstone_height, from, until) {
+                result.add_issue(Severity::Warning, "DID was tombstoned during given period");
+            }
+        }
+
+        let keys_with_right = match self.rights.get(&right) {
+            Some(entries) => entries,
+            None => {
+                result
+                    .add_issue(Severity::Error, "Right was never granted tp given authentication");
+                return Ok(result);
+            }
+        };
+
+        let key_history_opt = keys_with_right.iter().find_map(|right_entry| {
+            let key_data = match self.key(&right_entry.key_link) {
+                Ok(key_entry) => key_entry,
+                Err(e) => {
+                    // TODO ideally detected earlier during parsing and should never happen here
+                    result.add_issue(Severity::Error, &e.to_string());
+                    return None;
+                }
+            };
+            if key_data.authentication != *auth {
+                return None;
+            }
+            Some((key_data, &right_entry.history))
+        });
+
+        let (key_data, history) = match key_history_opt {
+            Some(key_history) => key_history,
+            None => {
+                result.add_issue(Severity::Error, "No matching authentication found in DID");
+                return Ok(result);
+            }
+        };
+
+        if let Some(key_valid_from) = key_data.valid_from_block {
+            if until < key_valid_from {
+                result.add_issue(Severity::Error, "Key was enabled only after given period");
+            }
+            if is_in_range(key_valid_from, from, until) {
+                result.add_issue(Severity::Warning, "Key was enabled during given period");
+            }
+        }
+
+        if let Some(key_valid_until) = key_data.valid_until_block {
+            if key_valid_until < from {
+                result.add_issue(Severity::Error, "Key expired before given period");
+            }
+            if is_in_range(key_valid_until, from, until) {
+                result.add_issue(Severity::Warning, "Key expired during given period");
+            }
+        }
+
+        ensure!(! history.is_empty(), "Implementation error: key related to rights were already filtered, right must be present here");
+
+        if history.len() == 1 {
+            let change = &history[0];
+            ensure!(change.valid, "History is false by default, first entry should set it to true");
+
+            if let Some(height) = change.height {
+                if is_in_range(height, from, until) {
+                    result.add_issue(Severity::Warning, "Key expired during given period");
+                }
+                if until <= height {
+                    result.add_issue(
+                        Severity::Error,
+                        "Key was granted specified right only after given period",
+                    );
+                }
+            }
+
+            return Ok(result);
+        }
+
+        // Found multiple changes in history
+        let mut last_state_before_range: Option<&KeyRightHistoryItem> = None;
+        for item in history {
+            if is_in_range(item.height.unwrap_or_default(), from, until) {
+                result.add_issue(Severity::Warning, "Required right changed during givenn period");
+                ensure!(
+                    item.valid
+                        || (last_state_before_range.is_some()
+                            && last_state_before_range.unwrap().valid),
+                    "Implementation error: right history must contain alternating values"
+                );
+                return Ok(result);
+            }
+            if item.height.unwrap_or_default() <= from {
+                last_state_before_range = Some(item);
+            } else {
+                break;
+            }
+        }
+
+        let valid = match last_state_before_range {
+            Some(state) => state.valid, // right explicitly denied
+            None => false,              // Rights are denied by default
+        };
+        if !valid {
+            result.add_issue(Severity::Error, "Required right is not present for key");
+        }
+
+        Ok(result)
     }
 }
 
@@ -357,4 +467,7 @@ mod test {
         assert!(!doc.has_right_at(second_key, Right::Update, 126).unwrap());
         assert!(doc.has_right_at(second_key, Right::Update, 127).is_err());
     }
+
+    #[test]
+    fn has_right_between() {}
 }

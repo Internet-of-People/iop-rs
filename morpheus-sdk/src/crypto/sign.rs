@@ -6,7 +6,7 @@ use crate::crypto::hash::{Content, ContentId};
 use crate::data::auth::Authentication;
 use crate::data::diddoc::{BlockHeight, DidDocument, Right};
 use crate::data::serde_string;
-use crate::io::dist::did::ValidationStatus;
+use crate::data::validation::ValidationStatus;
 use keyvault::{
     multicipher::{MKeyId, MPrivateKey, MPublicKey, MSignature},
     PrivateKey, PublicKey,
@@ -137,15 +137,16 @@ impl<T> Signed<T>
 where
     T: Signable,
 {
+    // TODO add Before/AfterProofs as optional arguments here
     // TODO consider returning ValidationResult with issue vector and translate to status
     //      somewhere above in an upper layer
-    pub fn validate_with_did(&self, on_behalf_of: &DidDocument) -> Fallible<ValidationStatus> {
+    pub fn validate_with_did_doc(&self, on_behalf_of: &DidDocument) -> Fallible<ValidationStatus> {
         if !self.validate()? {
             return Ok(ValidationStatus::Invalid);
         }
 
         let auth = Authentication::PublicKey(self.public_key.to_owned());
-        let issues = on_behalf_of.has_right_between(
+        let issues = on_behalf_of.validate_right_between(
             &auth,
             Right::Impersonation,
             1,
