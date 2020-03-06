@@ -146,7 +146,7 @@ where
         }
 
         let auth = Authentication::PublicKey(self.public_key.to_owned());
-        let issues = on_behalf_of.validate_right_between(
+        let issues = on_behalf_of.validate_right(
             &auth,
             Right::Impersonation,
             1,

@@ -56,8 +56,8 @@ pub fn is_in_opt_range(
     true
 }
 
-pub fn is_in_range(height: BlockHeight, from_inc: BlockHeight, until_exc: BlockHeight) -> bool {
-    is_in_opt_range(height, Some(from_inc), Some(until_exc))
+pub fn is_between(height: BlockHeight, after: BlockHeight, until_exc: BlockHeight) -> bool {
+    is_in_opt_range(height, Some(after + 1), Some(until_exc))
 }
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
@@ -77,17 +77,7 @@ impl KeyData {
     }
 
     fn is_valid_at(&self, height: BlockHeight) -> bool {
-        if let Some(valid_from) = self.valid_from_block {
-            if height <= valid_from {
-                return false;
-            }
-        }
-        if let Some(valid_until) = self.valid_until_block {
-            if valid_until <= height {
-                return false;
-            }
-        }
-        return true;
+        is_in_opt_range(height, self.valid_from_block, self.valid_until_block)
     }
 }
 
@@ -116,6 +106,7 @@ impl KeyRightHistory {
     }
 
     fn is_true_at(&self, height: BlockHeight) -> Fallible<bool> {
+        // All such checks should be done instead when constructing/parsing the whole DidDocument
         self.ensure_valid_history()?;
 
         let last_state_before_height =
@@ -228,10 +219,11 @@ impl DidDocument {
     }
 
     // TODO reconsider and thoroughly check if until should be inclusive or exclusive and if implementation matches
-    pub fn validate_right_between(
+    pub fn validate_right(
         &self, auth: &Authentication, right: Right, from: BlockHeight, until: BlockHeight,
     ) -> Fallible<ValidationResult> {
-        ensure!(from <= until, "Invalid block range {}-{}", from, until);
+        ensure!(1 <= from, "Range must not predate genesis block");
+        ensure!(from < until, "Invalid block range {}-{}", from, until);
         self.ensure_known_height(until)?;
 
         let mut result: ValidationResult = Default::default();
@@ -240,7 +232,7 @@ impl DidDocument {
             result.add_issue(Severity::Error, "DID was tombstoned before given period");
         }
         if let Some(tombstone_height) = self.tombstoned_at_height {
-            if is_in_range(tombstone_height, from, until) {
+            if is_between(tombstone_height, from, until) {
                 result.add_issue(Severity::Warning, "DID was tombstoned during given period");
             }
         }
@@ -266,10 +258,10 @@ impl DidDocument {
             if key_data.authentication != *auth {
                 return None;
             }
-            Some((key_data, &right_entry.history))
+            Some((key_data, right_entry))
         });
 
-        let (key_data, history) = match key_history_opt {
+        let (key_data, key_right) = match key_history_opt {
             Some(key_history) => key_history,
             None => {
                 result.add_issue(Severity::Error, "No matching authentication found in DID");
@@ -281,7 +273,7 @@ impl DidDocument {
             if until < key_valid_from {
                 result.add_issue(Severity::Error, "Key was enabled only after given period");
             }
-            if is_in_range(key_valid_from, from, until) {
+            if is_between(key_valid_from, from, until) {
                 result.add_issue(Severity::Warning, "Key was enabled during given period");
             }
         }
@@ -290,58 +282,25 @@ impl DidDocument {
             if key_valid_until < from {
                 result.add_issue(Severity::Error, "Key expired before given period");
             }
-            if is_in_range(key_valid_until, from, until) {
+            if is_between(key_valid_until, from, until) {
                 result.add_issue(Severity::Warning, "Key expired during given period");
             }
         }
 
+        let history = &key_right.history;
         ensure!(! history.is_empty(), "Implementation error: key related to rights were already filtered, right must be present here");
 
-        if history.len() == 1 {
-            let change = &history[0];
-            ensure!(change.valid, "History is false by default, first entry should set it to true");
+        let right_changes_in_range = history
+            .iter()
+            .filter(|item| is_between(item.height.unwrap_or_default(), from, until))
+            .collect::<Vec<_>>();
 
-            if let Some(height) = change.height {
-                if is_in_range(height, from, until) {
-                    result.add_issue(Severity::Warning, "Key expired during given period");
-                }
-                if until <= height {
-                    result.add_issue(
-                        Severity::Error,
-                        "Key was granted specified right only after given period",
-                    );
-                }
-            }
-
-            return Ok(result);
-        }
-
-        // Found multiple changes in history
-        let mut last_state_before_range: Option<&KeyRightHistoryItem> = None;
-        for item in history {
-            if is_in_range(item.height.unwrap_or_default(), from, until) {
-                result.add_issue(Severity::Warning, "Required right changed during givenn period");
-                ensure!(
-                    item.valid
-                        || (last_state_before_range.is_some()
-                            && last_state_before_range.unwrap().valid),
-                    "Implementation error: right history must contain alternating values"
-                );
-                return Ok(result);
-            }
-            if item.height.unwrap_or_default() <= from {
-                last_state_before_range = Some(item);
+        if !key_right.is_true_at(from)? {
+            if right_changes_in_range.is_empty() {
+                result.add_issue(Severity::Error, "Required right was never granted for key");
             } else {
-                break;
+                result.add_issue(Severity::Warning, "Required right changed during given period");
             }
-        }
-
-        let valid = match last_state_before_range {
-            Some(state) => state.valid, // right explicitly denied
-            None => false,              // Rights are denied by default
-        };
-        if !valid {
-            result.add_issue(Severity::Error, "Required right is not present for key");
         }
 
         Ok(result)
@@ -351,9 +310,10 @@ impl DidDocument {
 #[cfg(test)]
 mod test {
     use super::*;
+    use crate::data::validation::ValidationStatus;
 
     #[test]
-    fn pretty_json() {
+    fn pretty_json() -> Fallible<()> {
         test_parsed_did_document(
             r##"{
             "did": "did:morpheus:ezbeWGSY2dqcUBqT8K7R14xr",
@@ -422,17 +382,17 @@ mod test {
             "tombstoned": false,
             "queriedAtHeight": 126
           }"##,
-        );
+        )
     }
 
     #[test]
-    fn terse_json() {
+    fn terse_json() -> Fallible<()> {
         test_parsed_did_document(
             r##"{"did":"did:morpheus:ezbeWGSY2dqcUBqT8K7R14xr","keys":[{"index":0,"auth":"iezbeWGSY2dqcUBqT8K7R14xr","validFromHeight":null,"validUntilHeight":null,"valid":true},{"index":1,"auth":"iez25N5WZ1Q6TQpgpyYgiu9gTX","validFromHeight":120,"validUntilHeight":null,"valid":true}],"rights":{"impersonate":[{"keyLink":"#0","history":[{"height":null,"valid":true}],"valid":true},{"keyLink":"#1","history":[{"height":null,"valid":false},{"height":126,"valid":true}],"valid":true}],"update":[{"keyLink":"#0","history":[{"height":null,"valid":true}],"valid":true},{"keyLink":"#1","history":[{"height":null,"valid":false}],"valid":false}]},"tombstoned":false,"tombstonedAtHeight":null,"queriedAtHeight":126}"##,
-        );
+        )
     }
 
-    fn test_parsed_did_document(s: &str) {
+    fn test_parsed_did_document(s: &str) -> Fallible<()> {
         let doc: DidDocument = serde_json::from_str(s).unwrap();
 
         assert_eq!(doc.did, "did:morpheus:ezbeWGSY2dqcUBqT8K7R14xr".parse().unwrap());
@@ -443,31 +403,129 @@ mod test {
         let first_key = &doc.keys[0].authentication;
         let second_key = &doc.keys[1].authentication;
 
-        assert!(doc.has_right_at(first_key, Right::Impersonation, 1).unwrap());
-        assert!(doc.has_right_at(first_key, Right::Impersonation, 2).unwrap());
-        assert!(doc.has_right_at(first_key, Right::Impersonation, 125).unwrap());
-        assert!(doc.has_right_at(first_key, Right::Impersonation, 126).unwrap());
+        assert!(doc.has_right_at(first_key, Right::Impersonation, 1)?);
+        assert!(doc.has_right_at(first_key, Right::Impersonation, 2)?);
+        assert!(doc.has_right_at(first_key, Right::Impersonation, 125)?);
+        assert!(doc.has_right_at(first_key, Right::Impersonation, 126)?);
         assert!(doc.has_right_at(first_key, Right::Impersonation, 127).is_err());
 
-        assert!(!doc.has_right_at(second_key, Right::Impersonation, 1).unwrap());
-        assert!(!doc.has_right_at(second_key, Right::Impersonation, 2).unwrap());
-        assert!(!doc.has_right_at(second_key, Right::Impersonation, 125).unwrap());
-        assert!(doc.has_right_at(second_key, Right::Impersonation, 126).unwrap());
+        assert!(!doc.has_right_at(second_key, Right::Impersonation, 1)?);
+        assert!(!doc.has_right_at(second_key, Right::Impersonation, 2)?);
+        assert!(!doc.has_right_at(second_key, Right::Impersonation, 125)?);
+        assert!(doc.has_right_at(second_key, Right::Impersonation, 126)?);
         assert!(doc.has_right_at(second_key, Right::Impersonation, 127).is_err());
 
-        assert!(doc.has_right_at(first_key, Right::Update, 1).unwrap());
-        assert!(doc.has_right_at(first_key, Right::Update, 2).unwrap());
-        assert!(doc.has_right_at(first_key, Right::Update, 125).unwrap());
-        assert!(doc.has_right_at(first_key, Right::Update, 126).unwrap());
+        assert!(doc.has_right_at(first_key, Right::Update, 1)?);
+        assert!(doc.has_right_at(first_key, Right::Update, 2)?);
+        assert!(doc.has_right_at(first_key, Right::Update, 125)?);
+        assert!(doc.has_right_at(first_key, Right::Update, 126)?);
         assert!(doc.has_right_at(first_key, Right::Update, 127).is_err());
 
-        assert!(!doc.has_right_at(second_key, Right::Update, 1).unwrap());
-        assert!(!doc.has_right_at(second_key, Right::Update, 2).unwrap());
-        assert!(!doc.has_right_at(second_key, Right::Update, 125).unwrap());
-        assert!(!doc.has_right_at(second_key, Right::Update, 126).unwrap());
+        assert!(!doc.has_right_at(second_key, Right::Update, 1)?);
+        assert!(!doc.has_right_at(second_key, Right::Update, 2)?);
+        assert!(!doc.has_right_at(second_key, Right::Update, 125)?);
+        assert!(!doc.has_right_at(second_key, Right::Update, 126)?);
         assert!(doc.has_right_at(second_key, Right::Update, 127).is_err());
+
+        Ok(())
     }
 
     #[test]
-    fn has_right_between() {}
+    fn has_right_between() -> Fallible<()> {
+        let did_doc_str = r##"{
+            "did": "did:morpheus:ezbeWGSY2dqcUBqT8K7R14xr",
+            "keys": [
+              {
+                "auth": "iezbeWGSY2dqcUBqT8K7R14xr",
+                "valid": true
+              },
+              {
+                "auth": "iez25N5WZ1Q6TQpgpyYgiu9gTX",
+                "valid": true,
+                "validFromHeight": 10,
+                "validUntilHeight": 90
+              }
+            ],
+            "rights": {
+              "impersonate": [
+                {
+                  "keyLink": "#0",
+                  "history": [
+                    { "height": null, "valid": true }
+                  ],
+                  "valid": true
+                },
+                {
+                  "keyLink": "#1",
+                  "history": [
+                    { "height": null, "valid": false },
+                    { "height": 20, "valid": true },
+                    { "height": 80, "valid": false }
+                  ],
+                  "valid": false
+                }
+              ],
+              "update": [
+                {
+                  "keyLink": "#0",
+                  "history": [
+                    { "height": null, "valid": true }
+                  ],
+                  "valid": true
+                },
+                {
+                  "keyLink": "#1",
+                  "history": [
+                    { "height": null, "valid": false },
+                    { "height": 90, "valid": true }
+                  ],
+                  "valid": true
+                }
+              ]
+            },
+            "tombstonedAtHeight": 100,
+            "tombstoned": true,
+            "queriedAtHeight": 200
+          }"##;
+
+        let doc: DidDocument = serde_json::from_str(did_doc_str).unwrap();
+
+        assert_eq!(doc.did, "did:morpheus:ezbeWGSY2dqcUBqT8K7R14xr".parse().unwrap());
+        assert_eq!(doc.tombstoned_at_height, Some(100));
+        assert_eq!(doc.queried_at_height, 200);
+        assert_eq!(doc.tombstoned, true);
+
+        let first_key = &doc.keys[0].authentication;
+        let second_key = &doc.keys[1].authentication;
+        assert_eq!(*first_key, Authentication::KeyId("iezbeWGSY2dqcUBqT8K7R14xr".parse()?));
+        assert_eq!(*second_key, Authentication::KeyId("iez25N5WZ1Q6TQpgpyYgiu9gTX".parse()?));
+
+        use Right::*;
+        use ValidationStatus::*;
+
+        assert_eq!(doc.validate_right(first_key, Impersonation, 1, 100)?.status(), Valid);
+        assert_eq!(doc.validate_right(first_key, Update, 1, 100)?.status(), Valid);
+        assert_eq!(doc.validate_right(first_key, Impersonation, 10, 90)?.status(), Valid);
+        assert_eq!(doc.validate_right(first_key, Update, 10, 90)?.status(), Valid);
+        assert_eq!(doc.validate_right(first_key, Impersonation, 101, 200)?.status(), Invalid);
+        assert_eq!(doc.validate_right(first_key, Update, 101, 200)?.status(), Invalid);
+        assert_eq!(doc.validate_right(first_key, Impersonation, 1, 200)?.status(), MaybeValid);
+        assert_eq!(doc.validate_right(first_key, Update, 1, 200)?.status(), MaybeValid);
+        assert_eq!(doc.validate_right(first_key, Impersonation, 50, 150)?.status(), MaybeValid);
+        assert_eq!(doc.validate_right(first_key, Update, 50, 150)?.status(), MaybeValid);
+
+        assert_eq!(doc.validate_right(second_key, Impersonation, 20, 80)?.status(), Valid);
+        assert_eq!(doc.validate_right(second_key, Impersonation, 30, 70)?.status(), Valid);
+        assert_eq!(doc.validate_right(second_key, Impersonation, 1, 80)?.status(), MaybeValid);
+        assert_eq!(doc.validate_right(second_key, Impersonation, 20, 200)?.status(), MaybeValid);
+        assert_eq!(doc.validate_right(second_key, Impersonation, 1, 20)?.status(), Invalid);
+        assert_eq!(doc.validate_right(second_key, Impersonation, 80, 200)?.status(), Invalid);
+
+        assert_eq!(doc.validate_right(second_key, Update, 90, 100)?.status(), Valid);
+        assert_eq!(doc.validate_right(second_key, Update, 1, 90)?.status(), Invalid);
+        assert_eq!(doc.validate_right(second_key, Update, 100, 200)?.status(), Invalid);
+        assert_eq!(doc.validate_right(second_key, Update, 80, 110)?.status(), MaybeValid);
+
+        Ok(())
+    }
 }
