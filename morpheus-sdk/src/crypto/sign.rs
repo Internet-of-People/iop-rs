@@ -108,7 +108,7 @@ where
         Self { public_key, content, signature, nonce: None }
     }
 
-    pub fn message(&self) -> &T {
+    pub fn content(&self) -> &T {
         &self.content
     }
     pub fn public_key(&self) -> &MPublicKey {
@@ -140,18 +140,19 @@ where
     // TODO add Before/AfterProofs as optional arguments here
     // TODO consider returning ValidationResult with issue vector and translate to status
     //      somewhere above in an upper layer
-    pub fn validate_with_did_doc(&self, on_behalf_of: &DidDocument) -> Fallible<ValidationStatus> {
+    pub fn validate_with_did_doc(
+        &self, on_behalf_of: &DidDocument, from_inc: Option<BlockHeight>,
+        until_exc: Option<BlockHeight>,
+    ) -> Fallible<ValidationStatus> {
         if !self.validate()? {
             return Ok(ValidationStatus::Invalid);
         }
 
+        let from = from_inc.unwrap_or(1);
+        let until = until_exc.unwrap_or(on_behalf_of.queried_at_height);
+
         let auth = Authentication::PublicKey(self.public_key.to_owned());
-        let issues = on_behalf_of.validate_right(
-            &auth,
-            Right::Impersonation,
-            1,
-            on_behalf_of.queried_at_height,
-        )?;
+        let issues = on_behalf_of.validate_right(&auth, Right::Impersonation, from, until)?;
         Ok(issues.status())
     }
 }
