@@ -1,4 +1,3 @@
-use async_trait::async_trait;
 use failure::Fallible;
 use serde::{Deserialize, Serialize};
 
@@ -8,43 +7,9 @@ use crate::data::diddoc::{BlockHeight, DidDocument, Right};
 use crate::data::serde_string;
 use crate::data::validation::ValidationStatus;
 use keyvault::{
-    multicipher::{MKeyId, MPrivateKey, MPublicKey, MSignature},
-    PrivateKey, PublicKey,
+    multicipher::{MKeyId, MPublicKey, MSignature},
+    PublicKey,
 };
-
-// TODO signer trait maybe belongs more under crate::io::local
-#[async_trait(?Send)]
-pub trait Signer {
-    fn authentication(&self) -> &Authentication;
-
-    // TODO MUST BE CHANGED to have separated special-purpose signer functions
-    //      so that the user can receive a confirmation dialog with relevant semantics
-    //      fn sign(&self, req: &WitnessRequest) -> Fallible<Signed<WitnessRequest>>
-    async fn sign(&self, data: Vec<u8>) -> Fallible<(MPublicKey, MSignature)>;
-}
-
-pub struct PrivateKeySigner {
-    private_key: MPrivateKey,
-    authentication: Authentication,
-}
-
-impl PrivateKeySigner {
-    pub fn new(private_key: MPrivateKey, authentication: Authentication) -> Self {
-        Self { private_key, authentication }
-    }
-}
-
-#[async_trait(?Send)]
-impl Signer for PrivateKeySigner {
-    fn authentication(&self) -> &Authentication {
-        &self.authentication
-    }
-
-    async fn sign(&self, data: Vec<u8>) -> Fallible<(MPublicKey, MSignature)> {
-        let signature = self.private_key.sign(&data);
-        Ok((self.private_key.public_key(), signature))
-    }
-}
 
 // NOTE  multibase-encoded random content, e.g. 'urvU8F6HmEol5zOmHh_nnS1RiX5r3T2t9U_d_kQY7ZC-I"
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
@@ -61,16 +26,10 @@ impl Nonce {
     }
 }
 
-#[async_trait(?Send)]
 pub trait Signable: Content {
     fn content_to_sign(&self) -> Fallible<Vec<u8>> {
         let content_id = self.content_id()?;
         Ok(content_id.into_bytes())
-    }
-
-    async fn sign(&self, signer: &dyn Signer) -> Fallible<Signed<Self>> {
-        let (public_key, signature) = signer.sign(self.content_to_sign()?).await?;
-        Ok(Signed { content: self.clone(), public_key, signature, nonce: None })
     }
 }
 

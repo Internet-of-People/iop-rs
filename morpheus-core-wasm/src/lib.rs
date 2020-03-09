@@ -1,9 +1,9 @@
 use wasm_bindgen::prelude::*;
 
 use keyvault::PublicKey as KeyVaultPublicKey;
-use morpheus_sdk::crypto::sign::Signed;
-use morpheus_sdk::data::diddoc::BlockHeight;
-use morpheus_sdk::data::validation::ValidationStatus;
+use morpheus_core::crypto::sign::Signed;
+use morpheus_core::data::diddoc::BlockHeight;
+use morpheus_core::data::validation::ValidationStatus;
 
 fn err_to_js<E: ToString>(e: E) -> JsValue {
     JsValue::from(e.to_string())

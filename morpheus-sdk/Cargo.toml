@@ -5,20 +5,25 @@ authors = ["IoP Ventures LLC <info@iop-ventures.com>", "Rache Bartmoss <bartmoss
 license = "LGPL-3.0-or-later"
 edition = "2018"
 
+
+[lib]
+name = "morpheus_sdk"
+crate-type = ["rlib","cdylib"]
+
+
 [dependencies]
 async-trait = "*"
 failure = "*"
 futures = "*"
 hyper = "*"
 keyvault = { git="https://github.com/Internet-of-People/mercury-rust", branch="develop" }
+morpheus-core = { path = "../morpheus-core" }
 log = "*"
-multibase = "*"
 multihash = "*"
-rand = "0.7"
+rand = "*"
 serde = "*"
 serde_bytes = "*"
 serde_json = "*"
-tiny-keccak = "1"
 tokio = { version="*", features=["full"] }
 
 
@@ -29,7 +34,3 @@ tempfile = "*"
 [target.'cfg(target_os="android")'.dependencies]
 jni = { version = "0.5", default-features = false }
 android_logger = "0.5"
-
-[lib]
-name = "morpheus_sdk"
-crate-type = ["rlib","cdylib"]

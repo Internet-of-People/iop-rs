@@ -7,11 +7,11 @@ use std::os::raw;
 
 use serde_json;
 
-use crate::crypto::sign::Nonce;
-use crate::data::diddoc::BlockHeight;
 use crate::sdk::SdkContext;
 use call_context::{CallContext, Callback, RequestId};
 use convert::RawSlice;
+use morpheus_core::crypto::sign::Nonce;
+use morpheus_core::data::diddoc::BlockHeight;
 
 #[no_mangle]
 pub extern "C" fn init_sdk(

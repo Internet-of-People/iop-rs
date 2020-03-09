@@ -6,15 +6,13 @@ use failure::{ensure, format_err, Fallible};
 use log::*;
 use serde::{Deserialize, Serialize};
 
-use crate::{
-    crypto::sign::{PrivateKeySigner, Signer},
-    data::{auth::Authentication, did::*},
-};
+use crate::io::local::signer::{PrivateKeySigner, Signer};
 use keyvault::{
     ed25519::{Ed25519, EdExtPrivateKey},
     multicipher, ExtendedPrivateKey, ExtendedPublicKey, KeyDerivationCrypto, PublicKey, Seed,
     BIP43_PURPOSE_MERCURY,
 };
+use morpheus_core::data::{auth::Authentication, did::*};
 
 pub type Label = String;
 pub type Metadata = String;

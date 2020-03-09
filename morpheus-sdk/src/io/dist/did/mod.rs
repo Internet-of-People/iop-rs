@@ -5,14 +5,17 @@ use async_trait::async_trait;
 use failure::Fallible;
 use serde::{Deserialize, Serialize};
 
-use crate::crypto::{
-    hash::{Content, ContentId},
-    sign::{AfterProof, Signable, Signed, Signer},
-};
-use crate::data::{
-    auth::Authentication,
-    did::Did,
-    diddoc::{BlockHeight, DidDocument, Right},
+use crate::io::local::signer::Signer;
+use morpheus_core::{
+    crypto::{
+        hash::{Content, ContentId},
+        sign::{AfterProof, Signable, Signed},
+    },
+    data::{
+        auth::Authentication,
+        did::Did,
+        diddoc::{BlockHeight, DidDocument, Right},
+    },
 };
 
 pub use fake::FakeDidLedger;

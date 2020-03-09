@@ -779,6 +779,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "morpheus-core"
+version = "0.1.0"
+dependencies = [
+ "failure 0.1.7 (registry+https://github.com/rust-lang/crates.io-index)",
+ "keyvault 0.1.0 (git+https://github.com/Internet-of-People/mercury-rust?branch=develop)",
+ "log 0.4.8 (registry+https://github.com/rust-lang/crates.io-index)",
+ "multibase 0.8.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "rand 0.7.3 (registry+https://github.com/rust-lang/crates.io-index)",
+ "serde 1.0.104 (registry+https://github.com/rust-lang/crates.io-index)",
+ "serde_json 1.0.48 (registry+https://github.com/rust-lang/crates.io-index)",
+ "tiny-keccak 1.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
 name = "morpheus-sdk"
 version = "0.1.0"
 dependencies = [
@@ -790,14 +804,13 @@ dependencies = [
  "jni 0.5.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "keyvault 0.1.0 (git+https://github.com/Internet-of-People/mercury-rust?branch=develop)",
  "log 0.4.8 (registry+https://github.com/rust-lang/crates.io-index)",
- "multibase 0.8.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "morpheus-core 0.1.0",
  "multihash 0.10.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "rand 0.7.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde 1.0.104 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde_bytes 0.11.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde_json 1.0.48 (registry+https://github.com/rust-lang/crates.io-index)",
  "tempfile 3.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "tiny-keccak 1.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "tokio 0.2.13 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
@@ -808,7 +821,7 @@ dependencies = [
  "failure 0.1.7 (registry+https://github.com/rust-lang/crates.io-index)",
  "keyvault 0.1.0 (git+https://github.com/Internet-of-People/mercury-rust?branch=develop)",
  "log 0.4.8 (registry+https://github.com/rust-lang/crates.io-index)",
- "morpheus-sdk 0.1.0",
+ "morpheus-core 0.1.0",
  "serde_json 1.0.48 (registry+https://github.com/rust-lang/crates.io-index)",
  "wasm-bindgen 0.2.59 (registry+https://github.com/rust-lang/crates.io-index)",
 ]

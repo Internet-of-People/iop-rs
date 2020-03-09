@@ -6,8 +6,10 @@ use hyper::{
 };
 
 use super::*;
-use crate::crypto::hash::ContentId;
-use crate::data::{did::Did, diddoc::DidDocument};
+use morpheus_core::{
+    crypto::hash::ContentId,
+    data::{did::Did, diddoc::DidDocument},
+};
 
 pub struct HydraDidLedger {
     url: String,

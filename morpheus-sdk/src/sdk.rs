@@ -2,15 +2,17 @@ use failure::Fallible;
 
 use crate::{
     client::Client,
-    crypto::sign::{Signable, Signed},
+    io::dist::did::{HydraDidLedger, /*FakeDidLedger, */ LedgerOperations, LedgerQueries},
+    io::local::didvault::{DidVault, FilePersister, InMemoryDidVault, PersistentDidVault},
+};
+use morpheus_core::{
+    crypto::sign::Signed,
     data::{
         auth::Authentication,
         claim::{WitnessRequest, WitnessStatement},
         did::Did,
         diddoc::DidDocument,
     },
-    io::dist::did::{HydraDidLedger, /*FakeDidLedger, */ LedgerOperations, LedgerQueries},
-    io::local::didvault::{DidVault, FilePersister, InMemoryDidVault, PersistentDidVault},
 };
 
 pub type SdkContext = Sdk<PersistentDidVault, HydraDidLedger>;
@@ -50,7 +52,7 @@ impl<V: DidVault, L: LedgerQueries + LedgerOperations> Sdk<V, L> {
         let vault = self.client.vault()?;
         self.reactor.block_on(async {
             let signer = vault.signer_by_auth(auth)?;
-            req.sign(signer.as_ref()).await
+            signer.sign_witness_request(req.to_owned()).await
         })
     }
 
@@ -60,7 +62,7 @@ impl<V: DidVault, L: LedgerQueries + LedgerOperations> Sdk<V, L> {
         let vault = self.client.vault()?;
         self.reactor.block_on(async {
             let signer = vault.signer_by_auth(auth)?;
-            stmt.sign(signer.as_ref()).await
+            signer.sign_witness_statement(stmt.to_owned()).await
         })
     }
 

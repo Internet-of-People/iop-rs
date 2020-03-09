@@ -1,5 +1,6 @@
 [workspace]
 members = [
+    "morpheus-core",
     "morpheus-sdk",
-    "morpheus-wasm",
+    "morpheus-core-wasm",
 ]

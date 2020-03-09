@@ -1,18 +1,16 @@
 [package]
-name = "morpheus-wasm"
+name = "morpheus-core"
 version = "0.1.0"
 authors = ["IoP Ventures LLC <info@iop-ventures.com>", "Rache Bartmoss <bartmoss@tutanota.com>", "wigy <wigy_opensource_developer@yahoo.com>"]
 edition = "2018"
 
 
-[lib]
-crate-type = ["cdylib", "rlib"]
-
-
 [dependencies]
 failure = "*"
 keyvault = { git="https://github.com/Internet-of-People/mercury-rust", branch="develop" }
-morpheus-sdk = { path = "../morpheus-sdk" }
 log = "*"
+multibase = "0.8"
+rand = "*"
+serde = "*"
 serde_json = "*"
-wasm-bindgen = { version = "*", features = ["serde-serialize"] }
+tiny-keccak = "1"
