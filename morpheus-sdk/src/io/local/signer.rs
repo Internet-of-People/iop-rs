@@ -10,6 +10,7 @@ use morpheus_core::{
     data::{
         auth::Authentication,
         claim::{WitnessRequest, WitnessStatement},
+        present::ClaimPresentation,
     },
 };
 
@@ -36,6 +37,14 @@ pub trait Signer {
         let content_to_sign = statement.content_to_sign()?;
         let (public_key, signature) = self.sign(content_to_sign).await?;
         Ok(Signed::new(public_key, statement, signature))
+    }
+
+    async fn sign_claim_presentation(
+        &self, presentation: ClaimPresentation,
+    ) -> Fallible<Signed<ClaimPresentation>> {
+        let content_to_sign = presentation.content_to_sign()?;
+        let (public_key, signature) = self.sign(content_to_sign).await?;
+        Ok(Signed::new(public_key, presentation, signature))
     }
 }
 

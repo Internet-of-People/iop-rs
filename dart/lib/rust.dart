@@ -147,6 +147,24 @@ typedef DartFuncSignWitnessStatement = void Function(
   Pointer error,
 );
 
+typedef NativeFuncSignClaimPresentation = Void Function(
+  Pointer<Void> sdk,
+  Pointer<Utf8> witnessStatement,
+  Pointer<Utf8> auth,
+  Pointer<CallContext> requestId,
+  Pointer callback,
+  Pointer error,
+);
+typedef DartFuncSignClaimPresentation = void Function(
+  Pointer<Void> sdk,
+  Pointer<Utf8> witnessStatement,
+  Pointer<Utf8> auth,
+  Pointer<CallContext> requestId,
+  Pointer callback,
+  Pointer error,
+);
+
+
 typedef NativeFuncHasRightAt = Void Function(
   Pointer<Void> sdk,
   Pointer<Utf8> did,
@@ -198,6 +216,7 @@ class NativeAPI {
   final DartFuncGenerateNonce generate_nonce;
   final DartFuncSignWitnessRequest sign_witness_request;
   final DartFuncSignWitnessStatement sign_witness_statement;
+  final DartFuncSignClaimPresentation sign_claim_presentation;
   final DartFuncHasRightAt has_right_at;
   final DartFuncIsTombstonedAt is_tombstoned_at;
 
@@ -213,6 +232,7 @@ class NativeAPI {
     this.generate_nonce,
     this.sign_witness_request,
     this.sign_witness_statement,
+    this.sign_claim_presentation,
     this.has_right_at,
     this.is_tombstoned_at,
   );
@@ -391,6 +411,27 @@ class RustSdk {
     });
   }
 
+  String signClaimPresentation(String claimPresentation, String authentication) {
+    return CallContext.run((call) {
+      final nativeClaimPresentation = Utf8.toUtf8(claimPresentation);
+      final nativeAuthentication = Utf8.toUtf8(authentication);
+      try {
+        _api.sign_claim_presentation(
+          _sdk,
+          nativeClaimPresentation,
+          nativeAuthentication,
+          call.id,
+          call.callback,
+          call.error,
+        );
+        return call.result().asString;
+      } finally {
+        free(nativeAuthentication);
+        free(nativeClaimPresentation);
+      }
+    });
+  }
+
   bool hasRightAt(String did, String auth, String right, int height) {
     return CallContext.run((call) {
       final nativeDid = Utf8.toUtf8(did);
@@ -480,6 +521,7 @@ class RustAPI {
       lib.lookupFunction<NativeFuncGenerateNonce, DartFuncGenerateNonce>('generate_nonce'),
       lib.lookupFunction<NativeFuncSignWitnessRequest, DartFuncSignWitnessRequest>('sign_witness_request'),
       lib.lookupFunction<NativeFuncSignWitnessStatement, DartFuncSignWitnessStatement>('sign_witness_statement'),
+      lib.lookupFunction<NativeFuncSignClaimPresentation, DartFuncSignClaimPresentation>('sign_claim_presentation'),
       lib.lookupFunction<NativeFuncHasRightAt, DartFuncHasRightAt>('has_right_at'),
       lib.lookupFunction<NativeFuncIsTombstonedAt, DartFuncIsTombstonedAt>('is_tombstoned_at'),
     );

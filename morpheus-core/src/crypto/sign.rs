@@ -44,6 +44,12 @@ impl Signable for String {
     }
 }
 
+impl Signable for serde_json::Value {
+    fn content_to_sign(&self) -> Fallible<Vec<u8>> {
+        Ok(serde_json::to_vec(self)?)
+    }
+}
+
 // TODO implement Hash for MPublicKey and MSignature
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
 #[serde(from = "SignatureSerializationFormat<T>", into = "SignatureSerializationFormat<T>")]

@@ -1,30 +1,49 @@
 use serde::{Deserialize, Serialize};
 
-use crate::crypto::{hash::Content, sign::Signable};
-use crate::data::{claim::Claim, did::Did};
+use crate::{
+    crypto::{
+        hash::Content,
+        sign::{Signable, Signed},
+    },
+    data::{did::Did, serde_string},
+};
 
 #[derive(Clone, Debug, Deserialize, Eq, Hash, PartialEq, PartialOrd, Serialize)]
 pub struct License {
-    // TODO how to build a proper license?
-    // license_type
-    licensed_to: Did,
-    // issued_at or valid_from
-    // expires_at or valid_until
+    #[serde(rename = "issuedTo", with = "serde_string")]
+    issued_to: Did,
+    purpose: String, // TODO should be more strictly typed, probably an enum
+    #[serde(rename = "validFrom")]
+    valid_from: String, // TODO should be some strict date type here, like std::time::Instant but it's not serde-serializable
+    #[serde(rename = "validUntil")]
+    valid_until: String,
 }
 
 impl Content for License {}
 impl Signable for License {}
 
-#[derive(Clone, Debug, Deserialize, Serialize)]
+// TODO this probably should be more strictly typed here
+#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
+pub struct ProvenClaim {
+    claim: serde_json::Value,
+    statements: Vec<Signed<serde_json::Value>>,
+}
+
+impl Content for ProvenClaim {}
+impl Signable for ProvenClaim {}
+
+#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
 pub struct ClaimPresentation {
-    // TODO how to represent Merkle-tree and other data here?
-    // a collection of claims, potentially on different subjects
-    claims: Vec<Claim>,
-    // if subjects are different then the creator of this presentation then an optional license is needed to prove proper rights to further delegate claims
+    #[serde(rename = "provenClaims")]
+    proven_claims: Vec<ProvenClaim>,
+    licenses: Vec<License>,
+    // if subjects are different (from each other or the creator of this presentation)
+    // then the creator an optional license is needed to prove proper rights to further delegate claims
     // consider how to do it without potentially infinite data size?
     // claim_control_proof: Option<Signed<ClaimPresentation>>,
-    license: License,
 }
 
 impl Content for ClaimPresentation {}
 impl Signable for ClaimPresentation {}
+
+// TODO Maskable: T -> serde_json::Value

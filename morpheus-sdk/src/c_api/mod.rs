@@ -146,7 +146,7 @@ pub extern "C" fn sign_witness_request(
         let req = serde_json::from_str(req_str)?;
         let auth_str = format!("{:?}", convert::str_in(auth)?);
         let auth = serde_json::from_str(&auth_str)?;
-        let signed_request = sdk.sign_witness_request(&req, &auth)?;
+        let signed_request = sdk.sign_witness_request(req, &auth)?;
         let json = serde_json::to_string(&signed_request)?;
         Ok(convert::string_out(json))
     };
@@ -164,8 +164,26 @@ pub extern "C" fn sign_witness_statement(
         let stmnt = serde_json::from_str(stmnt_str)?;
         let auth_str = format!("{:?}", convert::str_in(auth)?);
         let auth = serde_json::from_str(&auth_str)?;
-        let signed_stmnt = sdk.sign_witness_statement(&stmnt, &auth)?;
+        let signed_stmnt = sdk.sign_witness_statement(stmnt, &auth)?;
         let json = serde_json::to_string(&signed_stmnt)?;
+        Ok(convert::string_out(json))
+    };
+    CallContext::new(id, success, error).run(fun)
+}
+
+#[no_mangle]
+pub extern "C" fn sign_claim_presentation(
+    sdk: *mut SdkContext, pres: *const raw::c_char, auth: *const raw::c_char, id: *mut RequestId,
+    success: Callback<*mut raw::c_char>, error: Callback<*const raw::c_char>,
+) {
+    let sdk = unsafe { &mut *sdk };
+    let fun = || {
+        let pres_str = convert::str_in(pres)?;
+        let presentation = serde_json::from_str(pres_str)?;
+        let auth_str = format!("{:?}", convert::str_in(auth)?);
+        let auth = serde_json::from_str(&auth_str)?;
+        let signed_pres = sdk.sign_claim_presentation(presentation, &auth)?;
+        let json = serde_json::to_string(&signed_pres)?;
         Ok(convert::string_out(json))
     };
     CallContext::new(id, success, error).run(fun)

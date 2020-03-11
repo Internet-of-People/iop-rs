@@ -19,3 +19,4 @@ pub trait Content: Serialize + Clone + Sized {
 
 impl Content for &str {}
 impl Content for String {}
+impl Content for serde_json::Value {}

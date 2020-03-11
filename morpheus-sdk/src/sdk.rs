@@ -5,6 +5,7 @@ use crate::{
     io::dist::did::{HydraDidLedger, /*FakeDidLedger, */ LedgerOperations, LedgerQueries},
     io::local::didvault::{DidVault, FilePersister, InMemoryDidVault, PersistentDidVault},
 };
+use morpheus_core::data::present::ClaimPresentation;
 use morpheus_core::{
     crypto::sign::Signed,
     data::{
@@ -47,22 +48,32 @@ impl<V: DidVault, L: LedgerQueries + LedgerOperations> Sdk<V, L> {
     }
 
     pub fn sign_witness_request(
-        &mut self, req: &WitnessRequest, auth: &Authentication,
+        &mut self, req: WitnessRequest, auth: &Authentication,
     ) -> Fallible<Signed<WitnessRequest>> {
         let vault = self.client.vault()?;
         self.reactor.block_on(async {
             let signer = vault.signer_by_auth(auth)?;
-            signer.sign_witness_request(req.to_owned()).await
+            signer.sign_witness_request(req).await
         })
     }
 
     pub fn sign_witness_statement(
-        &mut self, stmt: &WitnessStatement, auth: &Authentication,
+        &mut self, stmt: WitnessStatement, auth: &Authentication,
     ) -> Fallible<Signed<WitnessStatement>> {
         let vault = self.client.vault()?;
         self.reactor.block_on(async {
             let signer = vault.signer_by_auth(auth)?;
-            signer.sign_witness_statement(stmt.to_owned()).await
+            signer.sign_witness_statement(stmt).await
+        })
+    }
+
+    pub fn sign_claim_presentation(
+        &mut self, presentation: ClaimPresentation, auth: &Authentication,
+    ) -> Fallible<Signed<ClaimPresentation>> {
+        let vault = self.client.vault()?;
+        self.reactor.block_on(async {
+            let signer = vault.signer_by_auth(auth)?;
+            signer.sign_claim_presentation(presentation).await
         })
     }
 
