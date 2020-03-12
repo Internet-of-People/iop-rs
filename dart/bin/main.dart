@@ -1,4 +1,4 @@
-import 'dart:io';
+import 'dart:io' show Platform, File;
 
 import 'package:morpheus_dart/rust.dart';
 
@@ -29,7 +29,7 @@ void main(List<String> arguments) {
     final sdk = RustAPI.initSdk('../target/debug/libmorpheus_sdk.so');
     try {
       final nonce = sdk.generateNonce();
-      print("Generated nonce: $nonce");
+      print('Generated nonce: $nonce');
 
       final vaultPath =
           '${Platform.environment['HOME']}/.config/prometheus/did_vault.dat';
@@ -48,15 +48,15 @@ void main(List<String> arguments) {
       final dids = sdk.listDids();
       print('Dids: ${dids.join(',')}');
 
-      final witnessRequest = '{"claim":{"subject":"did:morpheus:ezbeWGSY2dqcUBqT8K7R14xr","content":{"address":"adsf","placeOfBirth":{"country":"sdf","city":"adsf"},"dateOfBirth":"13/02/2002"}},"claimant":"did:morpheus:ezbeWGSY2dqcUBqT8K7R14xr#0","processId":"Digitalize ID card","evidence":{},"nonce":"uOANCT6WfyvEqvZkT8+5WFgubadCdJdiuNjVDpcAdXFzh"}';
+      final witnessRequest = File('bin/witnessRequest.json').readAsStringSync();
       final signedWitnessRequest = sdk.signWitnessRequest(witnessRequest, 'iezbeWGSY2dqcUBqT8K7R14xr');
       print('Signed Witness Request:\n$signedWitnessRequest');
 
-      final witnessStatement = '{"claim":{"subject":"did:morpheus:ezbeWGSY2dqcUBqT8K7R14xr","content":{"address":"Strasse","dateOfBirth":"16/02/2002","placeOfBirth":{"city":"Berlin","country":"Germany"}}},"processId":"cjunI8lB1BEtampkcvotOpF-zr1XmsCRNvntciGl3puOkg","constraints":{"after":"2020-02-13T13:23:56.319668","before":"2021-02-13T00:00:00.000","witness":"did:morpheus:ezbeWGSY2dqcUBqT8K7R14xr#0","authority":"did:morpheus:ezbeWGSY2dqcUBqT8K7R14xr","content":null},"nonce":"abcde"}';
+      final witnessStatement = File('bin/witnessStatement.json').readAsStringSync();
       final signedWitnessStatement = sdk.signWitnessStatement(witnessStatement, 'iezbeWGSY2dqcUBqT8K7R14xr');
       print('Signed Witness Statement:\n$signedWitnessStatement');
 
-      final claimPresentation = '{"provenClaims":[{"claim":{"subject":"did:morpheus:ezbeWGSY2dqcUBqT8K7R14xr","content":{"address":"Strasse","dateOfBirth":"16/02/2002","placeOfBirth":{"city":"Berlin","country":"Germany"}}},"statements":[{"content":{"claim":{"subject":"did:morpheus:ezbeWGSY2dqcUBqT8K7R14xr","content":{"address":"Strasse","dateOfBirth":"16/02/2002","placeOfBirth":{"city":"Berlin","country":"Germany"}}},"processId":"cjunI8lB1BEtampkcvotOpF-zr1XmsCRNvntciGl3puOkg","constraints":{"after":"2020-02-13T14:02:25.959532","before":"2021-02-13T00:00:00.000","witness":"did:morpheus:ezbeWGSY2dqcUBqT8K7R14xr#0","authority":"did:morpheus:ezbeWGSY2dqcUBqT8K7R14xr","content":null},"nonce":"uI6/zmtfF37W9ZzbZAj6trQJoUtTNnJyKCkhPox+wC7DO"},"signature":{"publicKey":"pez7aYuvoDPM5i7xedjwjsWaFVzL3qRKPv4sBLv3E3pAGi6","bytes":"sez7wdTBDCUdAPuRLifRC3TRxctDcdbABM25iMmz4xiVsdbgFf84fyUDhoPrrWmNbqLYmfCqtM8tAtycW9Dq7yjY3bK"}}]}],"licenses":[{"issuedTo":"did:morpheus:ezbeWGSY2dqcUBqT8K7R14xr","purpose":"Inspection by gate-keeper","validFrom":"2020-03-14T15:26:27.0","validUntil":"2020-03-14T15:45:0.0"}],"nonce":"u1U9fIy/AE2sIA1Xi3523NzSsMnJrVU3Tv+q4rlGyhluQ"}';
+      final claimPresentation = File('bin/claimPresentation.json').readAsStringSync();
       final signedClaimPresentation = sdk.signClaimPresentation(claimPresentation, 'iezbeWGSY2dqcUBqT8K7R14xr');
       print('Signed Claim Presentation:\n$signedClaimPresentation');
 
