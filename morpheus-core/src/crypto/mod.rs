@@ -1,3 +1,3 @@
 pub mod hash;
-pub mod mask;
+pub mod json_digest;
 pub mod sign;

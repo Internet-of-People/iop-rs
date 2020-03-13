@@ -1,7 +1,7 @@
 use failure::Fallible;
 use serde::Serialize;
 
-use crate::crypto::mask::json_digest;
+use crate::crypto::json_digest::json_digest;
 
 pub type ContentId = String;
 
