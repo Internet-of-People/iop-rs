@@ -120,11 +120,12 @@ pub fn collapse_json_subtree(
     }
 }
 
-pub fn mask_json<T: serde::Serialize>(data: &T, keep_paths: Vec<&str>) -> Fallible<String> {
+pub fn mask_json<T: serde::Serialize>(data: &T, keep_paths_str: &str) -> Fallible<String> {
+    let keep_paths_vec = json_path::split_alternatives(keep_paths_str);
     let json_value = serde_json::to_value(&data)?;
     let digest_json = match &json_value {
-        serde_json::Value::Object(_obj) => collapse_json_subtree(&json_value, keep_paths),
-        serde_json::Value::Array(_arr) => collapse_json_subtree(&json_value, keep_paths),
+        serde_json::Value::Object(_obj) => collapse_json_subtree(&json_value, keep_paths_vec),
+        serde_json::Value::Array(_arr) => collapse_json_subtree(&json_value, keep_paths_vec),
         _ => bail!("Json digest is currently implemented only for composite types"),
     }?;
     match digest_json {
@@ -135,7 +136,7 @@ pub fn mask_json<T: serde::Serialize>(data: &T, keep_paths: Vec<&str>) -> Fallib
 }
 
 pub fn json_digest<T: serde::Serialize>(data: &T) -> Fallible<String> {
-    mask_json(data, vec![])
+    mask_json(data, "")
 }
 
 #[cfg(test)]
@@ -202,30 +203,55 @@ mod tests {
         let composite = CompositeTestData { z: Some(test_obj.clone()), y: Some(test_obj.clone()) };
         let double_complex =
             CompositeTestData { z: Some(composite.clone()), y: Some(composite.clone()) };
+        let triple_complex =
+            CompositeTestData { z: Some(double_complex.clone()), y: Some(double_complex.clone()) };
         {
-            let fully_masked = mask_json(&composite, vec![])?;
+            let fully_masked = mask_json(&composite, "")?;
             assert_eq!(fully_masked, "cjubdcpA0FfHhD8yEpDzZ8vS5sm7yxkrX_wAJgmke2bWRQ");
         }
         {
-            let keep_y = mask_json(&composite, vec![".y"])?;
+            let keep_y = mask_json(&composite, ".y")?;
             assert_eq!(
                 keep_y,
                 r#"{"y":{"a":2,"b":1},"z":"cjumTq1s6Tn6xkXolxHj4LmAo7DAb-zoPLhEa1BvpovAFU"}"#
             );
+            let val: serde_json::Value = serde_json::from_str(&keep_y)?;
+            assert_eq!(json_digest(&val)?, "cjubdcpA0FfHhD8yEpDzZ8vS5sm7yxkrX_wAJgmke2bWRQ");
         }
         {
-            let keep_z = mask_json(&composite, vec![".z"])?;
+            let keep_z = mask_json(&composite, ".z")?;
             assert_eq!(
                 keep_z,
                 r#"{"y":"cjumTq1s6Tn6xkXolxHj4LmAo7DAb-zoPLhEa1BvpovAFU","z":{"a":2,"b":1}}"#
             );
+            let val: serde_json::Value = serde_json::from_str(&keep_z)?;
+            assert_eq!(json_digest(&val)?, "cjubdcpA0FfHhD8yEpDzZ8vS5sm7yxkrX_wAJgmke2bWRQ");
         }
         {
-            let keep_yz = mask_json(&double_complex, vec![".y.z"])?;
+            let digest = json_digest(&double_complex)?;
+            assert_eq!(digest, "cjuQLebyl_BJipFLibhWiStDBqK5J4JZq15ehUqybfTTKA");
+        }
+        {
+            let keep_yz = mask_json(&double_complex, ".y.z")?;
             assert_eq!(
                 keep_yz,
                 r#"{"y":{"y":"cjumTq1s6Tn6xkXolxHj4LmAo7DAb-zoPLhEa1BvpovAFU","z":{"a":2,"b":1}},"z":"cjubdcpA0FfHhD8yEpDzZ8vS5sm7yxkrX_wAJgmke2bWRQ"}"#
             );
+            let val: serde_json::Value = serde_json::from_str(&keep_yz)?;
+            assert_eq!(json_digest(&val)?, "cjuQLebyl_BJipFLibhWiStDBqK5J4JZq15ehUqybfTTKA");
+        }
+        {
+            let digest = json_digest(&triple_complex)?;
+            assert_eq!(digest, "cjuik140L3w7LCi6z1eHt7Qgwr2X65-iy8HA6zqrlUdmVk");
+        }
+        {
+            let keep_yz = mask_json(&triple_complex, ".y.y , .z.z")?;
+            assert_eq!(
+                keep_yz,
+                r#"{"y":{"y":{"y":{"a":2,"b":1},"z":{"a":2,"b":1}},"z":"cjubdcpA0FfHhD8yEpDzZ8vS5sm7yxkrX_wAJgmke2bWRQ"},"z":{"y":"cjubdcpA0FfHhD8yEpDzZ8vS5sm7yxkrX_wAJgmke2bWRQ","z":{"y":{"a":2,"b":1},"z":{"a":2,"b":1}}}}"#
+            );
+            let val: serde_json::Value = serde_json::from_str(&keep_yz)?;
+            assert_eq!(json_digest(&val)?, "cjuik140L3w7LCi6z1eHt7Qgwr2X65-iy8HA6zqrlUdmVk");
         }
         Ok(())
     }

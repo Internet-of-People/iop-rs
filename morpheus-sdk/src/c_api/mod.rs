@@ -14,6 +14,21 @@ use morpheus_core::crypto::sign::Nonce;
 use morpheus_core::data::diddoc::BlockHeight;
 
 #[no_mangle]
+pub extern "C" fn mask_json(
+    raw_json: *const raw::c_char, raw_keep_paths: *const raw::c_char, id: *mut RequestId,
+    success: Callback<*mut raw::c_char>, error: Callback<*const raw::c_char>,
+) {
+    let fun = || {
+        let json_str = convert::str_in(raw_json)?;
+        let json_val: serde_json::Value = serde_json::from_str(json_str)?;
+        let keep_paths_str = convert::str_in(raw_keep_paths)?;
+        let masked_json = morpheus_core::crypto::json_digest::mask_json(&json_val, keep_paths_str)?;
+        Ok(convert::string_out(masked_json))
+    };
+    CallContext::new(id, success, error).run(fun)
+}
+
+#[no_mangle]
 pub extern "C" fn init_sdk(
     id: *mut RequestId, success: Callback<*mut SdkContext>, error: Callback<*const raw::c_char>,
 ) -> () {

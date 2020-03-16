@@ -35,6 +35,7 @@ pub fn match_single(tree: &serde_json::Value, path: &str) -> Fallible<bool> {
 /// ```
 /// use morpheus_core::util::json_path::split_alternatives;
 /// assert_eq!( split_alternatives(".a , .b.c , .d"), vec![".a", ".b.c", ".d"]);
+/// assert_eq!( split_alternatives(""), Vec::<&str>::new());
 /// ```
 pub fn split_alternatives(paths_pattern: &str) -> Vec<&str> {
     paths_pattern
@@ -119,13 +120,6 @@ mod tests {
         assert_eq!(matches(&obj, ".addr , .address.street.number, .xxx").ok(), Some(true));
         assert_eq!(matches(&obj, ".ad , .address.street.numbers, .xxx").ok(), Some(false));
 
-        Ok(())
-    }
-
-    #[test]
-    fn selective_json_masking() -> Fallible<()> {
-        let _obj = sample_json_object();
-        // TODO
         Ok(())
     }
 }

@@ -31,6 +31,10 @@ void main(List<String> arguments) {
       final nonce = sdk.generateNonce();
       print('Generated nonce: $nonce');
 
+      final json = File('bin/witnessStatement.json').readAsStringSync();
+      final maskedJson = sdk.maskJson(json, '.claim.content.dateOfBirth');
+      print('Masked Json:\n$maskedJson');
+
       final vaultPath =
           '${Platform.environment['HOME']}/.config/prometheus/did_vault.dat';
       try {

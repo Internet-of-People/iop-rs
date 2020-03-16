@@ -34,6 +34,16 @@ typedef DartFuncInitSdk = void Function(
 typedef NativeFuncCloseSdk = Void Function(Pointer<Void> sdk);
 typedef DartFuncCloseSdk = void Function(Pointer<Void> sdk);
 
+typedef NativeFuncMaskJson = Void Function(
+    Pointer<Utf8> json,
+    Pointer<Utf8> keepPaths,
+    Pointer<CallContext> requestId,
+    Pointer callback,
+    Pointer error,
+    );
+typedef DartFuncMaskJson = void Function(Pointer<Utf8> json, Pointer<Utf8> keepPaths,
+    Pointer<CallContext> requestId, Pointer callback, Pointer error);
+
 typedef NativeFuncLoadVault = Void Function(
   Pointer<Void> sdk,
   Pointer<Utf8> path,
@@ -206,6 +216,7 @@ typedef DartFuncIsTombstonedAt = void Function(
 
 class NativeAPI {
   final DartFuncCloseSdk close_sdk;
+  final DartFuncMaskJson mask_json;
   final DartFuncLoadVault load_vault;
   final DartFuncCreateVault create_vault;
   final DartFuncFakeLedger fake_ledger;
@@ -222,6 +233,7 @@ class NativeAPI {
 
   NativeAPI(
     this.close_sdk,
+    this.mask_json,
     this.load_vault,
     this.create_vault,
     this.fake_ledger,
@@ -243,6 +255,26 @@ class RustSdk {
   final NativeAPI _api;
 
   RustSdk(this._sdk, this._api);
+
+  String maskJson(String json, String keepPaths) {
+    return CallContext.run((call) {
+      final nativeJson = Utf8.toUtf8(json);
+      final nativeKeepPaths = Utf8.toUtf8(keepPaths);
+      try {
+        _api.mask_json(
+          nativeJson,
+          nativeKeepPaths,
+          call.id,
+          call.callback,
+          call.error,
+        );
+        return call.result().asString;
+      } finally {
+        free(nativeJson);
+        free(nativeKeepPaths);
+      }
+    });
+  }
 
   void loadVault(String path) {
     return CallContext.run((call) {
@@ -508,6 +540,7 @@ class RustAPI {
 
     final api = NativeAPI(
       lib.lookupFunction<NativeFuncCloseSdk, DartFuncCloseSdk>('close_sdk'),
+      lib.lookupFunction<NativeFuncMaskJson, DartFuncMaskJson>('mask_json'),
       lib.lookupFunction<NativeFuncLoadVault, DartFuncLoadVault>('load_vault'),
       lib.lookupFunction<NativeFuncCreateVault, DartFuncCreateVault>(
           'create_vault'),
