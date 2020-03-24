@@ -241,7 +241,7 @@ impl DidDocument {
             Some(entries) => entries,
             None => {
                 result
-                    .add_issue(Severity::Error, "Right was never granted tp given authentication");
+                    .add_issue(Severity::Error, "Right was never granted to given authentication");
                 return Ok(result);
             }
         };

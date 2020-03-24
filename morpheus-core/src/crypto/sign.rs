@@ -97,13 +97,7 @@ where
         }
         Ok(valid)
     }
-}
 
-// TODO probably this shouldn't be generic but work only with Before/AfterProofs
-impl<T> Signed<T>
-where
-    T: Signable,
-{
     // TODO add Before/AfterProofs as optional arguments here
     // TODO consider returning ValidationResult with issue vector and translate to status
     //      somewhere above in an upper layer

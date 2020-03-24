@@ -2,8 +2,6 @@ use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
 use keyvault::multicipher;
 
-const PREFIX_DID_MORPHEUS: &str = "did:morpheus:";
-
 // NOTE should be const, but current language rules do not allow that
 fn prefix_multicipher_keyid() -> String {
     multicipher::MKeyId::PREFIX.to_string()
@@ -33,6 +31,8 @@ impl<'de> Deserialize<'de> for Did {
 }
 
 impl Did {
+    pub const PREFIX: &'static str = "did:morpheus:";
+
     pub fn new(key_id: multicipher::MKeyId) -> Self {
         Self { default_key_id: key_id }
     }
@@ -63,10 +63,10 @@ impl From<&multicipher::MKeyId> for Did {
 impl std::str::FromStr for Did {
     type Err = failure::Error;
     fn from_str(src: &str) -> Result<Self, Self::Err> {
-        if !src.starts_with(PREFIX_DID_MORPHEUS) {
-            failure::bail!("{} is not a valid DID: must start with {}", src, PREFIX_DID_MORPHEUS);
+        if !src.starts_with(Self::PREFIX) {
+            failure::bail!("{} is not a valid DID: must start with {}", src, Self::PREFIX);
         }
-        let mkeyid = src.replacen(PREFIX_DID_MORPHEUS, &prefix_multicipher_keyid(), 1);
+        let mkeyid = src.replacen(Self::PREFIX, &prefix_multicipher_keyid(), 1);
         Ok(Did::new(mkeyid.parse()?))
     }
 }
@@ -77,7 +77,7 @@ impl From<&Did> for String {
         // if !key_id_str.starts_with(prefix_multicipher_keyid) {
         //     panic!("Implementation error: {} is not a valid KeyId: must start with {}", key_id_str, prefix_multicipher_keyid );
         // }
-        let result = key_id_str.replacen(&prefix_multicipher_keyid(), PREFIX_DID_MORPHEUS, 1);
+        let result = key_id_str.replacen(&prefix_multicipher_keyid(), Did::PREFIX, 1);
         result
     }
 }

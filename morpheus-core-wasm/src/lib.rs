@@ -1,7 +1,11 @@
+use failure::{bail, Fallible};
 use serde_json::Value;
 use wasm_bindgen::prelude::*;
 
-use keyvault::PublicKey as KeyVaultPublicKey;
+use keyvault::{
+    multicipher::{MKeyId, MPublicKey},
+    PublicKey as KeyVaultPublicKey,
+};
 use keyvault_wasm::*;
 use morpheus_core::{
     crypto::sign::{PrivateKeySigner, Signable, Signed, SyncSigner},
@@ -115,8 +119,8 @@ impl JsSignedJson {
     }
 
     // TODO return red/yellow/green instead of bool
-    #[wasm_bindgen(js_name = validateWithDid)]
-    pub fn validate_with_did(
+    #[wasm_bindgen(js_name = validateWithDidDoc)]
+    pub fn validate_with_did_doc(
         &self, did_doc_str: &str, from_height_inc: Option<BlockHeight>,
         until_height_exc: Option<BlockHeight>,
     ) -> Result<JsValue, JsValue> {
@@ -223,6 +227,11 @@ impl JsDid {
     pub fn new(did_str: &str) -> Result<JsDid, JsValue> {
         let inner: Did = did_str.parse().map_err(err_to_js)?;
         Ok(Self { inner })
+    }
+
+    #[wasm_bindgen]
+    pub fn prefix() -> String {
+        Did::PREFIX.to_owned()
     }
 
     #[wasm_bindgen(js_name = fromKeyId)]
