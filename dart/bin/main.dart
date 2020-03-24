@@ -31,6 +31,10 @@ void main(List<String> arguments) {
       final nonce = sdk.generateNonce();
       print('Generated nonce: $nonce');
 
+      final contentId = 'cjuzC-XxgzNMwYXtw8aMIAeS2Xjlw1hlSNKTvVtUwPuyYo';
+      final maskedContentId = sdk.maskJson('"${contentId}"', '.');
+      print('Masking string is idempotent: ${contentId == maskedContentId}');
+
       final json = File('bin/witnessStatement.json').readAsStringSync();
       final maskedJson = sdk.maskJson(json, '.claim.content.dateOfBirth');
       print('Masked Json:\n$maskedJson');
@@ -53,8 +57,10 @@ void main(List<String> arguments) {
       print('Dids: ${dids.join(',')}');
 
       final witnessRequest = File('bin/witnessRequest.json').readAsStringSync();
+      final witnessRequestId = sdk.maskJson(witnessRequest, '.');
       final signedWitnessRequest = sdk.signWitnessRequest(witnessRequest, 'iezbeWGSY2dqcUBqT8K7R14xr');
       print('Signed Witness Request:\n$signedWitnessRequest');
+      print('Witness Request Content ID: ${witnessRequestId}');
 
       final witnessStatement = File('bin/witnessStatement.json').readAsStringSync();
       final signedWitnessStatement = sdk.signWitnessStatement(witnessStatement, 'iezbeWGSY2dqcUBqT8K7R14xr');

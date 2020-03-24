@@ -3,7 +3,7 @@ use failure::Fallible;
 use crate::{
     client::Client,
     io::dist::did::{HydraDidLedger, /*FakeDidLedger, */ LedgerOperations, LedgerQueries},
-    io::local::didvault::{DidVault, FilePersister, InMemoryDidVault, PersistentDidVault},
+    io::local::didvault::{DidVault, FilePersister, PersistentDidVault},
 };
 use morpheus_core::data::present::ClaimPresentation;
 use morpheus_core::{
@@ -14,6 +14,7 @@ use morpheus_core::{
         did::Did,
         diddoc::DidDocument,
     },
+    vault::InMemoryDidVault,
 };
 
 pub type SdkContext = Sdk<PersistentDidVault, HydraDidLedger>;

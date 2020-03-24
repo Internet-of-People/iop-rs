@@ -1,14 +1,20 @@
 use failure::Fallible;
 use serde::{Deserialize, Serialize};
 
-use crate::crypto::hash::{Content, ContentId};
-use crate::data::auth::Authentication;
-use crate::data::diddoc::{BlockHeight, DidDocument, Right};
-use crate::data::serde_string;
-use crate::data::validation::ValidationStatus;
+use crate::{
+    crypto::hash::{Content, ContentId},
+    data::{
+        auth::Authentication,
+        claim::{WitnessRequest, WitnessStatement},
+        diddoc::{BlockHeight, DidDocument, Right},
+        present::ClaimPresentation,
+        serde_string,
+        validation::{ValidationIssueSeverity, ValidationResult},
+    },
+};
 use keyvault::{
-    multicipher::{MKeyId, MPublicKey, MSignature},
-    PublicKey,
+    multicipher::{MKeyId, MPrivateKey, MPublicKey, MSignature},
+    PrivateKey, PublicKey,
 };
 
 // NOTE  multibase-encoded random content, e.g. 'urvU8F6HmEol5zOmHh_nnS1RiX5r3T2t9U_d_kQY7ZC-I"
@@ -28,25 +34,21 @@ impl Nonce {
 
 pub trait Signable: Content {
     fn content_to_sign(&self) -> Fallible<Vec<u8>> {
-        let content_id = self.content_id()?;
-        Ok(content_id.into_bytes())
+        Ok(self.content_id()?.into_bytes())
     }
 }
 
-impl Signable for &str {
+impl Signable for serde_json::Value {}
+
+impl Signable for Box<[u8]> {
     fn content_to_sign(&self) -> Fallible<Vec<u8>> {
-        Ok(self.as_bytes().to_owned())
-    }
-}
-impl Signable for String {
-    fn content_to_sign(&self) -> Fallible<Vec<u8>> {
-        Ok(self.as_bytes().to_owned())
+        Ok(self.as_ref().to_owned())
     }
 }
 
-impl Signable for serde_json::Value {
+impl Signable for Vec<u8> {
     fn content_to_sign(&self) -> Fallible<Vec<u8>> {
-        Ok(serde_json::to_vec(self)?)
+        Ok(self.to_owned())
     }
 }
 
@@ -108,17 +110,17 @@ where
     pub fn validate_with_did_doc(
         &self, on_behalf_of: &DidDocument, from_inc: Option<BlockHeight>,
         until_exc: Option<BlockHeight>,
-    ) -> Fallible<ValidationStatus> {
-        if !self.validate()? {
-            return Ok(ValidationStatus::Invalid);
-        }
-
+    ) -> Fallible<ValidationResult> {
         let from = from_inc.unwrap_or(1);
         let until = until_exc.unwrap_or(on_behalf_of.queried_at_height);
 
         let auth = Authentication::PublicKey(self.public_key.to_owned());
-        let issues = on_behalf_of.validate_right(&auth, Right::Impersonation, from, until)?;
-        Ok(issues.status())
+        let mut issues = on_behalf_of.validate_right(&auth, Right::Impersonation, from, until)?;
+
+        if !self.validate()? {
+            issues.add_issue(ValidationIssueSeverity::Error, "Signature is invalid");
+        }
+        Ok(issues)
     }
 }
 
@@ -159,6 +161,66 @@ impl<T: Signable> From<SignatureSerializationFormat<T>> for Signed<T> {
     }
 }
 
+pub trait SyncSigner {
+    fn authentication(&self) -> &Authentication;
+
+    fn sign(&self, data: &[u8]) -> Fallible<(MPublicKey, MSignature)>;
+
+    fn sign_witness_request(&self, request: WitnessRequest) -> Fallible<Signed<WitnessRequest>> {
+        let content_to_sign = request.content_to_sign()?;
+        let (public_key, signature) = self.sign(&content_to_sign)?;
+        Ok(Signed::new(public_key, request, signature))
+    }
+
+    fn sign_witness_statement(
+        &self, statement: WitnessStatement,
+    ) -> Fallible<Signed<WitnessStatement>> {
+        let content_to_sign = statement.content_to_sign()?;
+        let (public_key, signature) = self.sign(&content_to_sign)?;
+        Ok(Signed::new(public_key, statement, signature))
+    }
+
+    fn sign_claim_presentation(
+        &self, presentation: ClaimPresentation,
+    ) -> Fallible<Signed<ClaimPresentation>> {
+        let content_to_sign = presentation.content_to_sign()?;
+        let (public_key, signature) = self.sign(&content_to_sign)?;
+        Ok(Signed::new(public_key, presentation, signature))
+    }
+}
+
+impl<T: SyncSigner + Sized> SyncSigner for Box<T> {
+    fn authentication(&self) -> &Authentication {
+        self.as_ref().authentication()
+    }
+
+    fn sign(&self, data: &[u8]) -> Fallible<(MPublicKey, MSignature)> {
+        self.as_ref().sign(data)
+    }
+}
+
+pub struct PrivateKeySigner {
+    private_key: MPrivateKey,
+    authentication: Authentication,
+}
+
+impl PrivateKeySigner {
+    pub fn new(private_key: MPrivateKey, authentication: Authentication) -> Self {
+        Self { private_key, authentication }
+    }
+}
+
+impl SyncSigner for PrivateKeySigner {
+    fn authentication(&self) -> &Authentication {
+        &self.authentication
+    }
+
+    fn sign(&self, data: &[u8]) -> Fallible<(MPublicKey, MSignature)> {
+        let signature = self.private_key.sign(data);
+        Ok((self.private_key.public_key(), signature))
+    }
+}
+
 pub type BlockHash = ContentId;
 
 #[derive(Clone, Debug, Deserialize, Eq, Hash, PartialEq, Serialize)]
@@ -181,5 +243,5 @@ pub struct AfterEnvelope<T: Signable> {
     proof: AfterProof, // TODO is a transactionId also needed here?
 }
 
-impl<T: Signable> Content for AfterEnvelope<T> {}
-impl<T: Signable> Signable for AfterEnvelope<T> {}
+// impl<T: Signable> MaskableContent for AfterEnvelope<T> {}
+// impl<T: Signable> Signable for AfterEnvelope<T> {}

@@ -3,14 +3,17 @@ use failure::{bail, Fallible};
 use crate::util::json_path;
 use std::collections::HashMap;
 
-pub fn hash_str(content: &str) -> String {
+pub(crate) fn hasher(content: &[u8]) -> String {
     // TODO we might want to use sha3 crate instead of tiny_keccak
     let mut hasher = tiny_keccak::Keccak::new_sha3_256();
     let mut hash_output = [0u8; 32];
-    hasher.update(content.as_bytes());
+    hasher.update(content);
     hasher.finalize(&mut hash_output);
-    let mask = multibase::encode(multibase::Base::Base64Url, &hash_output);
-    format!("cj{}", mask)
+    multibase::encode(multibase::Base::Base64Url, &hash_output)
+}
+
+pub fn hash_str(content: &str) -> String {
+    format!("cj{}", hasher(content.as_bytes()))
 }
 
 pub fn canonical_json(data: &serde_json::Value) -> String {
@@ -126,6 +129,7 @@ pub fn mask_json<T: serde::Serialize>(data: &T, keep_paths_str: &str) -> Fallibl
     let digest_json = match &json_value {
         serde_json::Value::Object(_obj) => collapse_json_subtree(&json_value, keep_paths_vec),
         serde_json::Value::Array(_arr) => collapse_json_subtree(&json_value, keep_paths_vec),
+        serde_json::Value::String(_s) => Ok(json_value),
         _ => bail!("Json digest is currently implemented only for composite types"),
     }?;
     match digest_json {
@@ -156,6 +160,13 @@ mod tests {
     struct CompositeTestData<T> {
         z: Option<T>,
         y: Option<T>,
+    }
+
+    #[test]
+    fn digest_string_is_idempotent() {
+        let content_id = &r#""cjuzC-XxgzNMwYXtw8aMIAeS2Xjlw1hlSNKTvVtUwPuyYo""#;
+        let digest_id = json_digest(content_id).unwrap();
+        assert_eq!(content_id, &digest_id);
     }
 
     #[test]

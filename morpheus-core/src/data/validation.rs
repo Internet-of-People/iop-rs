@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-#[derive(Clone, Debug, Deserialize, Eq, Hash, Ord, PartialOrd, PartialEq, Serialize)]
+#[derive(Clone, Copy, Debug, Deserialize, Eq, Hash, Ord, PartialOrd, PartialEq, Serialize)]
 pub enum ValidationStatus {
     /// All possible checks are done and passed.
     Valid,
@@ -12,10 +12,31 @@ pub enum ValidationStatus {
     Invalid,
 }
 
-#[derive(Clone, Debug, Deserialize, Eq, Hash, Ord, PartialOrd, PartialEq, Serialize)]
+impl std::fmt::Display for ValidationStatus {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let msg = match self {
+            Self::Valid => "valid",
+            Self::MaybeValid => "maybe valid",
+            Self::Invalid => "invalid",
+        };
+        write!(f, "{}", msg)
+    }
+}
+
+#[derive(Clone, Copy, Debug, Deserialize, Eq, Hash, Ord, PartialOrd, PartialEq, Serialize)]
 pub enum ValidationIssueSeverity {
     Warning,
     Error,
+}
+
+impl std::fmt::Display for ValidationIssueSeverity {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let msg = match self {
+            Self::Warning => "warning",
+            Self::Error => "error",
+        };
+        write!(f, "{}", msg)
+    }
 }
 
 const VALIDATION_CODE_DEFAULT: u32 = 0;
@@ -25,6 +46,18 @@ pub struct ValidationIssue {
     code: u32,
     reason: String,
     severity: ValidationIssueSeverity,
+}
+
+impl ValidationIssue {
+    pub fn code(&self) -> u32 {
+        self.code
+    }
+    pub fn reason(&self) -> &str {
+        &self.reason
+    }
+    pub fn severity(&self) -> ValidationIssueSeverity {
+        self.severity
+    }
 }
 
 #[derive(Clone, Debug, Default, Deserialize, Eq, Hash, Ord, PartialOrd, PartialEq, Serialize)]
