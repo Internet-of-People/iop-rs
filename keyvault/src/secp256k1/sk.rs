@@ -87,8 +87,7 @@ impl PrivateKey<Secp256k1> for SecpPrivateKey {
     /// fail, but this pure rust version does. Then we panic.
     fn sign<D: AsRef<[u8]>>(&self, data: D) -> SecpSignature {
         let msg = Secp256k1::hash_message(data);
-        let (sig, _recovery) = secp::sign(&msg, &self.0)
-            .expect("Seems like we should have used the C version of secp256k1");
+        let (sig, _recovery) = secp::sign(&msg, &self.0);
         SecpSignature(sig)
     }
 }

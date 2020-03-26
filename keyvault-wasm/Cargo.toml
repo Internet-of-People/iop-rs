@@ -1,5 +1,5 @@
 [package]
-name = "keyvault-wasm"
+name = "iop-keyvault-wasm"
 version = "0.1.0"
 authors = ["IoP Ventures LLC <info@iop-ventures.com>", "Rache Bartmoss <bartmoss@tutanota.com>"]
 edition = "2018"
@@ -10,6 +10,6 @@ crate-type = ["cdylib", "rlib"]
 [dependencies]
 failure = "*"
 log = "*"
-keyvault = { path="../keyvault" }
+iop-keyvault = { path="../keyvault" }
 serde_json = "*"
 wasm-bindgen = { version = "*", features = ["serde-serialize"] }

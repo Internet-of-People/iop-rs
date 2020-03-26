@@ -1,7 +1,7 @@
 use wasm_bindgen::prelude::*;
 
-use keyvault::multicipher;
-use keyvault::PublicKey as KeyVaultPublicKey;
+use iop_keyvault::multicipher;
+use iop_keyvault::PublicKey as KeyVaultPublicKey;
 
 // NOTE Always receive function arguments as references (as long as bindgen allows)
 //      and return results by value. Otherwise the generated code may destroy
