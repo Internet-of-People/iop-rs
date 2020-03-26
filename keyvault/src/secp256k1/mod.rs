@@ -61,14 +61,19 @@ pub fn to_base58check<D: AsRef<[u8]>>(data: D) -> String {
     bytes.extend_from_slice(data);
     bytes.extend_from_slice(checksum);
 
-    // we do not need the multibase prefix, but want to conform to multibase otherwise
-    base_x::encode(multibase::Base58btc.alphabet(), &bytes)
+    // we do not need the multibase prefix, but want to conform to multibase otherwise.
+    // Prefix is always a single character.
+    let prefixed_enc = multibase::encode(multibase::Base::Base58Btc, &bytes);
+    prefixed_enc[1..].to_owned()
 }
 
 /// Decoding string with BASE58 into binary data and verify if the 4-byte checksum at the end
 /// matches the rest of the data. Only the decoded data without checksum will be returned.
 pub fn from_base58check<S: AsRef<str>>(s: S) -> Fallible<Vec<u8>> {
-    let checked_data = base_x::decode(multibase::Base58btc.alphabet(), s.as_ref())?;
+    let mut to_decode = String::new();
+    to_decode.push(multibase::Base::Base58Btc.code());
+    to_decode += s.as_ref();
+    let (_base, checked_data) = multibase::decode(&to_decode)?;
     let (data, actual_checksum) = checked_data.split_at(checked_data.len() - CHECKSUM_LEN);
 
     let mut inner_hasher = Sha256::default();

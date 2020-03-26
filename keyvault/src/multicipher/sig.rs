@@ -101,7 +101,7 @@ impl Eq for MSignature {}
 impl From<&MSignature> for String {
     fn from(src: &MSignature) -> Self {
         let (discriminator, bytes) = visit!(to_bytes_tuple(src));
-        let mut output = multibase::encode(multibase::Base58btc, &bytes);
+        let mut output = multibase::encode(multibase::Base::Base58Btc, &bytes);
         output.insert_str(0, discriminator);
         output.insert(0, MSignature::PREFIX);
         output
