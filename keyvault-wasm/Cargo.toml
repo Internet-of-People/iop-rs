@@ -1,6 +1,6 @@
 [package]
 name = "iop-keyvault-wasm"
-version = "0.1.0"
+version = "0.0.1"
 authors = ["IoP Ventures LLC <info@iop-ventures.com>", "Rache Bartmoss <bartmoss@tutanota.com>"]
 edition = "2018"
 
@@ -13,3 +13,5 @@ log = "*"
 iop-keyvault = { path="../keyvault" }
 serde_json = "*"
 wasm-bindgen = { version = "*", features = ["serde-serialize"] }
+#tiny-bip39 = { version = "0.7.3", default-features = false }
+tiny-bip39 = { git = "https://github.com/wigy-opensource-developer/bip39-rs.git", branch = "add_get_words_by_prefix", default-features = false }

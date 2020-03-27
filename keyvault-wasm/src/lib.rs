@@ -1,7 +1,6 @@
 use wasm_bindgen::prelude::*;
 
-use iop_keyvault::multicipher;
-use iop_keyvault::PublicKey as KeyVaultPublicKey;
+use iop_keyvault::{multicipher, PublicKey as KeyVaultPublicKey, Seed};
 
 // NOTE Always receive function arguments as references (as long as bindgen allows)
 //      and return results by value. Otherwise the generated code may destroy
@@ -10,6 +9,53 @@ use iop_keyvault::PublicKey as KeyVaultPublicKey;
 
 pub fn err_to_js<E: ToString>(e: E) -> JsValue {
     JsValue::from(e.to_string())
+}
+
+#[wasm_bindgen(js_name = Bip39)]
+#[derive(Clone, Debug)]
+pub struct JsBip39 {
+    language: bip39::Language,
+}
+
+#[wasm_bindgen(js_class = Bip39)]
+impl JsBip39 {
+    #[wasm_bindgen(constructor)]
+    pub fn new(lang_code: &str) -> Result<JsBip39, JsValue> {
+        if lang_code != "en" {
+            return Err(JsValue::from_str("Currently only 'en' is supported"));
+        }
+        let language = match bip39::Language::from_language_code(&lang_code) {
+            Some(lang) => lang,
+            None => return Err(JsValue::from_str("Unknown language")),
+        };
+        Ok(Self { language })
+    }
+
+    #[wasm_bindgen(js_name = generatePhrase)]
+    pub fn generate_phrase(&self) -> String {
+        // TODO this interface must enable languages and should expose word filtering to
+        //  - avoid calling directly into bip39 crate
+        //  - enable selecting any supported language
+        Seed::generate_bip39()
+    }
+
+    #[wasm_bindgen(js_name = validatePhrase)]
+    pub fn validate_phrase(&self, phrase: &str) -> Result<(), JsValue> {
+        let _seed = Seed::from_bip39(phrase).map_err(err_to_js)?;
+        Ok(())
+    }
+
+    #[wasm_bindgen(js_name = listWords)]
+    pub fn list_words(&self, prefix: &str) -> Box<[JsValue]> {
+        let words = self
+            .language
+            .wordlist()
+            .get_words_by_prefix(prefix)
+            .iter()
+            .map(|word| JsValue::from_str(word))
+            .collect::<Vec<_>>();
+        words.into_boxed_slice()
+    }
 }
 
 #[wasm_bindgen(js_name = KeyId)]
