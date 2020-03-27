@@ -94,6 +94,7 @@ pub struct Seed {
     bytes: Vec<u8>,
 }
 
+// TODO this interface should enable selecting language and listing words by prefix
 impl Seed {
     const PASSWORD: &'static str = "morpheus";
     const MNEMONIC_WORDS: usize = 24;

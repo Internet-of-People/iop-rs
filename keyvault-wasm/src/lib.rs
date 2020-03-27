@@ -1,6 +1,6 @@
 use wasm_bindgen::prelude::*;
 
-use iop_keyvault::{multicipher, PublicKey as KeyVaultPublicKey, Seed};
+use iop_keyvault::{multicipher, PublicKey as KeyVaultPublicKey};
 
 // NOTE Always receive function arguments as references (as long as bindgen allows)
 //      and return results by value. Otherwise the generated code may destroy
@@ -17,13 +17,11 @@ pub struct JsBip39 {
     language: bip39::Language,
 }
 
+// TODO should use keyvault::Seed directly, currently language selection and word lising is missing
 #[wasm_bindgen(js_class = Bip39)]
 impl JsBip39 {
     #[wasm_bindgen(constructor)]
     pub fn new(lang_code: &str) -> Result<JsBip39, JsValue> {
-        if lang_code != "en" {
-            return Err(JsValue::from_str("Currently only 'en' is supported"));
-        }
         let language = match bip39::Language::from_language_code(&lang_code) {
             Some(lang) => lang,
             None => return Err(JsValue::from_str("Unknown language")),
@@ -31,18 +29,18 @@ impl JsBip39 {
         Ok(Self { language })
     }
 
+    // NOTE Mnemonic::new() generates random entropy which accesses OsRng.
+    //      Os access is refused from sandboxes like NodeJs Wasm.
+    //      So to be usable, we need entropy as explicit input instead.
     #[wasm_bindgen(js_name = generatePhrase)]
-    pub fn generate_phrase(&self) -> String {
-        // TODO this interface must enable languages and should expose word filtering to
-        //  - avoid calling directly into bip39 crate
-        //  - enable selecting any supported language
-        Seed::generate_bip39()
+    pub fn generate_phrase(&self, entropy: &[u8]) -> Result<String, JsValue> {
+        let mnemonic = bip39::Mnemonic::from_entropy(entropy, self.language).map_err(err_to_js)?;
+        Ok(mnemonic.into_phrase())
     }
 
     #[wasm_bindgen(js_name = validatePhrase)]
     pub fn validate_phrase(&self, phrase: &str) -> Result<(), JsValue> {
-        let _seed = Seed::from_bip39(phrase).map_err(err_to_js)?;
-        Ok(())
+        bip39::Mnemonic::validate(phrase, self.language).map_err(err_to_js)
     }
 
     #[wasm_bindgen(js_name = listWords)]
