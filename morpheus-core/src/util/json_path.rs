@@ -33,7 +33,7 @@ pub fn match_single(tree: &serde_json::Value, path: &str) -> Fallible<bool> {
 }
 
 /// ```
-/// use morpheus_core::util::json_path::split_alternatives;
+/// use iop_morpheus_core::util::json_path::split_alternatives;
 /// assert_eq!( split_alternatives(".a , .b.c , .d"), vec![".a", ".b.c", ".d"]);
 /// assert_eq!( split_alternatives(""), Vec::<&str>::new());
 /// ```
@@ -45,7 +45,7 @@ pub fn split_alternatives(paths_pattern: &str) -> Vec<&str> {
 }
 
 /// ```
-/// use morpheus_core::util::json_path::split_head_tail;
+/// use iop_morpheus_core::util::json_path::split_head_tail;
 /// assert_eq!(split_head_tail(".a").unwrap(), ("a", None));
 /// assert_eq!(split_head_tail(".a.b.c").unwrap(), ("a", Some(".b.c")));
 /// ```

@@ -6,7 +6,7 @@ use hyper::{
 };
 
 use super::*;
-use morpheus_core::{
+use iop_morpheus_core::{
     crypto::hash::ContentId,
     data::{did::Did, diddoc::DidDocument},
 };

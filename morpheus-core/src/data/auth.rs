@@ -4,7 +4,7 @@ use std::str::FromStr;
 use failure::{err_msg, Fallible};
 use serde::{Deserialize, Serialize};
 
-use keyvault::multicipher;
+use iop_keyvault::multicipher;
 
 #[derive(Clone, Debug, Deserialize, Eq, Serialize)]
 #[serde(try_from = "MAuthentication", into = "MAuthentication")]

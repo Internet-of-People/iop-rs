@@ -5,28 +5,17 @@ mod unsafe_fut;
 use std::os::raw;
 // use std::panic::catch_unwind; // TODO consider panic unwinding strategies
 
+use failure::{err_msg, Fallible};
 use serde_json;
 
+use self::call_context::{CallContext, Callback, RequestId};
+use self::convert::RawSlice;
 use crate::sdk::SdkContext;
-use call_context::{CallContext, Callback, RequestId};
-use convert::RawSlice;
-use morpheus_core::crypto::sign::Nonce;
-use morpheus_core::data::diddoc::BlockHeight;
-
-#[no_mangle]
-pub extern "C" fn mask_json(
-    raw_json: *const raw::c_char, raw_keep_paths: *const raw::c_char, id: *mut RequestId,
-    success: Callback<*mut raw::c_char>, error: Callback<*const raw::c_char>,
-) {
-    let fun = || {
-        let json_str = convert::str_in(raw_json)?;
-        let json_val: serde_json::Value = serde_json::from_str(json_str)?;
-        let keep_paths_str = convert::str_in(raw_keep_paths)?;
-        let masked_json = morpheus_core::crypto::json_digest::mask_json(&json_val, keep_paths_str)?;
-        Ok(convert::string_out(masked_json))
-    };
-    CallContext::new(id, success, error).run(fun)
-}
+use bip39::MnemonicType;
+use iop_morpheus_core::{
+    crypto::{json_digest, sign::Nonce},
+    data::diddoc::BlockHeight,
+};
 
 #[no_mangle]
 pub extern "C" fn init_sdk(
@@ -35,6 +24,74 @@ pub extern "C" fn init_sdk(
     let fun = || {
         let sdk = SdkContext::new()?;
         Ok(Box::into_raw(Box::new(sdk)))
+    };
+    CallContext::new(id, success, error).run(fun)
+}
+
+#[no_mangle]
+pub extern "C" fn mask_json(
+    _sdk: *mut SdkContext, raw_json: *const raw::c_char, raw_keep_paths: *const raw::c_char,
+    id: *mut RequestId, success: Callback<*mut raw::c_char>, error: Callback<*const raw::c_char>,
+) {
+    let fun = || {
+        let json_str = convert::str_in(raw_json)?;
+        let json_val: serde_json::Value = serde_json::from_str(json_str)?;
+        let keep_paths_str = convert::str_in(raw_keep_paths)?;
+        let masked_json = json_digest::mask_json(&json_val, keep_paths_str)?;
+        Ok(convert::string_out(masked_json))
+    };
+    CallContext::new(id, success, error).run(fun)
+}
+
+fn code_to_lang(lang: *const raw::c_char) -> Fallible<bip39::Language> {
+    let lang_code = convert::str_in(lang)?;
+    bip39::Language::from_language_code(&lang_code).ok_or_else(|| err_msg("Unknown language"))
+}
+
+#[no_mangle]
+pub extern "C" fn bip39_generate_phrase(
+    _sdk: *mut SdkContext, lang: *const raw::c_char, id: *mut RequestId,
+    success: Callback<*mut raw::c_char>, error: Callback<*const raw::c_char>,
+) -> () {
+    let fun = || {
+        let language = code_to_lang(lang)?;
+        let mnemonic = bip39::Mnemonic::new(MnemonicType::Words24, language);
+        let phrase = mnemonic.into_phrase();
+        Ok(convert::string_out(phrase))
+    };
+    CallContext::new(id, success, error).run(fun)
+}
+
+#[no_mangle]
+pub extern "C" fn bip39_validate_phrase(
+    _sdk: *mut SdkContext, lang: *const raw::c_char, phrase: *const raw::c_char,
+    id: *mut RequestId, success: Callback<*const raw::c_void>, error: Callback<*const raw::c_char>,
+) -> () {
+    let fun = || {
+        let phrase = convert::str_in(phrase)?;
+        let language = code_to_lang(lang)?;
+        bip39::Mnemonic::validate(phrase, language)?;
+        Ok(std::ptr::null())
+    };
+    CallContext::new(id, success, error).run(fun)
+}
+
+#[no_mangle]
+pub extern "C" fn bip39_list_words(
+    _sdk: *mut SdkContext, lang: *const raw::c_char, pref: *const raw::c_char, id: *mut RequestId,
+    success: Callback<*mut RawSlice<*mut raw::c_char>>, error: Callback<*const raw::c_char>,
+) -> () {
+    let fun = || {
+        let prefix = convert::str_in(pref)?;
+        let language = code_to_lang(lang)?;
+        let matching_words = language
+            .wordlist()
+            .get_words_by_prefix(prefix)
+            .iter()
+            .map(|word| word.to_string())
+            .collect::<Vec<_>>();
+        let raw_slice = convert::RawSlice::from(matching_words);
+        Ok(Box::into_raw(Box::new(raw_slice)))
     };
     CallContext::new(id, success, error).run(fun)
 }
@@ -98,12 +155,8 @@ pub extern "C" fn list_dids(
 ) {
     let sdk = unsafe { &mut *sdk };
     let fun = || {
-        let did_vec = sdk.list_dids()?;
-        let cptr_box_slice =
-            did_vec.iter().map(|did| convert::string_out(did.to_string())).collect::<Box<[_]>>();
-        let raw_box_slice = Box::into_raw(cptr_box_slice);
-        let raw_slice: RawSlice<*mut raw::c_char> = unsafe { &mut *raw_box_slice }.into();
-        //unsafe { Box::from_raw(raw_box_slice) };
+        let did_strs = sdk.list_dids()?.into_iter().map(|did| did.to_string()).collect::<Vec<_>>();
+        let raw_slice = RawSlice::from(did_strs);
         Ok(Box::into_raw(Box::new(raw_slice)))
     };
     CallContext::new(id, success, error).run(fun)

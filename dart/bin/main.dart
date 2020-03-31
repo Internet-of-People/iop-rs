@@ -30,6 +30,19 @@ void main(List<String> arguments) {
     final nonce = sdk.generateNonce();
     print('Generated nonce: $nonce');
 
+    final seedPhrase = sdk.bip39GeneratePhrase('en');
+    print('Generated seed phrase: $seedPhrase');
+
+    sdk.bip39ValidatePhrase('en', seedPhrase);
+    try {
+      sdk.bip39ValidatePhrase('en', seedPhrase + "x");
+    } catch (e) {
+      print('Validation throws for invalid phrase');
+    }
+
+    final words = sdk.bip39ListWords('en', 'woo');
+    print('Matching Bip39 words: $words');
+
     final contentId = 'cjuzC-XxgzNMwYXtw8aMIAeS2Xjlw1hlSNKTvVtUwPuyYo';
     final maskedContentId = sdk.maskJson('"${contentId}"', '.');
     print('Masking string is idempotent: ${contentId == maskedContentId}');

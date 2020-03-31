@@ -4,7 +4,7 @@ use async_trait::async_trait;
 use failure::{err_msg, Fallible};
 
 use super::*;
-use morpheus_core::{
+use iop_morpheus_core::{
     crypto::hash::ContentId,
     data::{did::Did, diddoc::DidDocument},
 };

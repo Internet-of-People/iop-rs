@@ -6,7 +6,7 @@ use failure::Fallible;
 use serde::{Deserialize, Serialize};
 
 use crate::io::local::signer::Signer;
-use morpheus_core::{
+use iop_morpheus_core::{
     crypto::{
         hash::{Content, ContentId},
         sign::{AfterProof, Signable, Signed},

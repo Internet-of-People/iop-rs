@@ -1,13 +1,13 @@
 [package]
-name = "morpheus-core"
-version = "0.1.0"
+name = "iop-morpheus-core"
+version = "0.0.1"
 authors = ["IoP Ventures LLC <info@iop-ventures.com>", "Rache Bartmoss <bartmoss@tutanota.com>", "wigy <wigy_opensource_developer@yahoo.com>"]
 edition = "2018"
 
 
 [dependencies]
 failure = "*"
-keyvault = { git="https://github.com/Internet-of-People/mercury-rust", branch="develop" }
+iop-keyvault = { git="https://github.com/Internet-of-People/keyvault-rust", branch="develop" }
 log = "*"
 multibase = "0.8"
 rand = "*"

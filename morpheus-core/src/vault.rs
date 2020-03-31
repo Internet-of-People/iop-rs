@@ -4,8 +4,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::crypto::sign::PrivateKeySigner;
 use crate::data::{auth::Authentication, did::*};
-use keyvault::multicipher::MKeyId;
-use keyvault::{
+use iop_keyvault::{
     ed25519::{Ed25519, EdExtPrivateKey},
     multicipher, ExtendedPrivateKey, ExtendedPublicKey, KeyDerivationCrypto, PublicKey, Seed,
     BIP43_PURPOSE_MERCURY,
@@ -62,7 +61,7 @@ impl DidVaultRecord {
 }
 
 pub trait SyncDidVault {
-    fn key_ids(&self) -> Fallible<Vec<MKeyId>>;
+    fn key_ids(&self) -> Fallible<Vec<multicipher::MKeyId>>;
     fn dids(&self) -> Fallible<Vec<Did>>;
 
     fn get_active(&self) -> Fallible<Option<Did>>;
@@ -149,7 +148,7 @@ impl InMemoryDidVault {
 }
 
 impl SyncDidVault for InMemoryDidVault {
-    fn key_ids(&self) -> Fallible<Vec<MKeyId>> {
+    fn key_ids(&self) -> Fallible<Vec<multicipher::MKeyId>> {
         Ok(self.records.iter().map(|rec| rec.key_id()).collect())
     }
 

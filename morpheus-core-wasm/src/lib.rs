@@ -1,13 +1,9 @@
-use failure::{bail, Fallible};
 use serde_json::Value;
 use wasm_bindgen::prelude::*;
 
-use keyvault::{
-    multicipher::{MKeyId, MPublicKey},
-    PublicKey as KeyVaultPublicKey,
-};
-use keyvault_wasm::*;
-use morpheus_core::{
+use iop_keyvault::{PublicKey as KeyVaultPublicKey, Seed};
+use iop_keyvault_wasm::*;
+use iop_morpheus_core::{
     crypto::sign::{PrivateKeySigner, Signable, Signed, SyncSigner},
     data::{
         auth::Authentication,
@@ -271,7 +267,7 @@ pub struct JsVault {
 impl JsVault {
     #[wasm_bindgen(constructor)]
     pub fn new(seed_phrase: &str) -> Result<JsVault, JsValue> {
-        let seed = keyvault::Seed::from_bip39(seed_phrase).map_err(err_to_js)?;
+        let seed = Seed::from_bip39(seed_phrase).map_err(err_to_js)?;
         let vault = InMemoryDidVault::new(seed);
         Ok(Self { inner: vault })
     }

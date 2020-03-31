@@ -12,7 +12,7 @@ use crate::{
         validation::{ValidationIssueSeverity, ValidationResult},
     },
 };
-use keyvault::{
+use iop_keyvault::{
     multicipher::{MKeyId, MPrivateKey, MPublicKey, MSignature},
     PrivateKey, PublicKey,
 };

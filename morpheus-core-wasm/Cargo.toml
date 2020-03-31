@@ -1,6 +1,6 @@
 [package]
-name = "morpheus-core-wasm"
-version = "0.1.0"
+name = "iop-morpheus-core-wasm"
+version = "0.0.1"
 authors = ["IoP Ventures LLC <info@iop-ventures.com>", "Rache Bartmoss <bartmoss@tutanota.com>", "wigy <wigy_opensource_developer@yahoo.com>"]
 edition = "2018"
 
@@ -11,9 +11,9 @@ crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 failure = "*"
-keyvault = { git = "https://github.com/Internet-of-People/mercury-rust", branch="develop" }
-keyvault-wasm = { git = "https://github.com/Internet-of-People/mercury-rust", branch="develop" }
-morpheus-core = { path = "../morpheus-core" }
+iop-keyvault = { git="https://github.com/Internet-of-People/keyvault-rust", branch="develop" }
+iop-keyvault-wasm = { git="https://github.com/Internet-of-People/keyvault-rust", branch="develop" }
+iop-morpheus-core = { path = "../morpheus-core" }
 log = "*"
 serde_json = "*"
 wasm-bindgen = { version = "*", features = ["serde-serialize"] }

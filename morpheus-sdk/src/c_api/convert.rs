@@ -32,3 +32,11 @@ impl<T> From<&mut [T]> for RawSlice<T> {
         Self { first, length }
     }
 }
+
+impl From<Vec<String>> for RawSlice<*mut raw::c_char> {
+    fn from(src: Vec<String>) -> Self {
+        let cptr_box_slice = src.into_iter().map(|s| string_out(s)).collect::<Box<[_]>>();
+        let raw_box_slice = Box::into_raw(cptr_box_slice);
+        unsafe { &mut *raw_box_slice }.into()
+    }
+}

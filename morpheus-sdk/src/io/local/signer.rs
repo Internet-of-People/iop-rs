@@ -1,10 +1,9 @@
 use async_trait::async_trait;
 use failure::Fallible;
 
-use keyvault::multicipher::{MPublicKey, MSignature};
-use morpheus_core::crypto::sign::SyncSigner;
-use morpheus_core::{
-    crypto::sign::{Signable, Signed},
+use iop_keyvault::multicipher::{MPublicKey, MSignature};
+use iop_morpheus_core::{
+    crypto::sign::{Signable, Signed, SyncSigner},
     data::{
         auth::Authentication,
         claim::{WitnessRequest, WitnessStatement},

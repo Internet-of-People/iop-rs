@@ -6,8 +6,8 @@ use failure::Fallible;
 use log::*;
 
 use crate::io::local::signer::{Signer, SyncAdapter};
-use keyvault::multicipher::MKeyId;
-use morpheus_core::{
+use iop_keyvault::multicipher::MKeyId;
+use iop_morpheus_core::{
     data::{auth::Authentication, did::*},
     vault::*,
 };
@@ -131,8 +131,8 @@ impl Persister for FilePersister {
 mod tests {
     use super::*;
 
-    use keyvault::Seed;
-    use morpheus_core::vault::DEMO_PHRASE;
+    use iop_keyvault::Seed;
+    use iop_morpheus_core::vault::DEMO_PHRASE;
 
     fn in_memory_vault_instance() -> Fallible<InMemoryDidVault> {
         let seed = Seed::from_bip39(DEMO_PHRASE)?;

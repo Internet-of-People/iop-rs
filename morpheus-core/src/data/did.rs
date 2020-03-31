@@ -1,6 +1,6 @@
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
-use keyvault::multicipher;
+use iop_keyvault::multicipher;
 
 // NOTE should be const, but current language rules do not allow that
 fn prefix_multicipher_keyid() -> String {
