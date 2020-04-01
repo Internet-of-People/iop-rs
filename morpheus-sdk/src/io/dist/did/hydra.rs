@@ -37,7 +37,7 @@ impl LedgerQueries for HydraDidLedger {
     }
 
     async fn document(&self, did: &Did) -> Fallible<DidDocument> {
-        let endpoint = format!("{}/did/{}/document", self.url, did);
+        let endpoint = format!("{}/morpheus/v1/did/{}/document", self.url, did);
 
         let request = Request::get(endpoint)
             .header("Content-Type", "application/json")
