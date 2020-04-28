@@ -4,7 +4,10 @@ use wasm_bindgen::prelude::*;
 use iop_keyvault::{PublicKey as KeyVaultPublicKey, Seed};
 use iop_keyvault_wasm::*;
 use iop_morpheus_core::{
-    crypto::sign::{PrivateKeySigner, Signable, Signed, SyncSigner},
+    crypto::{
+        json_digest::mask_json,
+        sign::{PrivateKeySigner, Signable, Signed, SyncSigner},
+    },
     data::{
         auth::Authentication,
         claim::{WitnessRequest, WitnessStatement},
@@ -256,6 +259,18 @@ impl Wraps<Did> for JsDid {
     fn inner(&self) -> &Did {
         &self.inner
     }
+}
+
+#[wasm_bindgen(js_name = mask)]
+pub fn mask(data: &JsValue, keep_properties_list: &str) -> Result<String, JsValue> {
+    let serde_data: serde_json::Value = data.into_serde().map_err(err_to_js)?;
+    let masked_data_str = mask_json(&serde_data, keep_properties_list).map_err(err_to_js)?;
+    Ok(masked_data_str)
+}
+
+#[wasm_bindgen(js_name = digest)]
+pub fn digest(data: &JsValue) -> Result<String, JsValue> {
+    mask(data, "")
 }
 
 #[wasm_bindgen(js_name = Vault)]
