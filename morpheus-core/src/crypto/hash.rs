@@ -1,7 +1,7 @@
 use failure::Fallible;
 use serde::Serialize;
 
-use crate::crypto::json_digest::{hasher, json_digest};
+use crate::crypto::json_digest::{digest_data, hasher};
 
 pub fn hash_bytes(content: &[u8]) -> String {
     format!("ck{}", hasher(content))
@@ -11,7 +11,7 @@ pub type ContentId = String;
 
 pub trait Content: Serialize + Clone + Sized {
     fn content_id(&self) -> Fallible<ContentId> {
-        json_digest(self)
+        digest_data(self)
     }
 
     fn validate_id(&self, content_id: &ContentId) -> Fallible<bool> {

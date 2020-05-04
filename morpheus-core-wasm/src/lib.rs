@@ -5,7 +5,7 @@ use iop_keyvault::{PublicKey as KeyVaultPublicKey, Seed};
 use iop_keyvault_wasm::*;
 use iop_morpheus_core::{
     crypto::{
-        json_digest::mask_json,
+        json_digest::mask_json_value,
         sign::{PrivateKeySigner, Signable, Signed, SyncSigner},
     },
     data::{
@@ -264,7 +264,7 @@ impl Wraps<Did> for JsDid {
 #[wasm_bindgen(js_name = mask)]
 pub fn mask(data: &JsValue, keep_properties_list: &str) -> Result<String, JsValue> {
     let serde_data: serde_json::Value = data.into_serde().map_err(err_to_js)?;
-    let masked_data_str = mask_json(&serde_data, keep_properties_list).map_err(err_to_js)?;
+    let masked_data_str = mask_json_value(serde_data, keep_properties_list).map_err(err_to_js)?;
     Ok(masked_data_str)
 }
 

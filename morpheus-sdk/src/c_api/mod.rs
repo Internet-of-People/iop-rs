@@ -37,7 +37,7 @@ pub extern "C" fn mask_json(
         let json_str = convert::str_in(raw_json)?;
         let json_val: serde_json::Value = serde_json::from_str(json_str)?;
         let keep_paths_str = convert::str_in(raw_keep_paths)?;
-        let masked_json = json_digest::mask_json(&json_val, keep_paths_str)?;
+        let masked_json = json_digest::mask_json_value(json_val, keep_paths_str)?;
         Ok(convert::string_out(masked_json))
     };
     CallContext::new(id, success, error).run(fun)

@@ -1,7 +1,12 @@
-use failure::{bail, Fallible};
+use failure::{bail, ensure, Fallible};
 
 use crate::util::json_path;
 use std::collections::HashMap;
+use unicode_normalization::UnicodeNormalization;
+
+fn normalize_unicode(s: &str) -> String {
+    s.nfkd().collect()
+}
 
 pub(crate) fn hasher(content: &[u8]) -> String {
     // TODO we might want to use sha3 crate instead of tiny_keccak
@@ -123,9 +128,8 @@ pub fn collapse_json_subtree(
     }
 }
 
-pub fn mask_json<T: serde::Serialize>(data: &T, keep_paths_str: &str) -> Fallible<String> {
+pub fn mask_json_value(json_value: serde_json::Value, keep_paths_str: &str) -> Fallible<String> {
     let keep_paths_vec = json_path::split_alternatives(keep_paths_str);
-    let json_value = serde_json::to_value(&data)?;
     let digest_json = match &json_value {
         serde_json::Value::Object(_obj) => collapse_json_subtree(&json_value, keep_paths_vec),
         serde_json::Value::Array(_arr) => collapse_json_subtree(&json_value, keep_paths_vec),
@@ -139,13 +143,36 @@ pub fn mask_json<T: serde::Serialize>(data: &T, keep_paths_str: &str) -> Fallibl
     }
 }
 
-pub fn json_digest<T: serde::Serialize>(data: &T) -> Fallible<String> {
-    mask_json(data, "")
+pub fn mask_data<T: serde::Serialize>(data: &T, keep_paths_str: &str) -> Fallible<String> {
+    let json_value = serde_json::to_value(&data)?;
+    mask_json_value(json_value, keep_paths_str)
+}
+
+pub fn mask_json_str(json_str: &str, keep_paths_str: &str) -> Fallible<String> {
+    let normalized_str = normalize_unicode(json_str);
+    ensure!(
+        normalized_str == json_str,
+        "Json string to be digested/masked must be normalized with Unicode NFKD"
+    );
+
+    let json_value: serde_json::Value = serde_json::from_str(json_str)?;
+    mask_json_value(json_value, keep_paths_str)
+}
+
+const KEEP_NOTHING: &str = "";
+
+pub fn digest_data<T: serde::Serialize>(data: &T) -> Fallible<String> {
+    mask_data(data, KEEP_NOTHING)
+}
+
+pub fn digest_json_str(json_str: &str) -> Fallible<String> {
+    mask_json_str(json_str, KEEP_NOTHING)
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use hex::FromHex;
 
     use failure::Fallible;
     use serde::{Deserialize, Serialize};
@@ -163,9 +190,22 @@ mod tests {
     }
 
     #[test]
+    fn reject_non_nfkd() -> Fallible<()> {
+        let key_nfc = String::from_utf8(Vec::from_hex("c3a16c6f6d")?)?;
+        let key_nfkd = String::from_utf8(Vec::from_hex("61cc816c6f6d")?)?;
+        assert_eq!(key_nfc, "álom");
+        assert_eq!(key_nfkd, "álom");
+        let json_nfc = format!("{{\"{}\": 1}}", key_nfc);
+        let json_nfkd = format!("{{\"{}\": 1}}", key_nfkd);
+        assert_eq!(digest_json_str(&json_nfkd)?, "cjuRab8yOeLzxmFY_fEMC79cW5z9XyihRhaGnTSvMabrA8");
+        assert!(digest_json_str(&json_nfc).is_err());
+        Ok(())
+    }
+
+    #[test]
     fn digest_string_is_idempotent() {
         let content_id = &r#""cjuzC-XxgzNMwYXtw8aMIAeS2Xjlw1hlSNKTvVtUwPuyYo""#;
-        let digest_id = json_digest(content_id).unwrap();
+        let digest_id = digest_data(content_id).unwrap();
         assert_eq!(content_id, &digest_id);
     }
 
@@ -173,20 +213,20 @@ mod tests {
     fn test_json_digest() -> Fallible<()> {
         let test_obj = TestData { b: 1, a: 2 };
         {
-            let masked = json_digest(&test_obj)?;
+            let masked = digest_data(&test_obj)?;
             assert_eq!(masked, "cjumTq1s6Tn6xkXolxHj4LmAo7DAb-zoPLhEa1BvpovAFU");
         }
         {
-            let masked = json_digest(&[&test_obj, &test_obj])?;
+            let masked = digest_data(&[&test_obj, &test_obj])?;
             assert_eq!(masked, "cjuGkDpb1HL7F8xFKDFVj3felfKZzjrJy92-108uuPixNw");
         }
         {
             let masked =
-                json_digest(&(&test_obj, "cjumTq1s6Tn6xkXolxHj4LmAo7DAb-zoPLhEa1BvpovAFU"))?;
+                digest_data(&(&test_obj, "cjumTq1s6Tn6xkXolxHj4LmAo7DAb-zoPLhEa1BvpovAFU"))?;
             assert_eq!(masked, "cjuGkDpb1HL7F8xFKDFVj3felfKZzjrJy92-108uuPixNw");
         }
         {
-            let masked = json_digest(&[
+            let masked = digest_data(&[
                 "cjumTq1s6Tn6xkXolxHj4LmAo7DAb-zoPLhEa1BvpovAFU",
                 "cjumTq1s6Tn6xkXolxHj4LmAo7DAb-zoPLhEa1BvpovAFU",
             ])?;
@@ -194,7 +234,7 @@ mod tests {
         }
         {
             let comp = CompositeTestData { z: Some(test_obj.clone()), y: Some(test_obj.clone()) };
-            let masked = json_digest(&comp)?;
+            let masked = digest_data(&comp)?;
             assert_eq!(masked, "cjubdcpA0FfHhD8yEpDzZ8vS5sm7yxkrX_wAJgmke2bWRQ");
         }
         {
@@ -202,7 +242,7 @@ mod tests {
                 z: Some("cjumTq1s6Tn6xkXolxHj4LmAo7DAb-zoPLhEa1BvpovAFU".to_owned()),
                 y: Some("cjumTq1s6Tn6xkXolxHj4LmAo7DAb-zoPLhEa1BvpovAFU".to_owned()),
             };
-            let masked = json_digest(&comp)?;
+            let masked = digest_data(&comp)?;
             assert_eq!(masked, "cjubdcpA0FfHhD8yEpDzZ8vS5sm7yxkrX_wAJgmke2bWRQ");
         }
         Ok(())
@@ -217,52 +257,52 @@ mod tests {
         let triple_complex =
             CompositeTestData { z: Some(double_complex.clone()), y: Some(double_complex.clone()) };
         {
-            let fully_masked = mask_json(&composite, "")?;
+            let fully_masked = mask_data(&composite, "")?;
             assert_eq!(fully_masked, "cjubdcpA0FfHhD8yEpDzZ8vS5sm7yxkrX_wAJgmke2bWRQ");
         }
         {
-            let keep_y = mask_json(&composite, ".y")?;
+            let keep_y = mask_data(&composite, ".y")?;
             assert_eq!(
                 keep_y,
                 r#"{"y":{"a":2,"b":1},"z":"cjumTq1s6Tn6xkXolxHj4LmAo7DAb-zoPLhEa1BvpovAFU"}"#
             );
             let val: serde_json::Value = serde_json::from_str(&keep_y)?;
-            assert_eq!(json_digest(&val)?, "cjubdcpA0FfHhD8yEpDzZ8vS5sm7yxkrX_wAJgmke2bWRQ");
+            assert_eq!(digest_data(&val)?, "cjubdcpA0FfHhD8yEpDzZ8vS5sm7yxkrX_wAJgmke2bWRQ");
         }
         {
-            let keep_z = mask_json(&composite, ".z")?;
+            let keep_z = mask_data(&composite, ".z")?;
             assert_eq!(
                 keep_z,
                 r#"{"y":"cjumTq1s6Tn6xkXolxHj4LmAo7DAb-zoPLhEa1BvpovAFU","z":{"a":2,"b":1}}"#
             );
             let val: serde_json::Value = serde_json::from_str(&keep_z)?;
-            assert_eq!(json_digest(&val)?, "cjubdcpA0FfHhD8yEpDzZ8vS5sm7yxkrX_wAJgmke2bWRQ");
+            assert_eq!(digest_data(&val)?, "cjubdcpA0FfHhD8yEpDzZ8vS5sm7yxkrX_wAJgmke2bWRQ");
         }
         {
-            let digest = json_digest(&double_complex)?;
+            let digest = digest_data(&double_complex)?;
             assert_eq!(digest, "cjuQLebyl_BJipFLibhWiStDBqK5J4JZq15ehUqybfTTKA");
         }
         {
-            let keep_yz = mask_json(&double_complex, ".y.z")?;
+            let keep_yz = mask_data(&double_complex, ".y.z")?;
             assert_eq!(
                 keep_yz,
                 r#"{"y":{"y":"cjumTq1s6Tn6xkXolxHj4LmAo7DAb-zoPLhEa1BvpovAFU","z":{"a":2,"b":1}},"z":"cjubdcpA0FfHhD8yEpDzZ8vS5sm7yxkrX_wAJgmke2bWRQ"}"#
             );
             let val: serde_json::Value = serde_json::from_str(&keep_yz)?;
-            assert_eq!(json_digest(&val)?, "cjuQLebyl_BJipFLibhWiStDBqK5J4JZq15ehUqybfTTKA");
+            assert_eq!(digest_data(&val)?, "cjuQLebyl_BJipFLibhWiStDBqK5J4JZq15ehUqybfTTKA");
         }
         {
-            let digest = json_digest(&triple_complex)?;
+            let digest = digest_data(&triple_complex)?;
             assert_eq!(digest, "cjuik140L3w7LCi6z1eHt7Qgwr2X65-iy8HA6zqrlUdmVk");
         }
         {
-            let keep_yz = mask_json(&triple_complex, ".y.y , .z.z")?;
+            let keep_yz = mask_data(&triple_complex, ".y.y , .z.z")?;
             assert_eq!(
                 keep_yz,
                 r#"{"y":{"y":{"y":{"a":2,"b":1},"z":{"a":2,"b":1}},"z":"cjubdcpA0FfHhD8yEpDzZ8vS5sm7yxkrX_wAJgmke2bWRQ"},"z":{"y":"cjubdcpA0FfHhD8yEpDzZ8vS5sm7yxkrX_wAJgmke2bWRQ","z":{"y":{"a":2,"b":1},"z":{"a":2,"b":1}}}}"#
             );
             let val: serde_json::Value = serde_json::from_str(&keep_yz)?;
-            assert_eq!(json_digest(&val)?, "cjuik140L3w7LCi6z1eHt7Qgwr2X65-iy8HA6zqrlUdmVk");
+            assert_eq!(digest_data(&val)?, "cjuik140L3w7LCi6z1eHt7Qgwr2X65-iy8HA6zqrlUdmVk");
         }
         Ok(())
     }

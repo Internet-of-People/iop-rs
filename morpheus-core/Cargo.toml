@@ -14,3 +14,8 @@ rand = "*"
 serde = "*"
 serde_json = { version = "*", features = ["preserve_order"] }
 tiny-keccak = "1"
+unicode-normalization = "*"
+
+
+[dev-dependencies]
+hex = "*"
