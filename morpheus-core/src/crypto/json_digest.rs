@@ -21,14 +21,14 @@ pub fn hash_str(content: &str) -> String {
     format!("cj{}", hasher(content.as_bytes()))
 }
 
-pub fn canonical_json(data: &serde_json::Value) -> String {
+pub fn canonical_json(data: &serde_json::Value) -> Fallible<String> {
     match data {
         serde_json::Value::Array(arr) => {
             let mut canonical_json_items = Vec::new();
             for item in arr {
-                canonical_json_items.push(canonical_json(item));
+                canonical_json_items.push(canonical_json(item)?);
             }
-            format!("[{}]", canonical_json_items.join(","))
+            Ok(format!("[{}]", canonical_json_items.join(",")))
         }
 
         serde_json::Value::Object(obj) => {
@@ -36,16 +36,24 @@ pub fn canonical_json(data: &serde_json::Value) -> String {
             let mut keys: Vec<_> = obj.keys().collect();
             keys.sort();
             for key in keys {
+                ensure!(
+                    *key == normalize_unicode(key),
+                    "Data for canonical JSON serialization must contain field names normalized with Unicode NFKD"
+                );
+
                 let value = obj.get(key).expect("serde_json keys() impl error");
-                let canonical_key = canonical_json(&serde_json::Value::String(key.to_owned()));
-                let entry = format!("{}:{}", canonical_key, canonical_json(value));
+                let canonical_key = canonical_json(&serde_json::Value::String(key.to_owned()))?;
+                let entry = format!("{}:{}", canonical_key, canonical_json(value)?);
                 canonical_json_entries.push(entry);
             }
             // NOTE: braces are escaped as double brace in Rust
-            format!("{{{}}}", canonical_json_entries.join(","))
+            Ok(format!("{{{}}}", canonical_json_entries.join(",")))
         }
 
-        _ => serde_json::to_string(data).expect("serde_json implementation error"),
+        _ => {
+            let data_str = serde_json::to_string(data).expect("serde_json implementation error");
+            Ok(normalize_unicode(&data_str))
+        }
     }
 }
 
@@ -82,6 +90,11 @@ pub fn collapse_json_subtree(
             let mut keys: Vec<_> = obj.keys().collect();
             keys.sort();
             for key in keys {
+                ensure!(
+                    *key == normalize_unicode(key),
+                    "Data to be digested/masked must contain field names normalized with Unicode NFKD"
+                );
+
                 let value = obj.get(key).expect("serde_json keys() impl error");
                 if let Some(tails) = keep_head_tails.get(key) {
                     // Found object key present in keep_paths option, skip collapsing current branch of tree
@@ -105,11 +118,16 @@ pub fn collapse_json_subtree(
                 let canonical_entry_strs = canonical_json_entries
                     .iter()
                     // unwrap() also could be .expect("serde_json can't transform its own type into string")
-                    .map(|(key, val)| {
-                        let canonical_key = canonical_json(&serde_json::Value::String(key.to_string()));
-                        format!("{}:{}", canonical_key, serde_json::to_string(val).unwrap())
+                    .filter_map(|(key, val)| {
+                        let canonical_key = canonical_json(&serde_json::Value::String(key.to_string())).ok()?;
+                        Some(format!("{}:{}", canonical_key, serde_json::to_string(val).ok()?))
                     })
                     .collect::<Vec<_>>();
+                ensure!(
+                    canonical_entry_strs.len() == canonical_json_entries.len(),
+                    "Implementation error: failed to serialize JSON node entries"
+                );
+
                 // NOTE: braces are escaped as double brace in Rust
                 let flattened_object = format!("{{{}}}", canonical_entry_strs.join(","));
 
@@ -138,7 +156,7 @@ pub fn mask_json_value(json_value: serde_json::Value, keep_paths_str: &str) -> F
     }?;
     match digest_json {
         serde_json::Value::String(digest) => return Ok(digest),
-        serde_json::Value::Object(_) => return Ok(canonical_json(&digest_json)),
+        serde_json::Value::Object(_) => return canonical_json(&digest_json),
         _ => bail!("Implementation error: digest should always return a string or object"),
     }
 }
@@ -149,9 +167,8 @@ pub fn mask_data<T: serde::Serialize>(data: &T, keep_paths_str: &str) -> Fallibl
 }
 
 pub fn mask_json_str(json_str: &str, keep_paths_str: &str) -> Fallible<String> {
-    let normalized_str = normalize_unicode(json_str);
     ensure!(
-        normalized_str == json_str,
+        json_str == normalize_unicode(json_str),
         "Json string to be digested/masked must be normalized with Unicode NFKD"
     );
 
@@ -195,10 +212,19 @@ mod tests {
         let key_nfkd = String::from_utf8(Vec::from_hex("61cc816c6f6d")?)?;
         assert_eq!(key_nfc, "álom");
         assert_eq!(key_nfkd, "álom");
-        let json_nfc = format!("{{\"{}\": 1}}", key_nfc);
-        let json_nfkd = format!("{{\"{}\": 1}}", key_nfkd);
-        assert_eq!(digest_json_str(&json_nfkd)?, "cjuRab8yOeLzxmFY_fEMC79cW5z9XyihRhaGnTSvMabrA8");
-        assert!(digest_json_str(&json_nfc).is_err());
+
+        let str_nfc = format!("{{\"{}\": 1}}", key_nfc);
+        let str_nfkd = format!("{{\"{}\": 1}}", key_nfkd);
+        assert_eq!(digest_json_str(&str_nfkd)?, "cjuRab8yOeLzxmFY_fEMC79cW5z9XyihRhaGnTSvMabrA8");
+        assert!(digest_json_str(&str_nfc).is_err());
+
+        let json_value_nfc: serde_json::Value = serde_json::from_str(&str_nfc)?;
+        let json_value_nfkd: serde_json::Value = serde_json::from_str(&str_nfkd)?;
+        assert_eq!(
+            mask_json_value(json_value_nfkd, "")?,
+            "cjuRab8yOeLzxmFY_fEMC79cW5z9XyihRhaGnTSvMabrA8"
+        );
+        assert!(mask_json_value(json_value_nfc, "").is_err());
         Ok(())
     }
 
