@@ -1,0 +1,23 @@
+{
+  "name": "@internet-of-people/morpheus-crypto-wasm",
+  "collaborators": [
+    "IoP Ventures LLC <info@iop-ventures.com>",
+    "Rache Bartmoss <bartmoss@tutanota.com>",
+    "wigy <wigy_opensource_developer@yahoo.com>",
+    "mudlee <contact@mudlee.hu>"
+  ],
+  "version": "2.0.7",
+  "files": [
+    "browser/iop_morpheus_core_wasm_bg.wasm",
+    "browser/iop_morpheus_core_wasm_bg.js",
+    "browser/iop_morpheus_core_wasm.js",
+    "node/iop_morpheus_core_wasm_bg.wasm",
+    "node/iop_morpheus_core_wasm.js",
+    "iop_morpheus_core_wasm_bg.d.ts",
+    "iop_morpheus_core_wasm.d.ts"
+  ],
+  "main": "node/iop_morpheus_core_wasm.js",
+  "module": "browser/iop_morpheus_core_wasm.js",
+  "types": "iop_morpheus_core_wasm.d.ts",
+  "sideEffects": "false"
+}
