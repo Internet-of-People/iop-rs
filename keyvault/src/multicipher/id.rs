@@ -12,6 +12,7 @@ erased_type! {
 }
 
 impl MKeyId {
+    /// All multicipher keyids start with this prefix
     pub const PREFIX: char = 'i';
 }
 
@@ -149,7 +150,7 @@ impl std::fmt::Debug for MKeyId {
 
 impl std::str::FromStr for MKeyId {
     type Err = failure::Error;
-    fn from_str(src: &str) -> Result<Self, Self::Err> {
+    fn from_str(src: &str) -> Fallible<Self> {
         let mut chars = src.chars();
         ensure!(
             chars.next() == Some(Self::PREFIX),
@@ -175,11 +176,20 @@ impl From<EdKeyId> for MKeyId {
     }
 }
 
-// TODO this should not be based on the String conversions
+impl From<SecpKeyId> for MKeyId {
+    fn from(src: SecpKeyId) -> Self {
+        erase!(s, MKeyId, src)
+    }
+}
+
 impl MKeyId {
+    /// Even the binary representation of a multicipher keyid is readable with this.
+    // TODO Should we really keep it like this?
     pub fn to_bytes(&self) -> Vec<u8> {
         String::from(self).as_bytes().to_vec()
     }
+    /// Even the binary representation of a multicipher keyid is readable with this.
+    // TODO Should we really keep it like this?
     pub fn from_bytes(bytes: &[u8]) -> Fallible<Self> {
         let string = String::from_utf8(bytes.to_owned())?;
         string.parse()

@@ -4,6 +4,7 @@ pub const XPRV_DATA_SIZE: usize = 78;
 pub const SK_PREFIX: u8 = 0u8;
 
 /// Implementation of Secp256k1::ExtendedPrivateKey
+#[derive(Clone)]
 pub struct SecpExtPrivateKey {
     depth: u8,
     parent_fingerprint: Vec<u8>,
@@ -56,7 +57,7 @@ impl SecpExtPrivateKey {
         let cc_bytes = &hash_bytes[PRIVATE_KEY_SIZE..];
 
         let depth = parent.depth + 1;
-        let parent_pk = parent.neuter().as_public_key();
+        let parent_pk = parent.neuter().public_key();
         // this uses the compressed pk opposed to the addr that uses the uncompressed pk format:
         let hash = hash160(parent_pk.to_bytes());
         let parent_fingerprint = Vec::from(&hash[..4]);
@@ -70,9 +71,9 @@ impl SecpExtPrivateKey {
     /// Serializes the extended private key according to the format defined in [`BIP32`]
     ///
     /// [`BIP32`]: https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki#serialization-format
-    pub fn to_xprv(&self, network: &dyn Network) -> String {
+    pub fn to_xprv(&self, version: &[u8; BIP32_VERSION_PREFIX_SIZE]) -> String {
         let mut res = Vec::with_capacity(XPRV_DATA_SIZE);
-        res.extend_from_slice(network.bip32_xprv());
+        res.extend_from_slice(version);
         res.push(self.depth);
         res.extend_from_slice(&self.parent_fingerprint);
         res.extend_from_slice(&self.idx.to_be_bytes());
@@ -86,17 +87,15 @@ impl SecpExtPrivateKey {
     /// Deserializes the extended private key from the format defined in [`BIP32`]
     ///
     /// [`BIP32`]: https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki#serialization-format
-    pub fn from_xprv(xprv: &str, network: &dyn Network) -> Fallible<Self> {
+    pub fn from_xprv(xprv: &str, prefix: &[u8; BIP32_VERSION_PREFIX_SIZE]) -> Fallible<Self> {
         let data = from_base58check(xprv)?;
         ensure!(data.len() == XPRV_DATA_SIZE, "Length of data must be {}", XPRV_DATA_SIZE);
 
-        let expected_prefix = network.bip32_xprv();
-        debug_assert_eq!(expected_prefix.len(), VERSION_SIZE);
-        debug_assert_eq!(VERSION_SIZE, 4);
+        debug_assert_eq!(BIP32_VERSION_PREFIX_SIZE, 4);
 
-        let actual_prefix = &data[0..4];
+        let actual_prefix = &data[0..BIP32_VERSION_PREFIX_SIZE];
         ensure!(
-            actual_prefix == expected_prefix,
+            actual_prefix == prefix,
             "Invalid network prefix found: {}",
             hex::encode(actual_prefix)
         );
@@ -153,7 +152,7 @@ impl ExtendedPrivateKey<Secp256k1> for SecpExtPrivateKey {
         let pk = self.sk.public_key();
         SecpExtPublicKey { depth, parent_fingerprint, idx, chain_code, pk }
     }
-    fn as_private_key(&self) -> SecpPrivateKey {
+    fn private_key(&self) -> SecpPrivateKey {
         self.sk.clone()
     }
 }

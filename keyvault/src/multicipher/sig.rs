@@ -12,12 +12,17 @@ erased_type! {
 
 // TODO this should not be based on the String conversions
 impl MSignature {
+    /// All multicipher signatures start with this prefix
     pub const PREFIX: char = 's';
 
+    /// Even the binary representation of a multicipher signature is readable with this.
+    // TODO Should we really keep it like this?
     pub fn to_bytes(&self) -> Vec<u8> {
         String::from(self).as_bytes().to_vec()
     }
 
+    /// Even the binary representation of a multicipher signature is readable with this.
+    // TODO Should we really keep it like this?
     pub fn from_bytes(bytes: &[u8]) -> Fallible<Self> {
         let string = String::from_utf8(bytes.to_owned())?;
         string.parse()
@@ -128,7 +133,7 @@ impl std::fmt::Debug for MSignature {
 
 impl std::str::FromStr for MSignature {
     type Err = failure::Error;
-    fn from_str(src: &str) -> Result<Self, Self::Err> {
+    fn from_str(src: &str) -> Fallible<Self> {
         let mut chars = src.chars();
         ensure!(
             chars.next() == Some(Self::PREFIX),
@@ -151,6 +156,12 @@ impl std::str::FromStr for MSignature {
 impl From<EdSignature> for MSignature {
     fn from(src: EdSignature) -> Self {
         erase!(e, MSignature, src)
+    }
+}
+
+impl From<SecpSignature> for MSignature {
+    fn from(src: SecpSignature) -> Self {
+        erase!(s, MSignature, src)
     }
 }
 

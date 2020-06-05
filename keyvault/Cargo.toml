@@ -1,6 +1,6 @@
 [package]
 name = "iop-keyvault"
-version = "0.0.1"
+version = "0.0.2"
 authors = ["IoP Ventures LLC <info@iop-ventures.com>", "wigy <wigy_opensource_developer@yahoo.com>"]
 license = "LGPL-3.0-or-later"
 repository = "https://github.com/internet-of-people/prometheus"
@@ -11,7 +11,7 @@ edition = "2018"
 blake2 = "0.8.0"
 digest = "0.8.0"
 ed25519-dalek = "1.0.0-pre.3"
-failure = "0.1.5"
+failure = "0.1.8"
 hex = "0.4.2"
 hmac = "0.7.0"
 # Unfortunately the crate name of the libsecp256k1 collides with the perfect module name
@@ -23,7 +23,7 @@ ripemd160 = "0.8.0"
 serde = { version = "1.0.87", features = ["derive"] }
 serde_bytes = "0.11.3"
 sha2 = "0.8.0"
-tiny-bip39 = { version = "0.7.3", default-features = false }
+tiny-bip39 = "0.7.3"
 
 [dev-dependencies]
 rmp-serde = "*"

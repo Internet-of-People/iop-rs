@@ -1,7 +1,21 @@
-use crate::secp256k1::Network;
+use super::*;
 
 /// Strategies for the IOP main (production) network.
 pub struct Mainnet;
+
+impl Subtree for Mainnet {
+    type Suite = Secp256k1;
+
+    fn name(&self) -> &'static str {
+        "IOP mainnet"
+    }
+    fn master(&self, seed: &Seed) -> SecpExtPrivateKey {
+        Secp256k1::master(seed)
+    }
+    fn key_id(&self, pk: &SecpPublicKey) -> SecpKeyId {
+        pk.key_id()
+    }
+}
 
 impl Network for Mainnet {
     fn p2pkh_addr(&self) -> &'static [u8; 1] {
@@ -25,10 +39,27 @@ impl Network for Mainnet {
     fn slip44(&self) -> i32 {
         0x42 // 66
     }
+    fn subtree(&self) -> &dyn Subtree<Suite = Secp256k1> {
+        self
+    }
 }
 
 /// Strategies for the BTC, BCC and BSV test (staging) network.
 pub struct Testnet;
+
+impl Subtree for Testnet {
+    type Suite = Secp256k1;
+
+    fn name(&self) -> &'static str {
+        "IOP testnet"
+    }
+    fn master(&self, seed: &Seed) -> SecpExtPrivateKey {
+        Secp256k1::master(seed)
+    }
+    fn key_id(&self, pk: &SecpPublicKey) -> SecpKeyId {
+        pk.key_id()
+    }
+}
 
 impl Network for Testnet {
     fn p2pkh_addr(&self) -> &'static [u8; 1] {
@@ -51,5 +82,8 @@ impl Network for Testnet {
     }
     fn slip44(&self) -> i32 {
         0x42 // 66
+    }
+    fn subtree(&self) -> &dyn Subtree<Suite = Secp256k1> {
+        self
     }
 }

@@ -106,10 +106,10 @@ macro_rules! visit_fac {
         match $discriminator {
             $left!(e) => visit_fac!(@case e $callback $self_ [ $($args),* ]),
             $left!(f) => visit_fac!(@case f $callback $self_ [ $($args),* ]),
-            _ => Err(err_msg(format!(
+            _ => return Err(err_msg(format!(
                 "Unknown crypto suite discriminator '{}'",
                 $discriminator
-            )))?,
+            ))),
         }
     };
     (@case $suite:ident $callback:ident $self_:tt [ ]) => {
@@ -179,8 +179,9 @@ pub enum CipherSuite {
     Secp256k1,
 }
 
+#[derive(Clone, Debug)]
 /// See the [module-level description](index.html).
-pub struct MultiCipher {}
+pub struct MultiCipher;
 
 impl AsymmetricCrypto for MultiCipher {
     type KeyId = MKeyId;

@@ -1,9 +1,11 @@
 //! SLIP-0010 and BIP-0032 compatible Secp256k1 cryptography that allows child key derivation.
 
+mod bip32;
+mod bip44;
 mod ext_pk;
 mod ext_sk;
 mod id;
-mod network;
+mod networks;
 mod pk;
 mod sig;
 mod sk;
@@ -90,7 +92,8 @@ pub fn from_base58check<S: AsRef<str>>(s: S) -> Fallible<Vec<u8>> {
 
 /// This elliptic curve cryptography implements both the [AsymmetricCrypto](AsymmetricCrypto) and
 /// [KeyDerivationCrypto](KeyDerivationCrypto) traits so for BTC, ETH and IOP as examples.
-pub struct Secp256k1 {}
+#[derive(Clone, Debug)]
+pub struct Secp256k1;
 
 impl Secp256k1 {
     fn hash_message<D: AsRef<[u8]>>(data: D) -> secp::Message {
@@ -102,11 +105,13 @@ impl Secp256k1 {
     }
 }
 
+pub use bip32::*;
+pub use bip44::*;
 pub use cc::{ChainCode, CHAIN_CODE_SIZE};
 pub use ext_pk::SecpExtPublicKey;
 pub use ext_sk::SecpExtPrivateKey;
 pub use id::{SecpKeyId, KEY_ID_SIZE, KEY_ID_VERSION1};
-pub use network::{ark, btc, hyd, iop};
+pub use networks::{ark, btc, hyd, iop};
 pub use pk::{SecpPublicKey, PUBLIC_KEY_SIZE, PUBLIC_KEY_UNCOMPRESSED_SIZE};
 pub use sig::{SecpSignature, SIGNATURE_SIZE, SIGNATURE_VERSION1};
 pub use sk::{SecpPrivateKey, PRIVATE_KEY_SIZE};
@@ -135,14 +140,6 @@ pub const VERSION_SIZE: usize = 1;
 /// SLIP-0010 defines keyed hashing for master key derivation. This does domain separation
 /// for different cryptographic algorithms. This is the standard key for BIP-0032
 pub const SLIP10_SEED_HASH_SALT: &[u8] = b"Bitcoin seed";
-
-/// It might sound a bit pedantic, but some Network trait methods return fixed length byte array
-/// static borrows instead of single bytes.
-pub const ADDR_PREFIX_SIZE: usize = 1;
-
-/// Extended public and private keys use version bytes to help finding out how these keys are
-/// used on the blockchain and which blockchains they are used on
-pub const BIP32_VERSION_PREFIX_SIZE: usize = 4;
 
 /// [BIP-0178](https://github.com/bitcoin/bips/blob/master/bip-0178.mediawiki) is an extension
 /// to the de-facto WIF to encode how the private key was used to generate receiving addresses.
@@ -195,37 +192,17 @@ impl Bip178 {
     }
 }
 
-/// Strategy that can be implemented for different clones of the Bitcoin network. It is a trait
-/// rather than an enumeration to leave it open for extensions outside this crate. A few example
-/// implementations can be found under the network submodules.
-pub trait Network {
-    /// `to_p2pkh_addr` needs a prefix
-    fn p2pkh_addr(&self) -> &'static [u8; ADDR_PREFIX_SIZE];
-    /// In the future p2sh will need a prefix
-    fn p2sh_addr(&self) -> &'static [u8; ADDR_PREFIX_SIZE];
-    /// `to_wif` and `from_wif` needs a prefix
-    fn wif(&self) -> &'static [u8; ADDR_PREFIX_SIZE];
-    /// `to_xprv` and `from_xprv` needs version bytes
-    fn bip32_xprv(&self) -> &'static [u8; BIP32_VERSION_PREFIX_SIZE];
-    /// `to_xpub` and `from_xpub` needs version bytes
-    fn bip32_xpub(&self) -> &'static [u8; BIP32_VERSION_PREFIX_SIZE];
-    /// signed free-text messages are prefixed with this text
-    fn message_prefix(&self) -> &'static str;
-    /// SLIP-44 registered coin number for BIP-44 derivation
-    fn slip44(&self) -> i32;
-}
-
 #[cfg(test)]
 mod test {
 
     #[test]
-    #[should_panic(expected = "InvalidSecretKey")]
     fn invalid_private_key() {
         use super::SecpPrivateKey;
         let sk_bytes =
             hex::decode("0000000000000000000000000000000000000000000000000000000000000000")
                 .unwrap();
-        let _sk = SecpPrivateKey::from_bytes(sk_bytes).unwrap();
+        let err = SecpPrivateKey::from_bytes(sk_bytes).unwrap_err();
+        assert!(err.to_string().contains("InvalidSecretKey"))
     }
 
     mod sign_verify {
@@ -260,7 +237,7 @@ mod test {
     // Also, you can use
     mod slip10_test_vectors {
         use crate::{
-            secp256k1::{btc, Secp256k1, SecpExtPrivateKey},
+            secp256k1::{btc, Network, Secp256k1, SecpExtPrivateKey},
             ExtendedPrivateKey, KeyDerivationCrypto, Seed,
         };
         struct TestDerivation {
@@ -278,8 +255,8 @@ mod test {
             fn assert_state(&self, xpub_str: &str, xprv_str: &str) {
                 let xpub = self.xprv.neuter();
 
-                assert_eq!(xpub.to_xpub(&btc::Mainnet), xpub_str);
-                assert_eq!(self.xprv.to_xprv(&btc::Mainnet), xprv_str);
+                assert_eq!(xpub.to_xpub(&btc::Mainnet.bip32_xpub()), xpub_str);
+                assert_eq!(self.xprv.to_xprv(&btc::Mainnet.bip32_xprv()), xprv_str);
             }
 
             fn derive_hardened(&mut self, idx: i32) {
@@ -326,14 +303,14 @@ mod test {
     // ./bitcointool -c pubfrompriv -p <WIF>
     // ./bitcointool -c addrfrompub -k <pub>
     mod btc_key_conversions {
-        use crate::secp256k1::{btc, Bip178, SecpPrivateKey};
+        use crate::secp256k1::{btc, Bip178, Network, SecpPrivateKey};
         use crate::{PrivateKey, PublicKey};
 
         fn test(sk_hex: &str, wif: &str, pk_hex: &str, id_hex: &str, address: &str) {
             let sk_bytes = hex::decode(sk_hex).unwrap();
             let sk = SecpPrivateKey::from_bytes(sk_bytes).unwrap();
 
-            let sk_wif = sk.to_wif(&btc::Mainnet, Bip178::Compressed);
+            let sk_wif = sk.to_wif(&btc::Mainnet.wif(), Bip178::Compressed);
             assert_eq!(sk_wif, wif);
 
             let pk = sk.public_key();
@@ -344,7 +321,7 @@ mod test {
             let id_bytes = id.to_bytes();
             assert_eq!(hex::encode(&id_bytes), id_hex);
 
-            let act_address = id.to_p2pkh_addr(&btc::Mainnet);
+            let act_address = id.to_p2pkh_addr(&btc::Mainnet.p2pkh_addr());
             assert_eq!(act_address, address);
         }
 
@@ -406,6 +383,140 @@ mod test {
                 "03e8aecc370aedd953483719a116711963ce201ac3eb21d3f3257bb48668c6a72f",
                 "01e3281990058f008a4b6c658cb735ae2b7327daa5",
                 "1Mi6RjU7ASvudQMZkeobQ1WoiZWAtVhkd6",
+            );
+        }
+    }
+
+    mod blockchain_com_derivation {
+        use crate::secp256k1::*;
+
+        #[test]
+        fn btc_wallet() {
+            let phrase =
+                "hint replace increase neglect egg wood ill alert beef rich install potato";
+            let xpub = "xpub6DVu7eWDWJkczyrDQdo2i99MKdns8idTeVfzwuHCaA3rKfSWaSCnpKigU21vJ2TdCT5MiLgbKWzpxZUx4gFx6zpNWukDzX8yRGU3UKyE9fC";
+            let xpub2 = "xpub6DVu7eWDWJkd4MbGacHiWGFKT2amHnJwQ7SmxWpD2YuacVtaQz7XPsRYxR5PqsGa2TiLYWPi3jsimnruvJ5LvMBxjc96jgZniP7peLHcEdM";
+            let old_addr0 = "17kxMsME7f8CVVWqPadgQNsDEMaHDBpCbv";
+            let bip44_addr0 = "17Y82siUGdY8KEWGpUTW7uF5kj6cEMRYfo";
+            let net = &btc::Mainnet;
+
+            let seed = Bip39::new().short_phrase(phrase).unwrap().password("");
+            let coin = Bip44.network(&seed, net).unwrap();
+            let account: Bip44Account<Secp256k1> = coin.account(0).unwrap();
+
+            assert_eq!(account.neuter().to_xpub(), xpub);
+
+            let old_pk0 = account.node().derive_normal(0).unwrap().neuter();
+
+            assert_eq!(old_pk0.to_p2pkh_addr(net), old_addr0);
+
+            let pk0 = account.key(0).unwrap().neuter();
+
+            assert_eq!(pk0.to_p2pkh_addr(), bip44_addr0);
+
+            let account2 = coin.account(1).unwrap();
+
+            assert_eq!(account2.neuter().to_xpub(), xpub2);
+        }
+    }
+
+    mod coinomi_derivation {
+        use crate::{
+            secp256k1::{btc, hyd},
+            *,
+        };
+
+        #[test]
+        fn hyd_derive() {
+            let mnemonic = "blast cargo razor option vote shoe stock cruel mansion boy spot never album crop reflect kangaroo blouse slam empty shoot cable vital crane manual";
+            let pk0_hex = "02f946d10106f55c755c1f836b63bef35fb0015603e1870c8dbdcacf62f178587e";
+            let addr0 = "hWNN8ymcsLdJivbwbBaPS8X1vekxB2pdwV";
+
+            let seed = Bip39::new().phrase(mnemonic).unwrap().password(Seed::PASSWORD);
+            let account = Bip44.network(&seed, &hyd::Mainnet).unwrap().account(0).unwrap();
+            let key0 = account.key(0).unwrap().neuter();
+
+            assert_eq!(hex::encode(key0.to_public_key().to_bytes()), pk0_hex);
+            assert_eq!(key0.to_p2pkh_addr(), addr0);
+        }
+
+        #[test]
+        fn tbtc_derive() {
+            let mnemonic = "blast cargo razor option vote shoe stock cruel mansion boy spot never album crop reflect kangaroo blouse slam empty shoot cable vital crane manual";
+            let xpub = "tpubDDfA4LQYyG71KmPW65gktxjvzxFAFcdhDAzj4zc6y5hpeX3rZu3nPh1GuvgWCyj4VWKfuFbnnCvFXyTuDLD6mmFA5yVTe2UUcSoNy7kgcYm";
+            let xpub_coinomi_bug = "xpub6DHXY6asFz9Z3yCedthfh3QZfq9WGE8dfYQRiSYxdAwvuEP9VgChFFLSftbigUmphbnmHg5vF76CqnyHpUMrtKns2Nk9xVpF2VCyD7Uej6C";
+            let addr0 = "mgH9VjC6uGTt1cWDDZEXisASAtCE8D6Xar";
+            let net = &btc::Testnet;
+
+            let seed = Bip39::new().phrase(mnemonic).unwrap().password(Seed::PASSWORD);
+            let account = Bip44.network(&seed, net).unwrap().account(0).unwrap().neuter();
+
+            assert_eq!(account.to_xpub(), xpub);
+            assert_eq!(account.node().to_xpub(&btc::Mainnet), xpub_coinomi_bug);
+
+            let key0 = account.key(0).unwrap();
+
+            assert_eq!(key0.to_p2pkh_addr(), addr0);
+        }
+    }
+
+    mod ark_desktop_hyd_address {
+        use super::super::*;
+
+        #[test]
+        fn test() {
+            let phrase = "boss slice draft close detail mix nation casino judge cigar melody catch";
+            let pk_hex = "03fdd041ed3e51d8909c44ef6b9d1268a412161d8e6544c5cd4d87ef78bb49e2f7";
+            let addr = "hFxvDfqQfXHzhvEebTJGkds8DBBGBCKpY9";
+            let addr_dev = "dEatNarXZifEXaqnMFy5uP9Fv8bq7aB3Vn";
+            let addr_test = "tXRoniBUYaGXc495HCdCL9V9qJPgBMywaH";
+
+            let sk = SecpPrivateKey::from_ark_passphrase(phrase).unwrap();
+            let pk = sk.public_key();
+
+            assert_eq!(hex::encode(pk.to_bytes()), pk_hex);
+
+            let key_id = pk.ark_key_id();
+
+            assert_eq!(key_id.to_p2pkh_addr(&hyd::Mainnet.p2pkh_addr()), addr);
+            assert_eq!(key_id.to_p2pkh_addr(&hyd::Devnet.p2pkh_addr()), addr_dev);
+            assert_eq!(key_id.to_p2pkh_addr(&hyd::Testnet.p2pkh_addr()), addr_test);
+        }
+    }
+
+    // ARK is special 😉 These tests are cross-checked with their JavaScript crpyto implementation and use private keys
+    // of their testnet genesis delegates.
+    mod ark_key_conversions {
+        use super::super::*;
+
+        fn test(passphrase: &str, pk_hex: &str, main_addr: &str, dev_addr: &str) {
+            let sk = SecpPrivateKey::from_ark_passphrase(passphrase).unwrap();
+            let pk = sk.public_key();
+            assert_eq!(hex::encode(pk.to_bytes()), pk_hex);
+
+            let key_id = pk.ark_key_id();
+
+            assert_eq!(key_id.to_p2pkh_addr(&ark::Mainnet.p2pkh_addr()), main_addr);
+            assert_eq!(key_id.to_p2pkh_addr(&ark::Devnet.p2pkh_addr()), dev_addr);
+        }
+
+        #[test]
+        fn test_delegate_1() {
+            test(
+                "clay harbor enemy utility margin pretty hub comic piece aerobic umbrella acquire",
+                "03287bfebba4c7881a0509717e71b34b63f31e40021c321f89ae04f84be6d6ac37",
+                "ANBkoGqWeTSiaEVgVzSKZd3jS7UWzv9PSo",
+                "DBYyh2vXcigrJGUHfvmYxVxEqeH7vomw6x",
+            );
+        }
+
+        #[test]
+        fn test_delegate_2() {
+            test(
+                "venue below waste gather spin cruise title still boost mother flash tuna",
+                "02def27da9336e7fbf63131b8d7e5c9f45b296235db035f1f4242c507398f0f21d",
+                "AbfQq8iRSf9TFQRzQWo33dHYU7HFMS17Zd",
+                "DR2ditoSQvPaySQbaT8GSWC3se5rLyfq4T",
             );
         }
     }

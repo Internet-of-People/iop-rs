@@ -31,10 +31,17 @@ impl SecpPrivateKey {
         Ok(Self(sk))
     }
 
+    /// Most ARK wallets simply hash a passphrase into a private key.
+    pub fn from_ark_passphrase(phrase: impl AsRef<str>) -> Fallible<Self> {
+        use sha2::Digest;
+        let hash = sha2::Sha256::digest(phrase.as_ref().as_bytes());
+        Self::from_bytes(hash)
+    }
+
     /// Serializes private key into wallet import format supported by many pre-HD wallets
-    pub fn to_wif(&self, network: &dyn Network, usage: Bip178) -> String {
+    pub fn to_wif(&self, version: &[u8; ADDR_PREFIX_SIZE], usage: Bip178) -> String {
         let mut res = Vec::with_capacity(1 + 1 + PRIVATE_KEY_SIZE);
-        res.extend_from_slice(network.wif());
+        res.extend_from_slice(version);
         res.extend_from_slice(&self.to_bytes());
         res.extend_from_slice(usage.to_wif_suffix());
 
@@ -42,7 +49,9 @@ impl SecpPrivateKey {
     }
 
     /// Deserializes private key from wallet import format supported by many pre-HD wallets
-    pub fn from_wif(wif: &str, network: &dyn Network) -> Fallible<(Self, Bip178)> {
+    pub fn from_wif(
+        wif: &str, network: &dyn Network<Suite = Secp256k1>,
+    ) -> Fallible<(Self, Bip178)> {
         let data = from_base58check(wif)?;
         ensure!(data.len() > PRIVATE_KEY_SIZE, "WIF data is too short");
 

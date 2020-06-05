@@ -1,4 +1,7 @@
+use std::fmt;
+
 use super::*;
+use crate::multicipher::MKeyId;
 
 /// The size of the key identifier in bytes. Since a version byte is prepended to the
 /// hash result, it is not a standard size.
@@ -42,11 +45,10 @@ impl SecpKeyId {
     ///
     /// # Panics
     /// If internal invariants of the key id format are not maintained because of a bug
-    pub fn to_p2pkh_addr(&self, network: &dyn Network) -> String {
+    pub fn to_p2pkh_addr(&self, prefix: &[u8; ADDR_PREFIX_SIZE]) -> String {
         assert_eq!(self.0[0], KEY_ID_VERSION1);
         assert_eq!(self.0.len(), KEY_ID_SIZE);
 
-        let prefix = network.p2pkh_addr();
         debug_assert_eq!(prefix.len(), ADDR_PREFIX_SIZE);
         let mut address = Vec::with_capacity(ADDR_PREFIX_SIZE + KEY_ID_SIZE - VERSION_SIZE);
         address.extend_from_slice(prefix);
@@ -56,7 +58,7 @@ impl SecpKeyId {
     }
 
     /// Deserializes the key identifier from a `p2pkh` bitcoin address
-    pub fn from_p2pkh_addr(addr: &str, network: &dyn Network) -> Fallible<Self> {
+    pub fn from_p2pkh_addr(addr: &str, network: &dyn Network<Suite = Secp256k1>) -> Fallible<Self> {
         let expected_prefix = network.p2pkh_addr();
         debug_assert_eq!(expected_prefix.len(), ADDR_PREFIX_SIZE);
         debug_assert_eq!(ADDR_PREFIX_SIZE, 1);
@@ -80,17 +82,36 @@ impl SecpKeyId {
 
         Ok(Self(id))
     }
+
+    /// ARK uses a non-standard hashing of the compressed public key.
+    pub fn from_ark_pk(pk: &SecpPublicKey) -> Self {
+        let mut hasher = Ripemd160::default();
+        hasher.input(&pk.to_bytes());
+        let hash = hasher.fixed_result();
+
+        Self::from_v1_bytes(&*hash)
+    }
+
+    fn from_v1_bytes(hash: &[u8]) -> Self {
+        let mut id = Vec::with_capacity(KEY_ID_SIZE);
+        id.push(KEY_ID_VERSION1);
+        id.extend_from_slice(hash);
+
+        SecpKeyId(id)
+    }
 }
 
 impl From<&SecpPublicKey> for SecpKeyId {
     // https://en.bitcoin.it/wiki/Technical_background_of_version_1_Bitcoin_addresses
-    fn from(pk: &SecpPublicKey) -> SecpKeyId {
+    fn from(pk: &SecpPublicKey) -> Self {
         let hash = hash160(&pk.to_bytes()[..]);
+        Self::from_v1_bytes(&*hash)
+    }
+}
 
-        let mut id = Vec::with_capacity(KEY_ID_SIZE);
-        id.push(KEY_ID_VERSION1);
-        id.extend_from_slice(&*hash);
-
-        SecpKeyId(id)
+impl fmt::Debug for SecpKeyId {
+    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> Result<(), fmt::Error> {
+        let id = MKeyId::from(self.clone());
+        id.fmt(formatter)
     }
 }

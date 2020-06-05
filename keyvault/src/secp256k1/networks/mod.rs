@@ -1,3 +1,7 @@
+//! Collection of networks using Secp256k1 cryptography
+
+use super::*;
+
 /// ARK.io related `Network` implementations
 pub mod ark;
 

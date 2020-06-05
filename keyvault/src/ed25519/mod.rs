@@ -4,6 +4,7 @@
 
 mod ext_sk;
 mod id;
+mod morpheus;
 mod pk;
 mod sig;
 mod sk;
@@ -12,14 +13,16 @@ use hmac::Mac;
 
 use super::*;
 
+#[derive(Clone, Debug)]
 /// This elliptic curve cryptography implements both the [AsymmetricCrypto](AsymmetricCrypto) and
 /// [KeyDerivationCrypto](KeyDerivationCrypto) traits so it can be used in EcDSA, Cardano and of course,
 /// Mopheus/Prometheus/Mercury.
-pub struct Ed25519 {}
+pub struct Ed25519;
 
 pub use cc::{ChainCode, CHAIN_CODE_SIZE};
 pub use ext_sk::EdExtPrivateKey;
 pub use id::{EdKeyId, KEY_ID_SALT, KEY_ID_SIZE, KEY_ID_VERSION1};
+pub use morpheus::*;
 pub use pk::{EdPublicKey, PUBLIC_KEY_SIZE};
 pub use sig::{EdSignature, SIGNATURE_SIZE, SIGNATURE_VERSION1};
 pub use sk::{EdPrivateKey, PRIVATE_KEY_SIZE};
@@ -54,7 +57,7 @@ pub const SLIP10_SEED_HASH_SALT: &[u8] = b"ed25519 seed";
 #[cfg(test)]
 mod tests {
     use crate::ed25519::Ed25519;
-    use crate::{ExtendedPrivateKey, KeyDerivationCrypto, Seed};
+    use crate::{Bip39, ExtendedPrivateKey, KeyDerivationCrypto, Seed};
 
     fn m_mercury_1_1<T: KeyDerivationCrypto>(seed: &Seed) -> T::ExtendedPrivateKey {
         let master = T::master(seed);
@@ -65,7 +68,7 @@ mod tests {
 
     #[test]
     fn test_generic() {
-        let seed = Seed::generate_new();
+        let seed = Bip39::new().generate().password("");
         let _first_app_in_first_profile = m_mercury_1_1::<Ed25519>(&seed);
     }
 
@@ -129,11 +132,11 @@ mod tests {
                 let chain_code_bytes = xprv.chain_code().to_bytes();
                 assert_eq!(hex::encode(chain_code_bytes), chain_code_hex);
 
-                let sk = xprv.as_private_key();
+                let sk = xprv.private_key();
                 let sk_bytes = sk.to_bytes();
                 assert_eq!(hex::encode(sk_bytes), sk_hex);
 
-                let pk = xprv.neuter().as_public_key();
+                let pk = xprv.neuter().public_key();
                 let pk_bytes = pk.to_bytes();
                 assert_eq!(hex::encode(pk_bytes), pk_hex);
             }

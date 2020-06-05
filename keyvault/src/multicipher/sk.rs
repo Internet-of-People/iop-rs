@@ -36,3 +36,22 @@ impl From<EdPrivateKey> for MPrivateKey {
         erase!(e, MPrivateKey, src)
     }
 }
+
+impl From<SecpPrivateKey> for MPrivateKey {
+    fn from(src: SecpPrivateKey) -> Self {
+        erase!(s, MPrivateKey, src)
+    }
+}
+
+macro_rules! clone {
+    ($suite:ident, $self_:expr) => {{
+        let result = reify!($suite, sk, $self_).clone();
+        erase!($suite, MPrivateKey, result)
+    }};
+}
+
+impl Clone for MPrivateKey {
+    fn clone(&self) -> Self {
+        visit!(clone(self))
+    }
+}

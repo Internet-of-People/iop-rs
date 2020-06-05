@@ -44,6 +44,9 @@ impl PublicKey<Ed25519> for EdPublicKey {
     fn key_id(&self) -> EdKeyId {
         EdKeyId::from(self)
     }
+    fn validate_id(&self, key_id: &EdKeyId) -> bool {
+        &self.key_id() == key_id
+    }
     /// We should never assume that there is only 1 public key that can verify a given
     /// signature. Actually, there are 8 public keys.
     fn verify<D: AsRef<[u8]>>(&self, data: D, sig: &EdSignature) -> bool {
@@ -56,7 +59,7 @@ impl ExtendedPublicKey<Ed25519> for EdPublicKey {
     fn derive_normal_child(&self, _idx: i32) -> Fallible<EdPublicKey> {
         bail!("Normal derivation of Ed25519 is invalid based on SLIP-0010.")
     }
-    fn as_public_key(&self) -> EdPublicKey {
+    fn public_key(&self) -> EdPublicKey {
         *self
     }
 }

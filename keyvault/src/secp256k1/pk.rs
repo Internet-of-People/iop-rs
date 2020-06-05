@@ -1,4 +1,6 @@
+use std::fmt;
 use std::ops::Add;
+use std::str::FromStr;
 
 use super::*;
 use crate::PublicKey;
@@ -14,7 +16,7 @@ pub const PUBLIC_KEY_SIZE: usize = secp::util::COMPRESSED_PUBLIC_KEY_SIZE;
 pub const PUBLIC_KEY_UNCOMPRESSED_SIZE: usize = secp::util::FULL_PUBLIC_KEY_SIZE;
 
 /// Implementation of Secp256k1::PublicKey
-#[derive(Debug, Clone, Eq, PartialEq)]
+#[derive(Clone, Eq, PartialEq)]
 pub struct SecpPublicKey(pub(super) secp::PublicKey);
 
 impl SecpPublicKey {
@@ -44,6 +46,11 @@ impl SecpPublicKey {
     pub fn uncompressed(&self) -> [u8; PUBLIC_KEY_UNCOMPRESSED_SIZE] {
         self.0.serialize()
     }
+
+    /// ARK uses a non-standards hashing of the compressed public key.
+    pub fn ark_key_id(&self) -> SecpKeyId {
+        SecpKeyId::from_ark_pk(self)
+    }
 }
 
 impl Add<&[u8]> for &SecpPublicKey {
@@ -61,8 +68,47 @@ impl PublicKey<Secp256k1> for SecpPublicKey {
     fn key_id(&self) -> SecpKeyId {
         SecpKeyId::from(self)
     }
+
+    fn validate_id(&self, key_id: &SecpKeyId) -> bool {
+        &self.key_id() == key_id
+    }
+
     fn verify<D: AsRef<[u8]>>(&self, data: D, sig: &SecpSignature) -> bool {
         let msg = Secp256k1::hash_message(data);
         secp::verify(&msg, &sig.0, &self.0)
+    }
+}
+
+impl FromStr for SecpPublicKey {
+    type Err = failure::Error;
+    fn from_str(src: &str) -> Fallible<Self> {
+        Self::from_bytes(hex::decode(src)?)
+    }
+}
+
+impl fmt::Display for SecpPublicKey {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
+        formatter.write_str(&hex::encode(self.to_bytes()))
+    }
+}
+
+impl fmt::Debug for SecpPublicKey {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
+        fmt::Display::fmt(self, formatter)
+        // let id = MPublicKey::from(self.clone());
+        // id.fmt(formatter)
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn string_roundtrip() -> Fallible<()> {
+        let key = "0279be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798";
+        let pk: SecpPublicKey = key.parse()?;
+        assert_eq!(pk.to_string(), key);
+        Ok(())
     }
 }

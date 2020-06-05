@@ -3,6 +3,7 @@ use failure::Fallible;
 use super::*;
 
 /// Implementation of Ed25519::ExtendedPrivateKey
+#[derive(Clone)]
 pub struct EdExtPrivateKey {
     chain_code: ChainCode,
     sk: EdPrivateKey,
@@ -56,7 +57,7 @@ impl ExtendedPrivateKey<Ed25519> for EdExtPrivateKey {
     fn neuter(&self) -> EdPublicKey {
         self.sk.public_key()
     }
-    fn as_private_key(&self) -> EdPrivateKey {
+    fn private_key(&self) -> EdPrivateKey {
         self.sk.clone()
     }
 }
