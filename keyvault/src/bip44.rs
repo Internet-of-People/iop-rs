@@ -423,7 +423,7 @@ mod test {
         *,
     };
 
-    const PHRASE: &'static str = "blast cargo razor option vote shoe stock cruel mansion boy spot never album crop reflect kangaroo blouse slam empty shoot cable vital crane manual";
+    const PHRASE: &str = "blast cargo razor option vote shoe stock cruel mansion boy spot never album crop reflect kangaroo blouse slam empty shoot cable vital crane manual";
 
     #[test]
     fn path() -> Fallible<()> {

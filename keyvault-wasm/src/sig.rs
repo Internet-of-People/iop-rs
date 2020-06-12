@@ -28,8 +28,9 @@ impl JsMSignature {
         MSignature::PREFIX.to_string()
     }
 
-    #[wasm_bindgen(js_name = toString)]
-    pub fn to_string(&self) -> String {
+    // Note that Clippy complains if you call these methods to_string. But implementing Display is not enough to get a toString in JS.
+    #[wasm_bindgen(js_name=toString)]
+    pub fn stringify(&self) -> String {
         self.inner.to_string()
     }
 }
@@ -65,9 +66,10 @@ impl JsSecpSignature {
         self.inner.to_der()
     }
 
-    #[wasm_bindgen(js_name = toString)]
-    pub fn to_string(&self) -> String {
-        MSignature::from(self.inner.clone()).to_string()
+    // Note that Clippy complains if you call these methods to_string. But implementing Display is not enough to get a toString in JS.
+    #[wasm_bindgen(js_name=toString)]
+    pub fn stringify(&self) -> String {
+        self.inner.to_string()
     }
 }
 

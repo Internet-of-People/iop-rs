@@ -16,6 +16,7 @@ impl Seed {
     /// Number of bits in entropy generated from the bip39 mnemonic
     pub const BITS: usize = 512;
 
+    /// A BIP39 phrase we use in most of the demo videos and proof-of-concept applications. Do not use it in production code.
     pub const DEMO_PHRASE: &'static str = "include pear escape sail spy orange cute despair witness trouble sleep torch wire burst unable brass expose fiction drift clock duck oxygen aerobic already";
 
     /// Legacy password used in the 0.0.1 version of the crate. Since 0.0.2 the crate always requires a password, which should be "" by default when

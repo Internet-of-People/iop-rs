@@ -21,8 +21,9 @@ pub enum DidKind {
 }
 
 impl DidKind {
-    pub fn bip32_path(&self) -> bip32::Path {
-        Morpheus.bip32_path().append(ChildIndex::Hardened(*self as i32))
+    /// The canonical BIP32 derivation path of the node that stores all identifiers of the given kind.
+    pub fn bip32_path(self) -> bip32::Path {
+        Morpheus.bip32_path().append(ChildIndex::Hardened(self as i32))
     }
 }
 
@@ -43,7 +44,7 @@ impl Subtree for MorpheusSubtree {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Copy, Debug)]
 /// Starting point for deriving all Morpheus related keys.
 pub struct Morpheus;
 
@@ -53,12 +54,13 @@ impl Morpheus {
     pub const BIP43_PURPOSE: i32 = 0x1F4A4;
 
     /// Calculate the root node of the Morpheus subtree in the HD wallet.
-    pub fn root(&self, seed: &Seed) -> Fallible<MorpheusRoot> {
+    pub fn root(self, seed: &Seed) -> Fallible<MorpheusRoot> {
         let node = Bip32.master(&seed, &MorpheusSubtree).derive_hardened(Self::BIP43_PURPOSE)?;
         Ok(MorpheusRoot { node })
     }
 
-    pub fn bip32_path(&self) -> bip32::Path {
+    /// The canonical BIP32 derivation path of the root Morpheus node.
+    pub fn bip32_path(self) -> bip32::Path {
         Bip43Path::purpose(Morpheus::BIP43_PURPOSE).bip32_path()
     }
 }
@@ -70,29 +72,33 @@ pub struct MorpheusRoot {
 }
 
 impl MorpheusRoot {
+    /// To match the `node.path().bip32_path()` pattern, the `Morpheus` sizeless struct has the `bip32_path` method and this method returns
+    /// a reference to `Morpheus`.
     pub fn path(&self) -> &Morpheus {
         &Morpheus
     }
 
+    /// Returns a reference to the underlying BIP32 node.
     pub fn node(&self) -> &Bip32Node<ed25519::Ed25519> {
         &self.node
     }
 
+    /// Creates an admin API for the Morpheus root node.
     pub fn admin(&self) -> MorpheusVaultAdmin {
         MorpheusVaultAdmin { parent: self.clone() }
     }
 
-    /// Alias for kind(Device)
+    /// Alias for kind(Device).
     pub fn devices(&self) -> Fallible<MorpheusKind> {
         self.kind(DidKind::Device)
     }
 
-    /// Alias for kind(Persona)
+    /// Alias for kind(Persona).
     pub fn personas(&self) -> Fallible<MorpheusKind> {
         self.kind(DidKind::Persona)
     }
 
-    /// Alias for kind(Group)
+    /// Alias for kind(Group).
     pub fn groups(&self) -> Fallible<MorpheusKind> {
         self.kind(DidKind::Group)
     }
@@ -105,21 +111,26 @@ impl MorpheusRoot {
 }
 
 #[derive(Clone, Debug)]
+/// The admin node for the Morpheus root node will be used for self-encrypting administrative data on a storage for data not derived from the seed itself.
 pub struct MorpheusVaultAdmin {
     parent: MorpheusRoot,
 }
 
 impl MorpheusVaultAdmin {
+    /// To match the `node.path().bip32_path()` pattern, the `Morpheus` sizeless struct has the `bip32_path` method and this method returns
+    /// a reference to `Morpheus`.
     pub fn path(&self) -> &Morpheus {
         &Morpheus
     }
 
+    /// Returns a reference to the underlying BIP32 node.
     pub fn node(&self) -> &Bip32Node<ed25519::Ed25519> {
         &self.parent.node()
     }
 }
 
 #[derive(Clone, Debug)]
+/// The admin node for a Morpheus kind node will be used for self-encrypting administrative data on a storage for the collection of identifiers of that kind.
 pub struct MorpheusKindAdmin {
     parent: MorpheusKind,
 }
@@ -130,6 +141,7 @@ impl MorpheusKindAdmin {
         self.parent.path()
     }
 
+    /// Returns a reference to the underlying BIP32 node.
     pub fn node(&self) -> &Bip32Node<ed25519::Ed25519> {
         &self.parent.node()
     }
@@ -148,10 +160,12 @@ impl MorpheusKind {
         self.kind
     }
 
+    /// Returns a reference to the underlying BIP32 node.
     pub fn node(&self) -> &Bip32Node<ed25519::Ed25519> {
         &self.node
     }
 
+    /// Creates an admin API for the Morpheus kind node.
     pub fn admin(&self) -> MorpheusKindAdmin {
         MorpheusKindAdmin { parent: self.clone() }
     }
@@ -166,63 +180,79 @@ impl MorpheusKind {
 }
 
 #[derive(Clone, Debug)]
+/// A Morpheus path describing a position of a node in the HD wallet without being bound to a given seed. Will be useful for hardware wallet
+/// integrations in the future.
 pub struct MorpheusKeyPath {
     kind: DidKind,
     idx: i32,
 }
 
 impl MorpheusKeyPath {
+    /// The kind of identifiers in this subtree
     pub fn kind(&self) -> DidKind {
         self.kind
     }
+
+    /// The index of the identifier
     pub fn idx(&self) -> i32 {
         self.idx
     }
+
+    /// The canonical BIP32 derivation path of the identifier.
     pub fn bip32_path(&self) -> bip32::Path {
         self.kind.bip32_path().append(ChildIndex::Hardened(self.idx))
     }
 }
 
 #[derive(Clone, Debug)]
+/// The operations on an identifier that require the private key to be available in memory.
 pub struct MorpheusPrivateKey {
     path: MorpheusKeyPath,
     node: Bip32Node<ed25519::Ed25519>,
 }
 
 impl MorpheusPrivateKey {
+    /// Created the public interface of the node that does not need the private key in memory.
     pub fn neuter(&self) -> MorpheusPublicKey {
         let node = self.node.neuter();
         MorpheusPublicKey { path: self.path.clone(), node }
     }
 
+    /// Returns the Morpheus path for this identifier.
     pub fn path(&self) -> &MorpheusKeyPath {
         &self.path
     }
 
+    /// Returns a reference to the underlying BIP32 node,
     pub fn node(&self) -> &Bip32Node<ed25519::Ed25519> {
         &self.node
     }
 
+    /// Returns the multicipher private key that belongs to this identifier.
     pub fn private_key(&self) -> MPrivateKey {
         MPrivateKey::from(self.node.private_key())
     }
 }
 
 #[derive(Clone, Debug)]
+/// The operations on an identifier that do not require the private key to be available in memory.
 pub struct MorpheusPublicKey {
     path: MorpheusKeyPath,
     node: Bip32PublicNode<ed25519::Ed25519>,
 }
 
 impl MorpheusPublicKey {
+    /// Returns the Morpheus path for this identifier.
     pub fn path(&self) -> &MorpheusKeyPath {
         &self.path
     }
 
+    /// Returns a reference to the underlying BIP32 public node.
     pub fn node(&self) -> &Bip32PublicNode<ed25519::Ed25519> {
         &self.node
     }
 
+    /// Returns the multicipher public key that belongs to this identifier.
     pub fn public_key(&self) -> MPublicKey {
         MPublicKey::from(self.node.public_key())
     }

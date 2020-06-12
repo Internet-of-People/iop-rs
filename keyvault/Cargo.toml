@@ -19,6 +19,7 @@ hmac = "0.7.0"
 secp = { version = "0.3.5", package = "libsecp256k1" }
 log = "0.4.6"
 multibase = "0.8.0"
+orion = "0.15.2"
 ripemd160 = "0.8.0"
 serde = { version = "1.0.87", features = ["derive"] }
 serde_bytes = "0.11.3"
@@ -28,3 +29,4 @@ tiny-bip39 = "0.7.3"
 [dev-dependencies]
 rmp-serde = "*"
 serde_json = "*"
+rand = "*"

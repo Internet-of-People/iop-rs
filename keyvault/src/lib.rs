@@ -10,6 +10,7 @@ mod bip44;
 mod bip44path;
 mod cc;
 pub mod ed25519;
+pub mod encrypt;
 pub mod multicipher;
 mod network;
 pub mod secp256k1;

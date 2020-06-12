@@ -95,8 +95,6 @@ impl fmt::Display for SecpPublicKey {
 impl fmt::Debug for SecpPublicKey {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
         fmt::Display::fmt(self, formatter)
-        // let id = MPublicKey::from(self.clone());
-        // id.fmt(formatter)
     }
 }
 

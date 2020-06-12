@@ -62,10 +62,16 @@ impl SecpSignature {
     }
 }
 
-impl fmt::Debug for SecpSignature {
-    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> Result<(), fmt::Error> {
+impl fmt::Display for SecpSignature {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         let id = MSignature::from(self.clone());
         id.fmt(formatter)
+    }
+}
+
+impl fmt::Debug for SecpSignature {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt::Display::fmt(self, formatter)
     }
 }
 

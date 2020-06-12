@@ -365,7 +365,7 @@ mod tests {
         let net = &secp256k1::hyd::Mainnet;
         let master = Bip32.master(&seed, net);
         let bip44 = master.derive_hardened(44)?;
-        let hyd = bip44.derive_hardened(4741444)?;
+        let hyd = bip44.derive_hardened(4_741_444)?;
         let account = hyd.derive_hardened(0)?;
         let receives = account.derive_normal(0)?;
         let key = receives.derive_normal(0)?;

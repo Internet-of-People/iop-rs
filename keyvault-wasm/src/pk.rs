@@ -43,8 +43,9 @@ impl JsMPublicKey {
         self.inner.verify(data, signature.inner())
     }
 
-    #[wasm_bindgen(js_name = toString)]
-    pub fn to_string(&self) -> String {
+    // Note that Clippy complains if you call these methods to_string. But implementing Display is not enough to get a toString in JS.
+    #[wasm_bindgen(js_name=toString)]
+    pub fn stringify(&self) -> String {
         self.inner.to_string()
     }
 }
@@ -90,8 +91,9 @@ impl JsSecpPublicKey {
         self.inner.verify(data, signature.inner())
     }
 
-    #[wasm_bindgen(js_name = toString)]
-    pub fn to_string(&self) -> String {
+    // Note that Clippy complains if you call these methods to_string. But implementing Display is not enough to get a toString in JS.
+    #[wasm_bindgen(js_name=toString)]
+    pub fn stringify(&self) -> String {
         self.inner.to_string()
     }
 }

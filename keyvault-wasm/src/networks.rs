@@ -21,6 +21,10 @@ impl Networks {
     ];
 
     pub fn by_name(name: &str) -> Fallible<&'static dyn Network<Suite = Secp256k1>> {
-        Self::ALL.iter().find(|n| n.name() == name).map(|n| *n).ok_or(err_msg(""))
+        Self::ALL
+            .iter()
+            .find(|n| n.name() == name)
+            .copied()
+            .ok_or_else(|| err_msg(format!("Could not find network with name {}.", name)))
     }
 }

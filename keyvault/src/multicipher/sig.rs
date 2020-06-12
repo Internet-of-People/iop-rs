@@ -1,5 +1,6 @@
 use failure::{ensure, err_msg, Fallible};
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
+use std::fmt;
 
 use super::*;
 
@@ -119,15 +120,15 @@ impl From<MSignature> for String {
     }
 }
 
-impl std::fmt::Display for MSignature {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "{}", String::from(self))
+impl fmt::Display for MSignature {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        f.write_str(&String::from(self))
     }
 }
 
-impl std::fmt::Debug for MSignature {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        (self as &dyn std::fmt::Display).fmt(f)
+impl fmt::Debug for MSignature {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        fmt::Display::fmt(self, f)
     }
 }
 
