@@ -1,3 +1,4 @@
+use iop_keyvault::Networks;
 use wasm_bindgen::prelude::*;
 
 // NOTE Always receive function arguments as references (as long as bindgen allows)
@@ -23,7 +24,6 @@ mod bip44;
 mod encrypt;
 mod id;
 mod morpheus;
-mod networks;
 mod pk;
 mod seed;
 mod sig;
@@ -38,7 +38,6 @@ pub use bip44::{
 pub use encrypt::{decrypt, encrypt};
 pub use id::{JsMKeyId, JsSecpKeyId};
 pub use morpheus::{JsMorpheus, JsMorpheusRoot};
-pub use networks::Networks;
 pub use pk::{JsMPublicKey, JsSecpPublicKey};
 pub use seed::JsSeed;
 pub use sig::{JsMSignature, JsSecpSignature};

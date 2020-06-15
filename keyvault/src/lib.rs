@@ -13,6 +13,7 @@ pub mod ed25519;
 pub mod encrypt;
 pub mod multicipher;
 mod network;
+mod networks;
 pub mod secp256k1;
 mod seed;
 #[cfg(test)]
@@ -32,6 +33,7 @@ pub use bip43::*;
 pub use bip44::*;
 pub use bip44path::*;
 pub use network::*;
+pub use networks::Networks;
 pub use seed::*;
 
 /// A public key (also called shared key or pk in some literature) is that part of an asymmetric keypair
