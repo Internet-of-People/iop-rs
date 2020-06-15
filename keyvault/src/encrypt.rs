@@ -16,6 +16,17 @@ fn password_to_key(pw: &str, salt: &[u8]) -> Fallible<SecretKey> {
     Ok(key)
 }
 
+/// Generates a 24-byte random nonce that can be used with the [`encrypt`] function.
+///
+/// # Errors
+///
+/// When the underlying platform is unable to provide enough random entropy.
+pub fn nonce() -> Fallible<[u8; 24]> {
+    let mut result = [0u8; 24];
+    getrandom::getrandom(&mut result)?;
+    Ok(result)
+}
+
 /// Encrypts the plaintext with a password. Make sure the password is not weak. Make sure to generate an exactly 24-byte random nonce for each call
 /// otherwise there is a chance of weakening the key if the same nonce is used more than once. The ciphertext returned will be 40 bytes longer than the
 /// plaintext.
@@ -70,13 +81,10 @@ pub fn decrypt(ciphertext: impl AsRef<[u8]>, pw: impl AsRef<str>) -> Fallible<Ve
 #[cfg(test)]
 mod test {
     use super::*;
-    use rand::{thread_rng, RngCore};
 
     #[test]
     fn encrypt_decrypt_roundtrip() -> Fallible<()> {
-        let mut rng = thread_rng();
-        let mut nonce = [0u8; 24];
-        rng.fill_bytes(&mut nonce);
+        let nonce = nonce()?;
 
         let password = "password123";
         let message = "Be at the big tree at 5pm tomorrow!";

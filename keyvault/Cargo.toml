@@ -12,6 +12,7 @@ blake2 = "0.8.0"
 digest = "0.8.0"
 ed25519-dalek = "1.0.0-pre.3"
 failure = "0.1.8"
+getrandom = "0.1.14"
 hex = "0.4.2"
 hmac = "0.7.0"
 # Unfortunately the crate name of the libsecp256k1 collides with the perfect module name
@@ -29,4 +30,3 @@ tiny-bip39 = "0.7.3"
 [dev-dependencies]
 rmp-serde = "*"
 serde_json = "*"
-rand = "*"
