@@ -1,8 +1,8 @@
-use failure::{err_msg, Fallible};
 use super::{
     secp256k1::{ark, btc, hyd, iop, Secp256k1},
     Network,
 };
+use failure::{err_msg, Fallible};
 
 /// A registry of all networks implemented in this crate.
 pub struct Networks;
