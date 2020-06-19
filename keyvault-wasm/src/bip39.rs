@@ -1,6 +1,3 @@
-use iop_keyvault::{Bip39, Bip39Phrase};
-use wasm_bindgen::prelude::*;
-
 use super::*;
 
 #[wasm_bindgen(js_name = Bip39)]
@@ -13,7 +10,7 @@ pub struct JsBip39 {
 impl JsBip39 {
     #[wasm_bindgen(constructor)]
     pub fn new(lang_code: &str) -> Result<JsBip39, JsValue> {
-        let inner = Bip39::language_code(lang_code).map_err(err_to_js)?;
+        let inner = Bip39::language_code(lang_code).map_err_to_js()?;
         Ok(Self { inner })
     }
 
@@ -22,13 +19,13 @@ impl JsBip39 {
     //      So to be usable, we need entropy as explicit input instead.
     #[wasm_bindgen(js_name = entropy)]
     pub fn entropy(&self, entropy: &[u8]) -> Result<JsBip39Phrase, JsValue> {
-        let phrase = self.inner.entropy(entropy).map_err(err_to_js)?;
+        let phrase = self.inner.entropy(entropy).map_err_to_js()?;
         Ok(JsBip39Phrase::from(phrase))
     }
 
     #[wasm_bindgen(js_name = validatePhrase)]
     pub fn validate_phrase(&self, phrase: &str) -> Result<(), JsValue> {
-        self.inner.validate(phrase).map_err(err_to_js)
+        self.inner.validate(phrase).map_err_to_js()
     }
 
     #[wasm_bindgen(js_name = listWords)]
@@ -43,7 +40,7 @@ impl JsBip39 {
     }
 
     pub fn phrase(&self, phrase: &str) -> Result<JsBip39Phrase, JsValue> {
-        let phrase = self.inner.phrase(phrase).map_err(err_to_js)?;
+        let phrase = self.inner.phrase(phrase).map_err_to_js()?;
         Ok(JsBip39Phrase::from(phrase))
     }
 }

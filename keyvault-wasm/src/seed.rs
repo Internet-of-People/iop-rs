@@ -1,6 +1,3 @@
-use iop_keyvault::Seed;
-use wasm_bindgen::prelude::*;
-
 use super::*;
 
 #[wasm_bindgen(js_name = Seed)]
@@ -12,7 +9,7 @@ pub struct JsSeed {
 impl JsSeed {
     #[wasm_bindgen(constructor)]
     pub fn new(bytes: &[u8]) -> Result<JsSeed, JsValue> {
-        let inner = Seed::from_bytes(bytes).map_err(err_to_js)?;
+        let inner = Seed::from_bytes(bytes).map_err_to_js()?;
         Ok(Self { inner })
     }
 

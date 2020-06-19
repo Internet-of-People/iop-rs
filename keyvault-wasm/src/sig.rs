@@ -1,6 +1,3 @@
-use iop_keyvault::{multicipher::MSignature, secp256k1::SecpSignature};
-use wasm_bindgen::prelude::*;
-
 use super::*;
 
 #[wasm_bindgen(js_name = Signature)]
@@ -13,7 +10,7 @@ pub struct JsMSignature {
 impl JsMSignature {
     #[wasm_bindgen(constructor)]
     pub fn new(sign_str: &str) -> Result<JsMSignature, JsValue> {
-        let inner: MSignature = sign_str.parse().map_err(err_to_js)?;
+        let inner: MSignature = sign_str.parse().map_err_to_js()?;
         Ok(Self { inner })
     }
 
@@ -57,7 +54,7 @@ pub struct JsSecpSignature {
 impl JsSecpSignature {
     #[wasm_bindgen(js_name = fromDer)]
     pub fn from_der(bytes: &[u8]) -> Result<JsSecpSignature, JsValue> {
-        let inner = SecpSignature::from_der(bytes).map_err(err_to_js)?;
+        let inner = SecpSignature::from_der(bytes).map_err_to_js()?;
         Ok(Self { inner })
     }
 

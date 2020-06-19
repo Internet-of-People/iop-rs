@@ -1,10 +1,3 @@
-use iop_keyvault::{
-    multicipher::MPrivateKey,
-    secp256k1::{Bip178, SecpPrivateKey},
-    PrivateKey,
-};
-use wasm_bindgen::prelude::*;
-
 use super::*;
 
 #[wasm_bindgen(js_name = PrivateKey)]
@@ -55,13 +48,13 @@ pub struct JsSecpPrivateKey {
 impl JsSecpPrivateKey {
     #[wasm_bindgen(js_name = fromArkPassphrase)]
     pub fn from_ark_passphrase(phrase: &str) -> Result<JsSecpPrivateKey, JsValue> {
-        let inner = SecpPrivateKey::from_ark_passphrase(phrase).map_err(err_to_js)?;
+        let inner = SecpPrivateKey::from_ark_passphrase(phrase).map_err_to_js()?;
         Ok(Self { inner })
     }
 
     #[wasm_bindgen(js_name = toWif)]
     pub fn to_wif(&self, network: &str) -> Result<String, JsValue> {
-        let network = Networks::by_name(network).map_err(err_to_js)?;
+        let network = Networks::by_name(network).map_err_to_js()?;
         Ok(self.inner.to_wif(network.wif(), Bip178::Compressed))
     }
 

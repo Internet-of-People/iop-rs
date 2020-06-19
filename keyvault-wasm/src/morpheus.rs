@@ -1,8 +1,3 @@
-use iop_keyvault::ed25519::{
-    Morpheus, MorpheusKind, MorpheusPrivateKey, MorpheusPublicKey, MorpheusRoot,
-};
-use wasm_bindgen::prelude::*;
-
 use super::*;
 
 #[wasm_bindgen(js_name = Morpheus)]
@@ -12,7 +7,7 @@ pub struct JsMorpheus;
 #[wasm_bindgen(js_class = Morpheus)]
 impl JsMorpheus {
     pub fn root(seed: &JsSeed) -> Result<JsMorpheusRoot, JsValue> {
-        let inner = Morpheus.root(&seed.inner()).map_err(err_to_js)?;
+        let inner = Morpheus.root(&seed.inner()).map_err_to_js()?;
         Ok(JsMorpheusRoot::from(inner))
     }
 }
@@ -31,7 +26,7 @@ impl JsMorpheusRoot {
     }
 
     pub fn personas(&self) -> Result<JsMorpheusKind, JsValue> {
-        let inner = self.inner.personas().map_err(err_to_js)?;
+        let inner = self.inner.personas().map_err_to_js()?;
         Ok(JsMorpheusKind::from(inner))
     }
 }
@@ -67,7 +62,7 @@ impl JsMorpheusKind {
     }
 
     pub fn key(&self, idx: i32) -> Result<JsMorpheusPrivateKey, JsValue> {
-        let inner = self.inner.key(idx).map_err(err_to_js)?;
+        let inner = self.inner.key(idx).map_err_to_js()?;
         Ok(JsMorpheusPrivateKey::from(inner))
     }
 }

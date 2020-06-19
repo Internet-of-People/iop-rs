@@ -1,6 +1,3 @@
-use iop_keyvault::{multicipher::MPublicKey, secp256k1::SecpPublicKey, PublicKey};
-use wasm_bindgen::prelude::*;
-
 use super::*;
 
 #[wasm_bindgen(js_name = PublicKey)]
@@ -13,7 +10,7 @@ pub struct JsMPublicKey {
 impl JsMPublicKey {
     #[wasm_bindgen(constructor)]
     pub fn new(pub_key_str: &str) -> Result<JsMPublicKey, JsValue> {
-        let inner: MPublicKey = pub_key_str.parse().map_err(err_to_js)?;
+        let inner: MPublicKey = pub_key_str.parse().map_err_to_js()?;
         Ok(Self { inner })
     }
 
@@ -72,7 +69,7 @@ pub struct JsSecpPublicKey {
 impl JsSecpPublicKey {
     #[wasm_bindgen(constructor)]
     pub fn new(key: &str) -> Result<JsSecpPublicKey, JsValue> {
-        let inner: SecpPublicKey = key.parse().map_err(err_to_js)?;
+        let inner: SecpPublicKey = key.parse().map_err_to_js()?;
         Ok(Self { inner })
     }
 

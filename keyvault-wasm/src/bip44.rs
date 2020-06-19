@@ -1,9 +1,3 @@
-use iop_keyvault::{
-    secp256k1::Secp256k1, Bip44, Bip44Account, Bip44Coin, Bip44Key, Bip44PublicAccount,
-    Bip44PublicKey, Bip44PublicSubAccount, Bip44SubAccount, Chain,
-};
-use wasm_bindgen::prelude::*;
-
 use super::*;
 
 #[wasm_bindgen(js_name = Bip44)]
@@ -13,8 +7,8 @@ pub struct JsBip44;
 #[wasm_bindgen(js_class = Bip44)]
 impl JsBip44 {
     pub fn network(seed: &JsSeed, name: &str) -> Result<JsBip44Coin, JsValue> {
-        let network = Networks::by_name(name).map_err(err_to_js)?;
-        let coin = Bip44.network(&seed.inner(), network).map_err(err_to_js)?;
+        let network = Networks::by_name(name).map_err_to_js()?;
+        let coin = Bip44.network(&seed.inner(), network).map_err_to_js()?;
         Ok(JsBip44Coin::from(coin))
     }
 }
@@ -32,7 +26,7 @@ impl JsBip44Coin {
     }
 
     pub fn account(&self, account: i32) -> Result<JsBip44Account, JsValue> {
-        let account = self.inner.account(account).map_err(err_to_js)?;
+        let account = self.inner.account(account).map_err_to_js()?;
         Ok(JsBip44Account::from(account))
     }
 
@@ -79,7 +73,7 @@ impl JsBip44Account {
     }
 
     pub fn chain(&self, change: bool) -> Result<JsBip44SubAccount, JsValue> {
-        let account = self.inner.chain(Chain::from(change)).map_err(err_to_js)?;
+        let account = self.inner.chain(Chain::from(change)).map_err_to_js()?;
         Ok(JsBip44SubAccount::from(account))
     }
 
@@ -112,8 +106,8 @@ impl JsBip44Account {
 
     #[wasm_bindgen(js_name = fromXprv)]
     pub fn from_xprv(account: i32, xprv: &str, network: &str) -> Result<JsBip44Account, JsValue> {
-        let network = Networks::by_name(network).map_err(err_to_js)?;
-        let inner = Bip44Account::from_xprv(account, xprv, network).map_err(err_to_js)?;
+        let network = Networks::by_name(network).map_err_to_js()?;
+        let inner = Bip44Account::from_xprv(account, xprv, network).map_err_to_js()?;
         Ok(JsBip44Account::from(inner))
     }
 
@@ -148,7 +142,7 @@ impl JsBip44PublicAccount {
     }
 
     pub fn chain(&self, change: bool) -> Result<JsBip44PublicSubAccount, JsValue> {
-        let account = self.inner.chain(Chain::from(change)).map_err(err_to_js)?;
+        let account = self.inner.chain(Chain::from(change)).map_err_to_js()?;
         Ok(JsBip44PublicSubAccount::from(account))
     }
 
@@ -178,8 +172,8 @@ impl JsBip44PublicAccount {
     pub fn from_xpub(
         account: i32, xpub: &str, network: &str,
     ) -> Result<JsBip44PublicAccount, JsValue> {
-        let network = Networks::by_name(network).map_err(err_to_js)?;
-        let inner = Bip44PublicAccount::from_xpub(account, xpub, network).map_err(err_to_js)?;
+        let network = Networks::by_name(network).map_err_to_js()?;
+        let inner = Bip44PublicAccount::from_xpub(account, xpub, network).map_err_to_js()?;
         Ok(JsBip44PublicAccount::from(inner))
     }
 
@@ -214,7 +208,7 @@ impl JsBip44SubAccount {
     }
 
     pub fn key(&self, idx: i32) -> Result<JsBip44Key, JsValue> {
-        let key = self.inner.key(idx).map_err(err_to_js)?;
+        let key = self.inner.key(idx).map_err_to_js()?;
         Ok(JsBip44Key::from(key))
     }
 
@@ -249,9 +243,9 @@ impl JsBip44SubAccount {
     pub fn from_xprv(
         account: i32, change: bool, xprv: &str, network: &str,
     ) -> Result<JsBip44SubAccount, JsValue> {
-        let network = Networks::by_name(network).map_err(err_to_js)?;
+        let network = Networks::by_name(network).map_err_to_js()?;
         let inner = Bip44SubAccount::from_xprv(account, Chain::from(change), xprv, network)
-            .map_err(err_to_js)?;
+            .map_err_to_js()?;
         Ok(JsBip44SubAccount::from(inner))
     }
 
@@ -286,7 +280,7 @@ impl JsBip44PublicSubAccount {
     }
 
     pub fn key(&self, idx: i32) -> Result<JsBip44PublicKey, JsValue> {
-        let key = self.inner.key(idx).map_err(err_to_js)?;
+        let key = self.inner.key(idx).map_err_to_js()?;
         Ok(JsBip44PublicKey::from(key))
     }
 
@@ -316,9 +310,9 @@ impl JsBip44PublicSubAccount {
     pub fn from_xpub(
         account: i32, change: bool, xpub: &str, network: &str,
     ) -> Result<JsBip44PublicSubAccount, JsValue> {
-        let network = Networks::by_name(network).map_err(err_to_js)?;
+        let network = Networks::by_name(network).map_err_to_js()?;
         let inner = Bip44PublicSubAccount::from_xpub(account, Chain::from(change), xpub, network)
-            .map_err(err_to_js)?;
+            .map_err_to_js()?;
         Ok(JsBip44PublicSubAccount::from(inner))
     }
 

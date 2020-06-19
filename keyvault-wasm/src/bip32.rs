@@ -1,6 +1,3 @@
-use iop_keyvault::{secp256k1::Secp256k1, Bip32, Bip32Node, Bip32PublicNode};
-use wasm_bindgen::prelude::*;
-
 use super::*;
 
 #[wasm_bindgen(js_name = Bip32)]
@@ -10,7 +7,7 @@ pub struct JsBip32;
 #[wasm_bindgen(js_name = Bip32)]
 impl JsBip32 {
     pub fn master(seed: &JsSeed, name: &str) -> Result<JsBip32Node, JsValue> {
-        let network = Networks::by_name(name).map_err(err_to_js)?;
+        let network = Networks::by_name(name).map_err_to_js()?;
         let node = Bip32.master(&seed.inner(), network.subtree());
         Ok(JsBip32Node::from(node))
     }
@@ -31,13 +28,13 @@ impl JsBip32Node {
 
     #[wasm_bindgen(js_name = deriveNormal)]
     pub fn derive_normal(&self, idx: i32) -> Result<JsBip32Node, JsValue> {
-        let child = self.inner.derive_normal(idx).map_err(err_to_js)?;
+        let child = self.inner.derive_normal(idx).map_err_to_js()?;
         Ok(JsBip32Node::from(child))
     }
 
     #[wasm_bindgen(js_name = deriveHardened)]
     pub fn derive_hardened(&self, idx: i32) -> Result<JsBip32Node, JsValue> {
-        let child = self.inner.derive_hardened(idx).map_err(err_to_js)?;
+        let child = self.inner.derive_hardened(idx).map_err_to_js()?;
         Ok(JsBip32Node::from(child))
     }
 
@@ -56,13 +53,13 @@ impl JsBip32Node {
 
     #[wasm_bindgen(js_name = toXprv)]
     pub fn to_xprv(&self, name: &str) -> Result<String, JsValue> {
-        let network = Networks::by_name(name).map_err(err_to_js)?;
+        let network = Networks::by_name(name).map_err_to_js()?;
         Ok(self.inner.to_xprv(network))
     }
 
     #[wasm_bindgen(js_name = toWif)]
     pub fn to_wif(&self, name: &str) -> Result<String, JsValue> {
-        let network = Networks::by_name(name).map_err(err_to_js)?;
+        let network = Networks::by_name(name).map_err_to_js()?;
         Ok(self.inner.to_wif(network))
     }
 }
@@ -94,7 +91,7 @@ impl JsBip32PublicNode {
 
     #[wasm_bindgen(js_name = deriveNormal)]
     pub fn derive_normal(&self, idx: i32) -> Result<JsBip32PublicNode, JsValue> {
-        let child = self.inner.derive_normal(idx).map_err(err_to_js)?;
+        let child = self.inner.derive_normal(idx).map_err_to_js()?;
         Ok(JsBip32PublicNode::from(child))
     }
 
@@ -112,13 +109,13 @@ impl JsBip32PublicNode {
 
     #[wasm_bindgen(js_name = toXpub)]
     pub fn to_xpub(&self, name: &str) -> Result<String, JsValue> {
-        let network = Networks::by_name(name).map_err(err_to_js)?;
+        let network = Networks::by_name(name).map_err_to_js()?;
         Ok(self.inner.to_xpub(network))
     }
 
     #[wasm_bindgen(js_name = toP2pkh)]
     pub fn to_p2pkh_addr(&self, name: &str) -> Result<String, JsValue> {
-        let network = Networks::by_name(name).map_err(err_to_js)?;
+        let network = Networks::by_name(name).map_err_to_js()?;
         Ok(self.inner.to_p2pkh_addr(network))
     }
 }

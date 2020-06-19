@@ -1,6 +1,3 @@
-use iop_keyvault::{multicipher::MKeyId, secp256k1::SecpKeyId};
-use wasm_bindgen::prelude::*;
-
 use super::*;
 
 #[wasm_bindgen(js_name = KeyId)]
@@ -13,7 +10,7 @@ pub struct JsMKeyId {
 impl JsMKeyId {
     #[wasm_bindgen(constructor)]
     pub fn new(key_id_str: &str) -> Result<JsMKeyId, JsValue> {
-        let inner: MKeyId = key_id_str.parse().map_err(err_to_js)?;
+        let inner: MKeyId = key_id_str.parse().map_err_to_js()?;
         Ok(Self { inner })
     }
 
