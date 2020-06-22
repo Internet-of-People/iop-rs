@@ -14,9 +14,11 @@ impl JsBip39 {
         Ok(Self { inner })
     }
 
-    // NOTE Mnemonic::new() generates random entropy which accesses OsRng.
-    //      Os access is refused from sandboxes like NodeJs Wasm.
-    //      So to be usable, we need entropy as explicit input instead.
+    pub fn generate(&self) -> Result<JsBip39Phrase, JsValue> {
+        let phrase = self.inner.generate();
+        Ok(JsBip39Phrase::from(phrase))
+    }
+
     #[wasm_bindgen(js_name = entropy)]
     pub fn entropy(&self, entropy: &[u8]) -> Result<JsBip39Phrase, JsValue> {
         let phrase = self.inner.entropy(entropy).map_err_to_js()?;

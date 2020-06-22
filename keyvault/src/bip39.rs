@@ -1,5 +1,6 @@
 use ::bip39::{Mnemonic, MnemonicType};
 use failure::{bail, err_msg, Fallible};
+use getrandom::getrandom;
 
 use super::*;
 
@@ -12,6 +13,13 @@ pub struct Bip39 {
 impl Bip39 {
     /// Number of words in the BIP39 mnemonics we accept and generate
     pub const MNEMONIC_WORDS: usize = 24;
+
+    /// Creates the right sized entropy using the CSPRNG available on the platform.
+    pub fn generate_entropy() -> Fallible<[u8; 32]> {
+        let mut entropy = [0u8; 256 / 8];
+        getrandom(&mut entropy)?;
+        Ok(entropy)
+    }
 
     /// Creates a new English BIP39 phrase handler
     pub fn new() -> Self {

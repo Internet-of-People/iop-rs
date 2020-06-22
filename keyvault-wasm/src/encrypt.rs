@@ -1,8 +1,9 @@
 use super::*;
 
 #[wasm_bindgen]
-pub fn encrypt(plain_text: &[u8], password: &str, nonce: &[u8]) -> Result<Vec<u8>, JsValue> {
-    keyvault_encrypt::encrypt(plain_text, password, nonce).map_err_to_js()
+pub fn encrypt(plain_text: &[u8], password: &str) -> Result<Vec<u8>, JsValue> {
+    let nonce = keyvault_encrypt::nonce().map_err_to_js()?;
+    keyvault_encrypt::encrypt(plain_text, password, &nonce).map_err_to_js()
 }
 
 #[wasm_bindgen]

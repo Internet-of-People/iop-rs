@@ -12,6 +12,7 @@ blake2 = "0.8.0"
 digest = "0.8.0"
 ed25519-dalek = "1.0.0-pre.3"
 failure = "0.1.8"
+rand = { version = "0.7.2", features = ["getrandom"] }
 getrandom = "0.1.14"
 hex = "0.4.2"
 hmac = "0.7.0"
@@ -25,7 +26,11 @@ ripemd160 = "0.8.0"
 serde = { version = "1.0.87", features = ["derive"] }
 serde_bytes = "0.11.3"
 sha2 = "0.8.0"
-tiny-bip39 = "0.7.3"
+tiny-bip39 = { version = "0.7.3", features = [] }
+
+[target.wasm32-unknown-unknown.dependencies.getrandom]
+version = "0.1.14"
+features = ["wasm-bindgen"]
 
 [dev-dependencies]
 rmp-serde = "*"
