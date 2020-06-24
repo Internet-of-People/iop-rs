@@ -4,6 +4,8 @@ mod bip;
 mod call_context;
 mod convert;
 mod crypto;
+//mod hydra;
+mod morpheus;
 mod vault;
 
 use std::os::raw;

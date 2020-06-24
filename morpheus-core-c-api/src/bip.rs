@@ -9,7 +9,6 @@ pub extern "C" fn bip39_generate_phrase(
     let fun = || {
         let lang_code = convert::str_in(lang)?;
         let bip39 = Bip39::language_code(lang_code)?;
-        // TODO remove bip39 crate and use iop_keyvault's types
         let phrase = bip39.generate();
         Ok(convert::string_out(phrase.as_phrase().to_string()))
     };

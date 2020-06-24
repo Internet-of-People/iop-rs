@@ -52,25 +52,30 @@ void main(List<String> arguments) {
     final maskedJson = sdk.maskJson(json, '.claim.content.dateOfBirth');
     print('Masked Json:\n$maskedJson');
 
+    print('Creating vault...');
     final word25 = "";
     final unlockPassword = "testing";
-    var vault = null;
-//    try {
-//      vault = sdk.loadVault(vaultPath);
-//    } catch (e) {
-        print('Creating vault...');
-        vault = sdk.createVault(
-          'include pear escape sail spy orange cute despair witness trouble sleep torch wire burst unable brass expose fiction drift clock duck oxygen aerobic already',
-          word25, unlockPassword);
-//    }
+    var vault = sdk.createVault(
+      'include pear escape sail spy orange cute despair witness trouble sleep torch wire burst unable brass expose fiction drift clock duck oxygen aerobic already',
+      word25, unlockPassword);
 
-    final vaultPath =
-        '${Platform.environment['HOME']}/.config/prometheus/did_vault.dat';
+//    final vaultPath =
+//        '${Platform.environment['HOME']}/.config/prometheus/did_vault.dat';
 
     print('Vault dirty flag: ${sdk.vaultIsDirty(vault)}');
     var vaultJson = sdk.vaultToJson(vault);
     print('Serialized Vault: $vaultJson');
     print('Vault dirty flag: ${sdk.vaultIsDirty(vault)}');
+
+    sdk.freeVault(vault);
+    vault = sdk.jsonToVault(vaultJson);
+    print('Loaded the same vault: ${sdk.vaultToJson(vault) == vaultJson}');
+    print('Vault dirty flag: ${sdk.vaultIsDirty(vault)}');
+
+    final morpheus = sdk.vaultMorpheus(vault, unlockPassword);
+    var persona = sdk.morpheusPersona(morpheus, 0);
+    print('Persona 0: $persona');
+    sdk.freeMorpheus(morpheus);
 
 //    while (sdk.listDids().length < 2) {
 //      print('Created ${sdk.createDid()}');
