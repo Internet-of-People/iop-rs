@@ -1,6 +1,6 @@
 use super::*;
 
-use iop_keyvault::{Network, Networks};
+use iop_keyvault::Networks;
 use iop_morpheus_core::crypto::hd::{
     hydra::{Parameters, Plugin, Private, Public},
     BoundPlugin, Vault,
@@ -22,16 +22,20 @@ impl Hydra {
     }
 }
 
-// #[no_mangle]
-// pub extern "C" fn vault_hydra(vault: *mut Vault, context: *mut CallContext<*mut Hydra>) {
-//     let fun = || {
-//         let hyd_params = hydra::Parameters::new(&hyd::Testnet, 0);
-//         hydra::Plugin::rewind(&mut vault, unlock_password, &hyd_params)?;
-//         // let hydra_plugin = hydra::Plugin::get(&vault, &hyd_params)?;
-//         Ok(convert::move_out(vault))
-//     };
-//     unsafe { convert::borrow_mut_in(context).run(fun) }
-// }
+#[no_mangle]
+pub extern "C" fn vault_hydra(
+    vault: *mut Vault, unlock_pwd: *const raw::c_char, network: *const raw::c_char, account: i32,
+    context: *mut CallContext<*mut Hydra>,
+) {
+    let vault = unsafe { convert::borrow_mut_in(vault) };
+    let fun = || {
+        let unlock_password = convert::str_in(unlock_pwd)?;
+        let network = convert::str_in(network)?;
+        let plugin = Hydra::new(vault, unlock_password, network, account)?;
+        Ok(convert::move_out(plugin))
+    };
+    unsafe { convert::borrow_mut_in(context).run(fun) }
+}
 
 #[no_mangle]
 pub extern "C" fn hydra_free(hydra: *mut Hydra) {
@@ -40,4 +44,17 @@ pub extern "C" fn hydra_free(hydra: *mut Hydra) {
     }
     let hydra = unsafe { Box::from_raw(hydra) };
     drop(hydra); // NOTE redundant, but clearer than let _plugin = ...;
+}
+
+#[no_mangle]
+pub extern "C" fn hydra_address(
+    hydra: *mut Hydra, idx: i32, context: *mut CallContext<*mut raw::c_char>,
+) {
+    let hydra = unsafe { convert::borrow_in(hydra) };
+    let fun = || {
+        let address = hydra.plugin.public()?.key(idx)?;
+        let adress_str = address.to_p2pkh_addr();
+        Ok(convert::string_out(adress_str))
+    };
+    unsafe { convert::borrow_mut_in(context).run(fun) }
 }

@@ -4,7 +4,7 @@ mod bip;
 mod call_context;
 mod convert;
 mod crypto;
-//mod hydra;
+mod hydra;
 mod morpheus;
 mod vault;
 
@@ -15,4 +15,3 @@ use failure::Fallible;
 
 use self::call_context::CallContext;
 use self::convert::RawSlice;
-use iop_morpheus_core::crypto::{json_digest, sign::Nonce};

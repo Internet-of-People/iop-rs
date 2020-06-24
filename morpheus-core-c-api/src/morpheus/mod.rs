@@ -19,16 +19,16 @@ impl Morpheus {
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn vault_morpheus(
+pub extern "C" fn vault_morpheus(
     vault: *mut Vault, unlock_pwd: *const raw::c_char, context: *mut CallContext<*mut Morpheus>,
 ) {
-    let vault = convert::borrow_mut_in(vault);
+    let vault = unsafe { convert::borrow_mut_in(vault) };
     let fun = || {
         let unlock_password = convert::str_in(unlock_pwd)?;
         let morpheus = Morpheus::new(vault, unlock_password)?;
         Ok(convert::move_out(morpheus))
     };
-    convert::borrow_mut_in(context).run(fun)
+    unsafe { convert::borrow_mut_in(context).run(fun) }
 }
 
 #[no_mangle]

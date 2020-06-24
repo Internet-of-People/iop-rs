@@ -1,5 +1,7 @@
 use super::*;
 
+use iop_morpheus_core::crypto::{json_digest, sign::Nonce};
+
 #[no_mangle]
 pub extern "C" fn json_mask(
     raw_json: *const raw::c_char, raw_keep_paths: *const raw::c_char,

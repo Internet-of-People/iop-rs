@@ -41,13 +41,13 @@ pub extern "C" fn vault_free(vault: *mut Vault) {
 
 #[no_mangle]
 pub extern "C" fn vault_is_dirty(vault: *mut Vault, context: *mut CallContext<*mut raw::c_uchar>) {
-    let vault = unsafe { &*vault };
+    let vault = unsafe { convert::borrow_in(vault) };
     let fun = || Ok(convert::bool_out(is_dirty(vault)?));
     unsafe { convert::borrow_mut_in(context).run(fun) }
 }
 
 #[no_mangle]
-pub extern "C" fn vault_to_json(vault: *mut Vault, context: *mut CallContext<*mut raw::c_char>) {
+pub extern "C" fn vault_save(vault: *mut Vault, context: *mut CallContext<*mut raw::c_char>) {
     let vault = unsafe { &*vault };
     let fun = || {
         let vault_json = serde_json::to_string(&vault)?;
@@ -58,7 +58,7 @@ pub extern "C" fn vault_to_json(vault: *mut Vault, context: *mut CallContext<*mu
 }
 
 #[no_mangle]
-pub extern "C" fn json_to_vault(json: *const raw::c_char, context: *mut CallContext<*mut Vault>) {
+pub extern "C" fn vault_load(json: *const raw::c_char, context: *mut CallContext<*mut Vault>) {
     let fun = || {
         let json = convert::str_in(json)?;
         let vault = serde_json::from_str(json)?;

@@ -67,6 +67,7 @@ void main(List<String> arguments) {
     print('Serialized Vault: $vaultJson');
     print('Vault dirty flag: ${sdk.vaultIsDirty(vault)}');
 
+    print('Reloading vault');
     sdk.freeVault(vault);
     vault = sdk.jsonToVault(vaultJson);
     print('Loaded the same vault: ${sdk.vaultToJson(vault) == vaultJson}');
@@ -76,6 +77,11 @@ void main(List<String> arguments) {
     var persona = sdk.morpheusPersona(morpheus, 0);
     print('Persona 0: $persona');
     sdk.freeMorpheus(morpheus);
+
+    final hydra = sdk.vaultHydra(vault, unlockPassword, 'HYD testnet', 0);
+    var address = sdk.hydraAddress(hydra, 0);
+    print('Hydra address 0: $address');
+    sdk.freeHydra(hydra);
 
 //    while (sdk.listDids().length < 2) {
 //      print('Created ${sdk.createDid()}');
