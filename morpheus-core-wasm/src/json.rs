@@ -1,13 +1,21 @@
 use super::*;
 
-#[wasm_bindgen(js_name = mask)]
-pub fn mask(data: &JsValue, keep_properties_list: &str) -> Result<String, JsValue> {
+#[wasm_bindgen(js_name = selectiveDigestJson)]
+pub fn selective_digest(data: &JsValue, keep_properties_list: &str) -> Result<String, JsValue> {
     let serde_data: serde_json::Value = data.into_serde().map_err_to_js()?;
-    let masked_data_str = mask_json_value(serde_data, keep_properties_list).map_err_to_js()?;
-    Ok(masked_data_str)
+    let digested_data_str =
+        selective_digest_json(serde_data, keep_properties_list).map_err_to_js()?;
+    Ok(digested_data_str)
 }
 
-#[wasm_bindgen(js_name = digest)]
+#[wasm_bindgen(js_name = digestJson)]
 pub fn digest(data: &JsValue) -> Result<String, JsValue> {
-    mask(data, "")
+    selective_digest(data, "")
+}
+
+#[wasm_bindgen(js_name = stringifyJson)]
+pub fn stringify(data: &JsValue) -> Result<String, JsValue> {
+    let serde_data: serde_json::Value = data.into_serde().map_err_to_js()?;
+    let stringified = canonical_json(&serde_data).map_err_to_js()?;
+    Ok(stringified)
 }

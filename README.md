@@ -39,7 +39,7 @@ but is ledger-agnostic in general. Hydra was built as a bridge-chain of the Ark 
 [layer 2 plugin](https://github.com/Internet-of-People/morpheus-ts) on top to define custom transactions
 managing DIDs and rights.
 
-Anything else that does not need public verification is not stored on ledger or
+Anything else that does not need public verification is not stored on the ledger or
 anywhere publicly, with special emphasis on any user data, e.g. verifiable claims.
 Instead, user data is shared explicitly on demand with only a specific peer.
 Shared data contains a license describing who might use it for what purpose and when the license expires.

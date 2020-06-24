@@ -9,8 +9,8 @@ pub extern "C" fn json_mask(
         let json_str = convert::str_in(raw_json)?;
         let json_val: serde_json::Value = serde_json::from_str(json_str)?;
         let keep_paths_str = convert::str_in(raw_keep_paths)?;
-        let masked_json = json_digest::mask_json_value(json_val, keep_paths_str)?;
-        Ok(convert::string_out(masked_json))
+        let digested_json = json_digest::selective_digest_json(json_val, keep_paths_str)?;
+        Ok(convert::string_out(digested_json))
     };
     unsafe { convert::borrow_mut_in(context).run(fun) }
 }

@@ -65,8 +65,8 @@ pub fn collapse_json_subtree(
         serde_json::Value::Array(arr) => {
             let mut canonical_json_items = Vec::new();
             for item in arr {
-                let masked_item = collapse_json_subtree(item, vec![])?;
-                canonical_json_items.push(serde_json::to_string(&masked_item)?);
+                let digested_item = collapse_json_subtree(item, vec![])?;
+                canonical_json_items.push(serde_json::to_string(&digested_item)?);
             }
             let flattened_array = format!("[{}]", canonical_json_items.join(","));
             //println!("Flattened array {} to {}", serde_json::to_string(&data)?, flattened_array);
@@ -92,7 +92,7 @@ pub fn collapse_json_subtree(
             for key in keys {
                 ensure!(
                     *key == normalize_unicode(key),
-                    "Data to be digested/masked must contain field names normalized with Unicode NFKD"
+                    "Data to be digested must contain field names normalized with Unicode NFKD"
                 );
 
                 let value = obj.get(key).expect("serde_json keys() impl error");
@@ -109,8 +109,8 @@ pub fn collapse_json_subtree(
                     }
                 } else {
                     // This path does not match any paths, fully collapse
-                    let fully_masked_value = collapse_json_subtree(value, vec![])?;
-                    canonical_json_entries.push((key, fully_masked_value));
+                    let fully_digested_value = collapse_json_subtree(value, vec![])?;
+                    canonical_json_entries.push((key, fully_digested_value));
                 };
             }
 
@@ -146,7 +146,9 @@ pub fn collapse_json_subtree(
     }
 }
 
-pub fn mask_json_value(json_value: serde_json::Value, keep_paths_str: &str) -> Fallible<String> {
+pub fn selective_digest_json(
+    json_value: serde_json::Value, keep_paths_str: &str,
+) -> Fallible<String> {
     let keep_paths_vec = json_path::split_alternatives(keep_paths_str);
     let digest_json = match &json_value {
         serde_json::Value::Object(_obj) => collapse_json_subtree(&json_value, keep_paths_vec),
@@ -161,29 +163,31 @@ pub fn mask_json_value(json_value: serde_json::Value, keep_paths_str: &str) -> F
     }
 }
 
-pub fn mask_data<T: serde::Serialize>(data: &T, keep_paths_str: &str) -> Fallible<String> {
+pub fn selective_digest_data<T: serde::Serialize>(
+    data: &T, keep_paths_str: &str,
+) -> Fallible<String> {
     let json_value = serde_json::to_value(&data)?;
-    mask_json_value(json_value, keep_paths_str)
+    selective_digest_json(json_value, keep_paths_str)
 }
 
-pub fn mask_json_str(json_str: &str, keep_paths_str: &str) -> Fallible<String> {
+pub fn selective_digest_json_str(json_str: &str, keep_paths_str: &str) -> Fallible<String> {
     ensure!(
         json_str == normalize_unicode(json_str),
-        "Json string to be digested/masked must be normalized with Unicode NFKD"
+        "Json string to be digested must be normalized with Unicode NFKD"
     );
 
     let json_value: serde_json::Value = serde_json::from_str(json_str)?;
-    mask_json_value(json_value, keep_paths_str)
+    selective_digest_json(json_value, keep_paths_str)
 }
 
 const KEEP_NOTHING: &str = "";
 
 pub fn digest_data<T: serde::Serialize>(data: &T) -> Fallible<String> {
-    mask_data(data, KEEP_NOTHING)
+    selective_digest_data(data, KEEP_NOTHING)
 }
 
 pub fn digest_json_str(json_str: &str) -> Fallible<String> {
-    mask_json_str(json_str, KEEP_NOTHING)
+    selective_digest_json_str(json_str, KEEP_NOTHING)
 }
 
 #[cfg(test)]
@@ -221,10 +225,10 @@ mod tests {
         let json_value_nfc: serde_json::Value = serde_json::from_str(&str_nfc)?;
         let json_value_nfkd: serde_json::Value = serde_json::from_str(&str_nfkd)?;
         assert_eq!(
-            mask_json_value(json_value_nfkd, "")?,
+            selective_digest_json(json_value_nfkd, "")?,
             "cjuRab8yOeLzxmFY_fEMC79cW5z9XyihRhaGnTSvMabrA8"
         );
-        assert!(mask_json_value(json_value_nfc, "").is_err());
+        assert!(selective_digest_json(json_value_nfc, "").is_err());
         Ok(())
     }
 
@@ -239,44 +243,44 @@ mod tests {
     fn test_json_digest() -> Fallible<()> {
         let test_obj = TestData { b: 1, a: 2 };
         {
-            let masked = digest_data(&test_obj)?;
-            assert_eq!(masked, "cjumTq1s6Tn6xkXolxHj4LmAo7DAb-zoPLhEa1BvpovAFU");
+            let digested = digest_data(&test_obj)?;
+            assert_eq!(digested, "cjumTq1s6Tn6xkXolxHj4LmAo7DAb-zoPLhEa1BvpovAFU");
         }
         {
-            let masked = digest_data(&[&test_obj, &test_obj])?;
-            assert_eq!(masked, "cjuGkDpb1HL7F8xFKDFVj3felfKZzjrJy92-108uuPixNw");
+            let digested = digest_data(&[&test_obj, &test_obj])?;
+            assert_eq!(digested, "cjuGkDpb1HL7F8xFKDFVj3felfKZzjrJy92-108uuPixNw");
         }
         {
-            let masked =
+            let digested =
                 digest_data(&(&test_obj, "cjumTq1s6Tn6xkXolxHj4LmAo7DAb-zoPLhEa1BvpovAFU"))?;
-            assert_eq!(masked, "cjuGkDpb1HL7F8xFKDFVj3felfKZzjrJy92-108uuPixNw");
+            assert_eq!(digested, "cjuGkDpb1HL7F8xFKDFVj3felfKZzjrJy92-108uuPixNw");
         }
         {
-            let masked = digest_data(&[
+            let digested = digest_data(&[
                 "cjumTq1s6Tn6xkXolxHj4LmAo7DAb-zoPLhEa1BvpovAFU",
                 "cjumTq1s6Tn6xkXolxHj4LmAo7DAb-zoPLhEa1BvpovAFU",
             ])?;
-            assert_eq!(masked, "cjuGkDpb1HL7F8xFKDFVj3felfKZzjrJy92-108uuPixNw");
+            assert_eq!(digested, "cjuGkDpb1HL7F8xFKDFVj3felfKZzjrJy92-108uuPixNw");
         }
         {
             let x = &test_obj;
             let comp = CompositeTestData { z: Some(x.clone()), y: Some(x.clone()) };
-            let masked = digest_data(&comp)?;
-            assert_eq!(masked, "cjubdcpA0FfHhD8yEpDzZ8vS5sm7yxkrX_wAJgmke2bWRQ");
+            let digested = digest_data(&comp)?;
+            assert_eq!(digested, "cjubdcpA0FfHhD8yEpDzZ8vS5sm7yxkrX_wAJgmke2bWRQ");
         }
         {
             let comp = CompositeTestData {
                 z: Some("cjumTq1s6Tn6xkXolxHj4LmAo7DAb-zoPLhEa1BvpovAFU".to_owned()),
                 y: Some("cjumTq1s6Tn6xkXolxHj4LmAo7DAb-zoPLhEa1BvpovAFU".to_owned()),
             };
-            let masked = digest_data(&comp)?;
-            assert_eq!(masked, "cjubdcpA0FfHhD8yEpDzZ8vS5sm7yxkrX_wAJgmke2bWRQ");
+            let digested = digest_data(&comp)?;
+            assert_eq!(digested, "cjubdcpA0FfHhD8yEpDzZ8vS5sm7yxkrX_wAJgmke2bWRQ");
         }
         Ok(())
     }
 
     #[test]
-    fn test_selective_masking() -> Fallible<()> {
+    fn test_selective_digesting() -> Fallible<()> {
         let test_obj = TestData { b: 1, a: 2 };
         let x = &test_obj;
         let composite = CompositeTestData { z: Some(x.clone()), y: Some(x.clone()) };
@@ -285,11 +289,11 @@ mod tests {
         let triple_complex =
             CompositeTestData { z: Some(double_complex.clone()), y: Some(double_complex.clone()) };
         {
-            let fully_masked = mask_data(&composite, "")?;
-            assert_eq!(fully_masked, "cjubdcpA0FfHhD8yEpDzZ8vS5sm7yxkrX_wAJgmke2bWRQ");
+            let fully_digested = selective_digest_data(&composite, "")?;
+            assert_eq!(fully_digested, "cjubdcpA0FfHhD8yEpDzZ8vS5sm7yxkrX_wAJgmke2bWRQ");
         }
         {
-            let keep_y = mask_data(&composite, ".y")?;
+            let keep_y = selective_digest_data(&composite, ".y")?;
             assert_eq!(
                 keep_y,
                 r#"{"y":{"a":2,"b":1},"z":"cjumTq1s6Tn6xkXolxHj4LmAo7DAb-zoPLhEa1BvpovAFU"}"#
@@ -298,7 +302,7 @@ mod tests {
             assert_eq!(digest_data(&val)?, "cjubdcpA0FfHhD8yEpDzZ8vS5sm7yxkrX_wAJgmke2bWRQ");
         }
         {
-            let keep_z = mask_data(&composite, ".z")?;
+            let keep_z = selective_digest_data(&composite, ".z")?;
             assert_eq!(
                 keep_z,
                 r#"{"y":"cjumTq1s6Tn6xkXolxHj4LmAo7DAb-zoPLhEa1BvpovAFU","z":{"a":2,"b":1}}"#
@@ -311,7 +315,7 @@ mod tests {
             assert_eq!(digest, "cjuQLebyl_BJipFLibhWiStDBqK5J4JZq15ehUqybfTTKA");
         }
         {
-            let keep_yz = mask_data(&double_complex, ".y.z")?;
+            let keep_yz = selective_digest_data(&double_complex, ".y.z")?;
             assert_eq!(
                 keep_yz,
                 r#"{"y":{"y":"cjumTq1s6Tn6xkXolxHj4LmAo7DAb-zoPLhEa1BvpovAFU","z":{"a":2,"b":1}},"z":"cjubdcpA0FfHhD8yEpDzZ8vS5sm7yxkrX_wAJgmke2bWRQ"}"#
@@ -324,7 +328,7 @@ mod tests {
             assert_eq!(digest, "cjuik140L3w7LCi6z1eHt7Qgwr2X65-iy8HA6zqrlUdmVk");
         }
         {
-            let keep_yz = mask_data(&triple_complex, ".y.y , .z.z")?;
+            let keep_yz = selective_digest_data(&triple_complex, ".y.y , .z.z")?;
             assert_eq!(
                 keep_yz,
                 r#"{"y":{"y":{"y":{"a":2,"b":1},"z":{"a":2,"b":1}},"z":"cjubdcpA0FfHhD8yEpDzZ8vS5sm7yxkrX_wAJgmke2bWRQ"},"z":{"y":"cjubdcpA0FfHhD8yEpDzZ8vS5sm7yxkrX_wAJgmke2bWRQ","z":{"y":{"a":2,"b":1},"z":{"a":2,"b":1}}}}"#
