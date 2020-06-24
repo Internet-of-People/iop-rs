@@ -23,7 +23,7 @@ use iop_keyvault::{
 pub struct Nonce(pub String);
 
 impl Nonce {
-    pub fn new() -> Self {
+    pub fn generate() -> Self {
         use rand::{thread_rng, RngCore};
         let mut arr = [0u8; 33];
         thread_rng().fill_bytes(&mut arr[..]);
@@ -99,8 +99,6 @@ where
     }
 
     // TODO add Before/AfterProofs as optional arguments here
-    // TODO consider returning ValidationResult with issue vector and translate to status
-    //      somewhere above in an upper layer
     pub fn validate_with_did_doc(
         &self, on_behalf_of: &DidDocument, from_inc: Option<BlockHeight>,
         until_exc: Option<BlockHeight>,
@@ -155,7 +153,7 @@ impl<T: Signable> From<SignatureSerializationFormat<T>> for Signed<T> {
     }
 }
 
-pub trait SyncSigner {
+pub trait SyncMorpheusSigner {
     fn authentication(&self) -> &Authentication;
 
     fn sign(&self, data: &[u8]) -> Fallible<(MPublicKey, MSignature)>;
@@ -183,7 +181,7 @@ pub trait SyncSigner {
     }
 }
 
-impl<T: SyncSigner + Sized> SyncSigner for Box<T> {
+impl<T: SyncMorpheusSigner + Sized> SyncMorpheusSigner for Box<T> {
     fn authentication(&self) -> &Authentication {
         self.as_ref().authentication()
     }
@@ -204,7 +202,7 @@ impl PrivateKeySigner {
     }
 }
 
-impl SyncSigner for PrivateKeySigner {
+impl SyncMorpheusSigner for PrivateKeySigner {
     fn authentication(&self) -> &Authentication {
         &self.authentication
     }

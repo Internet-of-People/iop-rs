@@ -7,15 +7,28 @@ edition = "2018"
 
 [dependencies]
 failure = "*"
-iop-keyvault = { git="https://github.com/Internet-of-People/keyvault-rust", branch="develop" }
+iop-keyvault = "0.0.2"
 log = "*"
 multibase = "0.8"
 rand = "*"
-serde = "*"
+serde = { version = "*", features = ["rc"] }
 serde_json = { version = "*", features = ["preserve_order"] }
+serde_repr = "*"
 tiny-keccak = "1"
+typetag = "*"
 unicode-normalization = "*"
+
+# --- Hydra dependencies
+byteorder = "*"
+hex = "*"
+sha2 = "*"
+varint = "*"
 
 
 [dev-dependencies]
 hex = "*"
+
+
+[target.'cfg(target_os="android")'.dependencies]
+jni = { version = "0.5", default-features = false }
+android_logger = "0.5"

@@ -1,6 +1,4 @@
-use serde::{Deserialize, Deserializer, Serialize, Serializer};
-
-use iop_keyvault::multicipher;
+use super::*;
 
 // NOTE should be const, but current language rules do not allow that
 fn prefix_multicipher_keyid() -> String {
@@ -26,7 +24,7 @@ impl<'de> Deserialize<'de> for Did {
     where
         D: Deserializer<'de>,
     {
-        multicipher::MKeyId::deserialize(deserializer).map(|key_id| Did::new(key_id))
+        multicipher::MKeyId::deserialize(deserializer).map(Did::new)
     }
 }
 
@@ -77,8 +75,7 @@ impl From<&Did> for String {
         // if !key_id_str.starts_with(prefix_multicipher_keyid) {
         //     panic!("Implementation error: {} is not a valid KeyId: must start with {}", key_id_str, prefix_multicipher_keyid );
         // }
-        let result = key_id_str.replacen(&prefix_multicipher_keyid(), Did::PREFIX, 1);
-        result
+        key_id_str.replacen(&prefix_multicipher_keyid(), Did::PREFIX, 1)
     }
 }
 

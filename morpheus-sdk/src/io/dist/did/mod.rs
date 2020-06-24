@@ -5,7 +5,7 @@ use async_trait::async_trait;
 use failure::Fallible;
 use serde::{Deserialize, Serialize};
 
-use crate::io::local::signer::Signer;
+use crate::io::local::signer::MorpheusSigner;
 use iop_morpheus_core::{
     crypto::{
         hash::{Content, ContentId},
@@ -65,14 +65,14 @@ pub trait LedgerOperations {
     ) -> Fallible<Box<dyn PooledLedgerTransaction>>;
 }
 
-pub trait OwnDidDocumentFactory<T: OwnDidDocument, S: Signer> {
+pub trait OwnDidDocumentFactory<T: OwnDidDocument, S: MorpheusSigner> {
     fn from(did: Did, signer: S) -> Fallible<T>;
 }
 
 #[async_trait(?Send)]
 pub trait OwnDidDocument {
     fn did(&self) -> &Did;
-    fn signer(&self) -> &dyn Signer;
+    fn signer(&self) -> &dyn MorpheusSigner;
 
     async fn document(&self) -> Fallible<DidDocument>;
 

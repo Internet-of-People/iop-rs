@@ -1,0 +1,19 @@
+[package]
+name = "morpheus-core-c-api"
+version = "0.0.1"
+authors = ["IoP Ventures LLC <info@iop-ventures.com>", "Rache Bartmoss <bartmoss@tutanota.com>", "wigy <wigy_opensource_developer@yahoo.com>"]
+edition = "2018"
+
+
+[lib]
+name = "morpheus_core"
+crate-type = ["rlib", "cdylib"]
+
+
+[dependencies]
+failure = "*"
+iop-keyvault = "0.0.2"
+iop-morpheus-core = { path = "../morpheus-core" }
+log = "*"
+serde_json = { version = "*", features = ["preserve_order"] }
+serde_repr = "*"

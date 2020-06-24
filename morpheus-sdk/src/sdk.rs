@@ -5,9 +5,9 @@ use crate::{
     io::dist::did::{HydraDidLedger, /*FakeDidLedger, */ LedgerOperations, LedgerQueries},
     io::local::didvault::{DidVault, FilePersister, PersistentDidVault},
 };
-use iop_keyvault::Seed;
+use iop_keyvault::{Bip39, Seed};
 use iop_morpheus_core::{
-    crypto::sign::Signed,
+    crypto::{hd::did::InMemoryDidVault, sign::Signed},
     data::{
         auth::Authentication,
         claim::{WitnessRequest, WitnessStatement},
@@ -15,7 +15,6 @@ use iop_morpheus_core::{
         diddoc::DidDocument,
         present::ClaimPresentation,
     },
-    vault::InMemoryDidVault,
 };
 
 pub type SdkContext = Sdk<PersistentDidVault, HydraDidLedger>;
@@ -85,8 +84,8 @@ impl<V: DidVault, L: LedgerQueries + LedgerOperations> Sdk<V, L> {
 }
 
 impl SdkContext {
-    pub fn create_vault(&mut self, seed: &str, path: &str) -> Fallible<()> {
-        let seed: Seed = Seed::from_bip39(seed)?;
+    pub fn create_vault(&mut self, phrase: &str, path: &str) -> Fallible<()> {
+        let seed: Seed = Bip39::new().phrase(phrase)?.password(Seed::PASSWORD);
         let mem_vault = InMemoryDidVault::new(seed);
         let file_persister = Box::new(FilePersister::new(&path));
         let mut persistent_vault = PersistentDidVault::new(mem_vault, file_persister);

@@ -4,8 +4,9 @@ use std::str::FromStr;
 use failure::{err_msg, Fallible};
 use serde::{Deserialize, Serialize};
 
-use iop_keyvault::multicipher;
+use iop_keyvault::{multicipher, PublicKey};
 
+// TODO this would probably also work with simply serde(untagged)
 #[derive(Clone, Debug, Deserialize, Eq, Serialize)]
 #[serde(try_from = "MAuthentication", into = "MAuthentication")]
 pub enum Authentication {

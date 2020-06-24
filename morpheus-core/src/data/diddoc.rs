@@ -393,9 +393,9 @@ mod test {
     }
 
     fn test_parsed_did_document(s: &str) -> Fallible<()> {
-        let doc: DidDocument = serde_json::from_str(s).unwrap();
+        let doc: DidDocument = serde_json::from_str(s)?;
 
-        assert_eq!(doc.did, "did:morpheus:ezbeWGSY2dqcUBqT8K7R14xr".parse().unwrap());
+        assert_eq!(doc.did, "did:morpheus:ezbeWGSY2dqcUBqT8K7R14xr".parse()?);
         assert_eq!(doc.tombstoned_at_height, None);
         assert_eq!(doc.queried_at_height, 126);
         assert_eq!(doc.tombstoned, false);
@@ -431,6 +431,7 @@ mod test {
     }
 
     #[test]
+    #[allow(clippy::cognitive_complexity)]
     fn has_right_between() -> Fallible<()> {
         let did_doc_str = r##"{
             "did": "did:morpheus:ezbeWGSY2dqcUBqT8K7R14xr",
@@ -488,9 +489,9 @@ mod test {
             "queriedAtHeight": 200
           }"##;
 
-        let doc: DidDocument = serde_json::from_str(did_doc_str).unwrap();
+        let doc: DidDocument = serde_json::from_str(did_doc_str)?;
 
-        assert_eq!(doc.did, "did:morpheus:ezbeWGSY2dqcUBqT8K7R14xr".parse().unwrap());
+        assert_eq!(doc.did, "did:morpheus:ezbeWGSY2dqcUBqT8K7R14xr".parse()?);
         assert_eq!(doc.tombstoned_at_height, Some(100));
         assert_eq!(doc.queried_at_height, 200);
         assert_eq!(doc.tombstoned, true);

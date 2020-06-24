@@ -1,79 +1,19 @@
-use failure::{ensure, format_err, Fallible};
-use log::*;
-use serde::{Deserialize, Serialize};
-
-use crate::crypto::sign::PrivateKeySigner;
-use crate::data::{auth::Authentication, did::*};
-use iop_keyvault::{
-    ed25519::{Ed25519, EdExtPrivateKey},
-    multicipher, ExtendedPrivateKey, ExtendedPublicKey, KeyDerivationCrypto, PublicKey, Seed,
-    BIP43_PURPOSE_MERCURY,
-};
-
-pub const DEMO_PHRASE: &str = "include pear escape sail spy orange cute despair witness trouble sleep torch wire burst unable brass expose fiction drift clock duck oxygen aerobic already";
-
-pub type Label = String;
-pub type Metadata = String;
-
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
-pub struct DidVaultRecord {
-    bip32_idx: i32,
-    public_key: multicipher::MPublicKey,
-    label: Label,
-    metadata: Metadata,
-    // document: DidDocument,
-    // #[serde(ignore)]
-    // version: usize,
-}
-
-impl DidVaultRecord {
-    fn new(bip32_idx: i32, pubkey: multicipher::MPublicKey, label: Label) -> Self {
-        Self { bip32_idx, public_key: pubkey, label, metadata: Default::default() }
-        // version: 0
-        // document: DidDocument {}
-    }
-
-    pub fn bip32_idx(&self) -> i32 {
-        self.bip32_idx
-    }
-    pub fn public_key(&self) -> multicipher::MPublicKey {
-        self.public_key.to_owned()
-    }
-    pub fn key_id(&self) -> multicipher::MKeyId {
-        self.public_key.key_id()
-    }
-    pub fn did(&self) -> Did {
-        self.key_id().into()
-    }
-    pub fn label(&self) -> Label {
-        self.label.to_owned()
-    }
-    pub fn set_label(&mut self, label: Label) {
-        self.label = label;
-    }
-    pub fn metadata(&self) -> Metadata {
-        self.metadata.to_owned()
-    }
-    pub fn set_metadata(&mut self, metadata: Metadata) {
-        self.metadata = metadata;
-    }
-    // pub fn document(&self) -> DidDocument { self.document.to_owned() }
-}
+use super::*;
 
 pub trait SyncDidVault {
-    fn key_ids(&self) -> Fallible<Vec<multicipher::MKeyId>>;
+    fn key_ids(&self) -> Fallible<Vec<MKeyId>>;
     fn dids(&self) -> Fallible<Vec<Did>>;
 
     fn get_active(&self) -> Fallible<Option<Did>>;
     fn set_active(&mut self, did: &Did) -> Fallible<()>;
 
-    fn record_by_auth(&self, auth: &Authentication) -> Fallible<DidVaultRecord>;
+    fn record_by_auth(&self, auth: &Authentication) -> Fallible<HdRecord>;
     // fn restore_id(&mut self, did: &Did) -> Fallible<()>;
     // fn signer_by_auth(&self, auth: &Authentication) -> Fallible<Box<dyn SyncSigner>>;
     fn signer_by_auth(&self, auth: &Authentication) -> Fallible<PrivateKeySigner>;
 
-    fn create(&mut self, label: Option<Label>) -> Fallible<DidVaultRecord>;
-    fn update(&mut self, record: DidVaultRecord) -> Fallible<()>;
+    fn create(&mut self, label: Option<Label>) -> Fallible<HdRecord>;
+    fn update(&mut self, record: HdRecord) -> Fallible<()>;
 }
 
 // TODO On the long term, this architecture should be completely different.
@@ -88,7 +28,7 @@ pub struct InMemoryDidVault {
     //      or decide to use sparse representation of records instead
     next_idx: usize,
     active_idx: Option<usize>,
-    records: Vec<DidVaultRecord>,
+    records: Vec<HdRecord>,
 }
 
 impl InMemoryDidVault {
@@ -104,15 +44,15 @@ impl InMemoryDidVault {
         Ok(morpheus_xsk)
     }
 
-    fn public_key(&self, idx: i32) -> Fallible<multicipher::MPublicKey> {
+    fn public_key(&self, idx: i32) -> Fallible<MPublicKey> {
         let did_xsk = self.morpheus_xsk()?.derive_hardened_child(idx)?;
-        let key = did_xsk.neuter().as_public_key();
+        let key = did_xsk.neuter().public_key();
         Ok(key.into())
     }
 
-    fn private_key(&self, idx: i32) -> Fallible<multicipher::MPrivateKey> {
+    fn private_key(&self, idx: i32) -> Fallible<MPrivateKey> {
         let did_xsk = self.morpheus_xsk()?.derive_hardened_child(idx)?;
-        let key = did_xsk.as_private_key();
+        let key = did_xsk.private_key();
         Ok(key.into())
     }
 
@@ -148,7 +88,7 @@ impl InMemoryDidVault {
 }
 
 impl SyncDidVault for InMemoryDidVault {
-    fn key_ids(&self) -> Fallible<Vec<multicipher::MKeyId>> {
+    fn key_ids(&self) -> Fallible<Vec<MKeyId>> {
         Ok(self.records.iter().map(|rec| rec.key_id()).collect())
     }
 
@@ -171,7 +111,7 @@ impl SyncDidVault for InMemoryDidVault {
         Ok(())
     }
 
-    fn record_by_auth(&self, auth: &Authentication) -> Fallible<DidVaultRecord> {
+    fn record_by_auth(&self, auth: &Authentication) -> Fallible<HdRecord> {
         let rec_opt = self
             .records
             .iter()
@@ -191,15 +131,15 @@ impl SyncDidVault for InMemoryDidVault {
         Ok(signer)
     }
 
-    fn create(&mut self, label_opt: Option<Label>) -> Fallible<DidVaultRecord> {
+    fn create(&mut self, label_opt: Option<Label>) -> Fallible<HdRecord> {
         let rec_idx = self.next_idx;
         let rec_idx_i32 = rec_idx as i32;
-        let label = label_opt.unwrap_or(self.records.len().to_string());
+        let label = label_opt.unwrap_or_else(|| self.records.len().to_string());
         ensure!(self.did_by_label(&label).is_err(), "Label {} already exists in the vault", label);
         ensure!(self.records.len() == rec_idx, "Implementation error: index is not continuous");
         let key = self.public_key(rec_idx_i32)?;
 
-        let rec = DidVaultRecord::new(rec_idx_i32, key.clone(), label);
+        let rec = HdRecord::new(rec_idx_i32, key.clone(), label);
         self.records.push(rec);
 
         self.active_idx = Option::Some(rec_idx);
@@ -209,7 +149,7 @@ impl SyncDidVault for InMemoryDidVault {
         Ok(self.records[rec_idx].to_owned())
     }
 
-    fn update(&mut self, record: DidVaultRecord) -> Fallible<()> {
+    fn update(&mut self, record: HdRecord) -> Fallible<()> {
         let idx = record.bip32_idx as usize;
         let old_rec = self
             .records
@@ -227,9 +167,10 @@ impl SyncDidVault for InMemoryDidVault {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use iop_keyvault::{Bip39, Seed};
 
     fn in_memory_vault_instance() -> Fallible<InMemoryDidVault> {
-        let seed = Seed::from_bip39(DEMO_PHRASE)?;
+        let seed = Bip39::new().phrase(Seed::DEMO_PHRASE)?.password(Seed::PASSWORD);
         Ok(InMemoryDidVault::new(seed))
     }
 

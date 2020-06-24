@@ -9,7 +9,7 @@ environment:
 dependencies:
   ffi: ^0.1.3
   morpheus_sdk:
-    path: ../../morpheus-dart
+    path: ../../../dart/morpheus-dart
 #  path: ^1.6.0
 
 dev_dependencies:

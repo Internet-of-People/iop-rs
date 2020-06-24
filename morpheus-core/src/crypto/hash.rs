@@ -1,5 +1,4 @@
-use failure::Fallible;
-use serde::Serialize;
+use super::*;
 
 use crate::crypto::json_digest::{digest_data, hasher};
 

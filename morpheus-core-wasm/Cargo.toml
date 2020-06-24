@@ -11,9 +11,18 @@ crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 failure = "*"
-iop-keyvault = { git="https://github.com/Internet-of-People/keyvault-rust", branch="develop" }
-iop-keyvault-wasm = { git="https://github.com/Internet-of-People/keyvault-rust", branch="develop" }
+iop-keyvault = "0.0.2"
+iop-keyvault-wasm = "0.0.2"
 iop-morpheus-core = { path = "../morpheus-core" }
+js-sys = "*"
 log = "*"
+serde = "*"
 serde_json = "*"
 wasm-bindgen = { version = "*", features = ["serde-serialize"] }
+wasm-bindgen-futures = "*"
+
+
+# Further options to experiment with for optimizing Wasm binary sizes
+#[profile.release]
+#lto = true
+#opt-level = 's'

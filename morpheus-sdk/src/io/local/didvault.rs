@@ -5,11 +5,11 @@ use async_trait::async_trait;
 use failure::Fallible;
 use log::*;
 
-use crate::io::local::signer::{Signer, SyncAdapter};
+use crate::io::local::signer::{MorpheusSigner, SyncAdapter};
 use iop_keyvault::multicipher::MKeyId;
 use iop_morpheus_core::{
+    crypto::hd::{did::*, HdRecord, Label},
     data::{auth::Authentication, did::*},
-    vault::*,
 };
 
 #[async_trait(?Send)]
@@ -20,12 +20,12 @@ pub trait DidVault {
     fn get_active(&self) -> Fallible<Option<Did>>;
     async fn set_active(&mut self, did: &Did) -> Fallible<()>;
 
-    fn record_by_auth(&self, auth: &Authentication) -> Fallible<DidVaultRecord>;
+    fn record_by_auth(&self, auth: &Authentication) -> Fallible<HdRecord>;
     // async fn restore_id(&mut self, did: &Did) -> Fallible<()>;
-    fn signer_by_auth(&self, auth: &Authentication) -> Fallible<Box<dyn Signer>>;
+    fn signer_by_auth(&self, auth: &Authentication) -> Fallible<Box<dyn MorpheusSigner>>;
 
-    async fn create(&mut self, label: Option<Label>) -> Fallible<DidVaultRecord>;
-    async fn update(&mut self, record: DidVaultRecord) -> Fallible<()>;
+    async fn create(&mut self, label: Option<Label>) -> Fallible<HdRecord>;
+    async fn update(&mut self, record: HdRecord) -> Fallible<()>;
 }
 
 pub struct PersistentDidVault {
@@ -72,22 +72,22 @@ impl DidVault for PersistentDidVault {
         self.save().await
     }
 
-    fn record_by_auth(&self, auth: &Authentication) -> Fallible<DidVaultRecord> {
+    fn record_by_auth(&self, auth: &Authentication) -> Fallible<HdRecord> {
         self.in_memory_vault.record_by_auth(auth)
     }
 
-    fn signer_by_auth(&self, auth: &Authentication) -> Fallible<Box<dyn Signer>> {
+    fn signer_by_auth(&self, auth: &Authentication) -> Fallible<Box<dyn MorpheusSigner>> {
         let sync_signer = self.in_memory_vault.signer_by_auth(auth)?;
         Ok(Box::new(SyncAdapter::new(sync_signer)))
     }
 
-    async fn create(&mut self, label_opt: Option<Label>) -> Fallible<DidVaultRecord> {
+    async fn create(&mut self, label_opt: Option<Label>) -> Fallible<HdRecord> {
         let result = self.in_memory_vault.create(label_opt)?;
         self.save().await?;
         Ok(result)
     }
 
-    async fn update(&mut self, record: DidVaultRecord) -> Fallible<()> {
+    async fn update(&mut self, record: HdRecord) -> Fallible<()> {
         self.in_memory_vault.update(record)?;
         self.save().await
     }
@@ -131,11 +131,10 @@ impl Persister for FilePersister {
 mod tests {
     use super::*;
 
-    use iop_keyvault::Seed;
-    use iop_morpheus_core::vault::DEMO_PHRASE;
+    use iop_keyvault::{Bip39, Seed};
 
     fn in_memory_vault_instance() -> Fallible<InMemoryDidVault> {
-        let seed = Seed::from_bip39(DEMO_PHRASE)?;
+        let seed = Bip39::new().phrase(Seed::DEMO_PHRASE)?.password(Seed::PASSWORD);
         Ok(InMemoryDidVault::new(seed))
     }
 

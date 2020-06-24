@@ -16,7 +16,7 @@ async-trait = "*"
 failure = "*"
 futures = "*"
 hyper = "*"
-iop-keyvault = { git="https://github.com/Internet-of-People/keyvault-rust", branch="develop" }
+iop-keyvault = "0.0.2"
 iop-morpheus-core = { path = "../morpheus-core" }
 log = "*"
 multihash = "*"

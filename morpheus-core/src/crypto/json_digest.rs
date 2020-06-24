@@ -79,7 +79,7 @@ pub fn collapse_json_subtree(
             let mut keep_head_tails = HashMap::new();
             for path in keep_paths {
                 let (head, tail_opt) = json_path::split_head_tail(path)?;
-                let tails = keep_head_tails.entry(head.to_owned()).or_insert(Vec::new());
+                let tails = keep_head_tails.entry(head.to_owned()).or_insert_with(Vec::new);
                 if let Some(tail) = tail_opt {
                     tails.push(tail);
                 }
@@ -119,7 +119,7 @@ pub fn collapse_json_subtree(
                     .iter()
                     // unwrap() also could be .expect("serde_json can't transform its own type into string")
                     .filter_map(|(key, val)| {
-                        let canonical_key = canonical_json(&serde_json::Value::String(key.to_string())).ok()?;
+                        let canonical_key = canonical_json(&serde_json::Value::String((*key).to_string())).ok()?;
                         Some(format!("{}:{}", canonical_key, serde_json::to_string(val).ok()?))
                     })
                     .collect::<Vec<_>>();
@@ -155,8 +155,8 @@ pub fn mask_json_value(json_value: serde_json::Value, keep_paths_str: &str) -> F
         _ => bail!("Json digest is currently implemented only for composite types"),
     }?;
     match digest_json {
-        serde_json::Value::String(digest) => return Ok(digest),
-        serde_json::Value::Object(_) => return canonical_json(&digest_json),
+        serde_json::Value::String(digest) => Ok(digest),
+        serde_json::Value::Object(_) => canonical_json(&digest_json),
         _ => bail!("Implementation error: digest should always return a string or object"),
     }
 }
@@ -259,7 +259,8 @@ mod tests {
             assert_eq!(masked, "cjuGkDpb1HL7F8xFKDFVj3felfKZzjrJy92-108uuPixNw");
         }
         {
-            let comp = CompositeTestData { z: Some(test_obj.clone()), y: Some(test_obj.clone()) };
+            let x = &test_obj;
+            let comp = CompositeTestData { z: Some(x.clone()), y: Some(x.clone()) };
             let masked = digest_data(&comp)?;
             assert_eq!(masked, "cjubdcpA0FfHhD8yEpDzZ8vS5sm7yxkrX_wAJgmke2bWRQ");
         }
@@ -277,7 +278,8 @@ mod tests {
     #[test]
     fn test_selective_masking() -> Fallible<()> {
         let test_obj = TestData { b: 1, a: 2 };
-        let composite = CompositeTestData { z: Some(test_obj.clone()), y: Some(test_obj.clone()) };
+        let x = &test_obj;
+        let composite = CompositeTestData { z: Some(x.clone()), y: Some(x.clone()) };
         let double_complex =
             CompositeTestData { z: Some(composite.clone()), y: Some(composite.clone()) };
         let triple_complex =
