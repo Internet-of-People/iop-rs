@@ -6,13 +6,12 @@ pub struct Vault {
 }
 
 impl Vault {
-
     pub fn is_dirty(&self) -> Fallible<bool> {
         let flag_state = self.inner.to_modifiable();
         let dirty_flag_value = flag_state.try_borrow()?;
         Ok(*dirty_flag_value)
     }
-    
+
     pub fn set_dirty(&self, value: bool) -> Fallible<()> {
         let mut vault_state = self.inner.to_modifiable();
         let mut dirty_flag = vault_state.try_borrow_mut()?;
@@ -23,9 +22,7 @@ impl Vault {
 
 #[no_mangle]
 pub extern "C" fn Vault_create(
-    seed: *const raw::c_char,
-    word25: *const raw::c_char,
-    unlock_pwd: *const raw::c_char,
+    seed: *const raw::c_char, word25: *const raw::c_char, unlock_pwd: *const raw::c_char,
 ) -> CPtrResult<Vault> {
     let fun = || {
         let seed = convert::str_in(seed)?;
@@ -35,20 +32,18 @@ pub extern "C" fn Vault_create(
         let vault = Vault { inner };
         Ok(convert::move_out(vault))
     };
-    fun().into()
+    cresult(fun())
 }
 
 #[no_mangle]
-pub extern "C" fn Vault_load(
-    json: *const raw::c_char
-) -> CPtrResult<Vault> {
+pub extern "C" fn Vault_load(json: *const raw::c_char) -> CPtrResult<Vault> {
     let fun = || {
         let json = convert::str_in(json)?;
         let inner: HdVault = serde_json::from_str(json)?;
         let vault = Vault { inner };
         Ok(convert::move_out(vault))
     };
-    fun().into()
+    cresult(fun())
 }
 
 #[no_mangle]
@@ -68,7 +63,7 @@ pub extern "C" fn Vault_save(vault: *mut Vault) -> CPtrResult<raw::c_char> {
         vault.set_dirty(false)?;
         Ok(convert::string_out(vault_json))
     };
-    fun().into()
+    cresult(fun())
 }
 
 #[no_mangle]
@@ -78,5 +73,5 @@ pub extern "C" fn Vault_dirty_get(vault: *mut Vault) -> CPtrResult<raw::c_uchar>
         let is_dirty = vault.is_dirty()?;
         Ok(convert::bool_out(is_dirty))
     };
-    fun().into()
+    cresult(fun())
 }

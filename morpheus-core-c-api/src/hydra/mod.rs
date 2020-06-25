@@ -18,10 +18,7 @@ fn params(network: *const raw::c_char, account: i32) -> Fallible<Parameters> {
 
 #[no_mangle]
 pub extern "C" fn HydraPlugin_rewind(
-    vault: *mut Vault,
-    unlock_pwd: *const raw::c_char,
-    network: *const raw::c_char,
-    account: i32,
+    vault: *mut Vault, unlock_pwd: *const raw::c_char, network: *const raw::c_char, account: i32,
 ) -> CPtrResult<raw::c_void> {
     let vault = unsafe { convert::borrow_mut_in(vault) };
     let mut fun = || {
@@ -30,14 +27,12 @@ pub extern "C" fn HydraPlugin_rewind(
         Plugin::rewind(vault, unlock_password, &params)?;
         Ok(())
     };
-    fun().into()
+    cresult_void(fun())
 }
 
 #[no_mangle]
 pub extern "C" fn HydraPlugin_get(
-    vault: *mut Vault,
-    network: *const raw::c_char,
-    account: i32,
+    vault: *mut Vault, network: *const raw::c_char, account: i32,
 ) -> CPtrResult<HydraPlugin> {
     let vault = unsafe { convert::borrow_mut_in(vault) };
     let fun = || {
@@ -46,7 +41,7 @@ pub extern "C" fn HydraPlugin_get(
         let hydra = HydraPlugin { plugin };
         Ok(convert::move_out(hydra))
     };
-    fun().into()
+    cresult(fun())
 }
 
 #[no_mangle]
@@ -68,5 +63,5 @@ pub extern "C" fn HydraPlugin_address(
         let adress_str = address.to_p2pkh_addr();
         Ok(convert::string_out(adress_str))
     };
-    fun().into()
+    cresult(fun())
 }

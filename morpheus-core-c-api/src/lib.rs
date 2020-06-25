@@ -1,8 +1,8 @@
 #![allow(clippy::not_unsafe_ptr_arg_deref)]
 
 mod bip;
-mod call_context;
 mod convert;
+mod cres;
 mod crypto;
 mod hydra;
 mod morpheus;
@@ -14,5 +14,5 @@ use std::ptr::null;
 
 use failure::Fallible;
 
-use self::call_context::CPtrResult;
-use self::convert::RawSlice;
+use crate::convert::CSlice;
+use crate::cres::*;

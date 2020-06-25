@@ -34,12 +34,12 @@ pub(crate) fn move_out<T>(value: T) -> *mut T {
 }
 
 #[repr(C)]
-pub struct RawSlice<T> {
+pub struct CSlice<T> {
     first: *mut T,
     length: usize,
 }
 
-impl<T> From<&mut [T]> for RawSlice<T> {
+impl<T> From<&mut [T]> for CSlice<T> {
     fn from(slice: &mut [T]) -> Self {
         let first = slice.as_mut_ptr();
         let length = slice.len();
@@ -47,7 +47,7 @@ impl<T> From<&mut [T]> for RawSlice<T> {
     }
 }
 
-impl From<Vec<String>> for RawSlice<*mut raw::c_char> {
+impl From<Vec<String>> for CSlice<*mut raw::c_char> {
     fn from(src: Vec<String>) -> Self {
         let cptr_box_slice = src.into_iter().map(string_out).collect::<Box<[_]>>();
         let raw_box_slice = Box::into_raw(cptr_box_slice);

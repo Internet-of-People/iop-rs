@@ -12,8 +12,7 @@ pub struct MorpheusPlugin {
 
 #[no_mangle]
 pub extern "C" fn MorpheusPlugin_rewind(
-    vault: *mut Vault,
-    unlock_pwd: *const raw::c_char,
+    vault: *mut Vault, unlock_pwd: *const raw::c_char,
 ) -> CPtrResult<raw::c_void> {
     let vault = unsafe { convert::borrow_mut_in(vault) };
     let mut fun = || {
@@ -21,20 +20,18 @@ pub extern "C" fn MorpheusPlugin_rewind(
         Plugin::rewind(vault, unlock_password)?;
         Ok(())
     };
-    fun().into()
+    cresult_void(fun())
 }
 
 #[no_mangle]
-pub extern "C" fn MorpheusPlugin_get(
-    vault: *mut Vault,
-) -> CPtrResult<MorpheusPlugin> {
+pub extern "C" fn MorpheusPlugin_get(vault: *mut Vault) -> CPtrResult<MorpheusPlugin> {
     let vault = unsafe { convert::borrow_mut_in(vault) };
     let fun = || {
         let plugin = Plugin::get(vault)?;
         let morpheus = MorpheusPlugin { plugin };
         Ok(convert::move_out(morpheus))
     };
-    fun().into()
+    cresult(fun())
 }
 
 #[no_mangle]
@@ -48,8 +45,7 @@ pub extern "C" fn delete_MorpheusPlugin(morpheus: *mut MorpheusPlugin) {
 
 #[no_mangle]
 pub extern "C" fn MorpheusPlugin_persona(
-    morpheus: *mut MorpheusPlugin,
-    idx: i32,
+    morpheus: *mut MorpheusPlugin, idx: i32,
 ) -> CPtrResult<raw::c_char> {
     let morpheus = unsafe { convert::borrow_in(morpheus) };
     let fun = || {
@@ -57,5 +53,5 @@ pub extern "C" fn MorpheusPlugin_persona(
         let persona_str = persona.key_id().to_string();
         Ok(convert::string_out(persona_str))
     };
-    fun().into()
+    cresult(fun())
 }

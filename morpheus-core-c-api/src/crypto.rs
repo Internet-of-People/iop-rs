@@ -13,7 +13,7 @@ pub extern "C" fn Json_selective_digest(
         let digested_json = json_digest::selective_digest_json(json_val, keep_paths_str)?;
         Ok(convert::string_out(digested_json))
     };
-    fun().into()
+    cresult(fun())
 }
 
 #[no_mangle]
@@ -22,5 +22,5 @@ pub extern "C" fn Nonce_generate() -> CPtrResult<raw::c_char> {
         let nonce = Nonce::generate();
         Ok(convert::string_out(nonce.0))
     };
-    fun().into()
+    cresult(fun())
 }
