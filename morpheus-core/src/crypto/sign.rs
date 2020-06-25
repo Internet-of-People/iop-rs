@@ -154,8 +154,6 @@ impl<T: Signable> From<SignatureSerializationFormat<T>> for Signed<T> {
 }
 
 pub trait SyncMorpheusSigner {
-    fn authentication(&self) -> &Authentication;
-
     fn sign(&self, data: &[u8]) -> Fallible<(MPublicKey, MSignature)>;
 
     fn sign_witness_request(&self, request: WitnessRequest) -> Fallible<Signed<WitnessRequest>> {
@@ -182,10 +180,6 @@ pub trait SyncMorpheusSigner {
 }
 
 impl<T: SyncMorpheusSigner + Sized> SyncMorpheusSigner for Box<T> {
-    fn authentication(&self) -> &Authentication {
-        self.as_ref().authentication()
-    }
-
     fn sign(&self, data: &[u8]) -> Fallible<(MPublicKey, MSignature)> {
         self.as_ref().sign(data)
     }
@@ -193,20 +187,15 @@ impl<T: SyncMorpheusSigner + Sized> SyncMorpheusSigner for Box<T> {
 
 pub struct PrivateKeySigner {
     private_key: MPrivateKey,
-    authentication: Authentication,
 }
 
 impl PrivateKeySigner {
-    pub fn new(private_key: MPrivateKey, authentication: Authentication) -> Self {
-        Self { private_key, authentication }
+    pub fn new(private_key: MPrivateKey) -> Self {
+        Self { private_key }
     }
 }
 
 impl SyncMorpheusSigner for PrivateKeySigner {
-    fn authentication(&self) -> &Authentication {
-        &self.authentication
-    }
-
     fn sign(&self, data: &[u8]) -> Fallible<(MPublicKey, MSignature)> {
         let signature = self.private_key.sign(data);
         Ok((self.private_key.public_key(), signature))

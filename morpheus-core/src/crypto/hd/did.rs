@@ -127,7 +127,7 @@ impl SyncDidVault for InMemoryDidVault {
     fn signer_by_auth(&self, auth: &Authentication) -> Fallible<PrivateKeySigner> {
         let bip32_idx = self.record_by_auth(auth)?.bip32_idx;
         let secret_key = self.private_key(bip32_idx)?;
-        let signer = PrivateKeySigner::new(secret_key, auth.to_owned());
+        let signer = PrivateKeySigner::new(secret_key);
         Ok(signer)
     }
 

@@ -5,7 +5,6 @@ use iop_keyvault::multicipher::{MPublicKey, MSignature};
 use iop_morpheus_core::{
     crypto::sign::{Signable, Signed, SyncMorpheusSigner},
     data::{
-        auth::Authentication,
         claim::{WitnessRequest, WitnessStatement},
         present::ClaimPresentation,
     },
@@ -13,8 +12,6 @@ use iop_morpheus_core::{
 
 #[async_trait(?Send)]
 pub trait MorpheusSigner {
-    fn authentication(&self) -> &Authentication;
-
     async fn sign(&self, data: &[u8]) -> Fallible<(MPublicKey, MSignature)>;
 
     async fn sign_witness_request(
@@ -54,10 +51,6 @@ impl<T: SyncMorpheusSigner> SyncAdapter<T> {
 
 #[async_trait(?Send)]
 impl<T: SyncMorpheusSigner> MorpheusSigner for SyncAdapter<T> {
-    fn authentication(&self) -> &Authentication {
-        self.inner.authentication()
-    }
-
     async fn sign(&self, data: &[u8]) -> Fallible<(MPublicKey, MSignature)> {
         self.inner.sign(data)
     }

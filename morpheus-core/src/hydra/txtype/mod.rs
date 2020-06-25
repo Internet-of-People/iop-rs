@@ -199,10 +199,7 @@ mod test {
         };
 
         let mph_persona_signer_privkey = mph_private.key_by_pk(&mph_persona_pubkey0)?;
-        let morpheus_signer = PrivateKeySigner::new(
-            mph_persona_signer_privkey.private_key(),
-            Authentication::KeyId(mph_persona_pubkey0.key_id()),
-        );
+        let morpheus_signer = PrivateKeySigner::new(mph_persona_signer_privkey.private_key());
 
         let morpheus_tx1_signables = vec![
             addkey_attempt,
