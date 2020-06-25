@@ -1,29 +1,51 @@
 use super::*;
+use iop_morpheus_core::crypto::hd::Vault as HdVault;
 
-use iop_morpheus_core::crypto::hd::Vault;
-
-fn is_dirty(vault: &Vault) -> Fallible<bool> {
-    let flag_state = vault.to_modifiable();
-    let dirty_flag_value = flag_state.try_borrow()?;
-    Ok(*dirty_flag_value)
+pub struct Vault {
+    inner: HdVault,
 }
 
-fn set_dirty(vault: &Vault, value: bool) -> Fallible<()> {
-    let mut vault_state = vault.to_modifiable();
-    let mut dirty_flag = vault_state.try_borrow_mut()?;
-    *dirty_flag = value;
-    Ok(())
+impl Vault {
+
+    pub fn is_dirty(&self) -> Fallible<bool> {
+        let flag_state = self.inner.to_modifiable();
+        let dirty_flag_value = flag_state.try_borrow()?;
+        Ok(*dirty_flag_value)
+    }
+    
+    pub fn set_dirty(&self, value: bool) -> Fallible<()> {
+        let mut vault_state = self.inner.to_modifiable();
+        let mut dirty_flag = vault_state.try_borrow_mut()?;
+        *dirty_flag = value;
+        Ok(())
+    }
 }
 
 #[no_mangle]
 pub extern "C" fn Vault_create(
-    seed: *const raw::c_char, word25: *const raw::c_char, unlock_pwd: *const raw::c_char,
+    seed: *const raw::c_char,
+    word25: *const raw::c_char,
+    unlock_pwd: *const raw::c_char,
 ) -> CPtrResult<Vault> {
     let fun = || {
         let seed = convert::str_in(seed)?;
         let bip39_password = convert::str_in(word25)?;
         let unlock_password = convert::str_in(unlock_pwd)?;
-        let vault = Vault::create(seed, bip39_password, unlock_password)?;
+        let inner = HdVault::create(seed, bip39_password, unlock_password)?;
+        let vault = Vault { inner };
+        Ok(convert::move_out(vault))
+    };
+    fun().into()
+}
+
+#[no_mangle]
+pub extern "C" fn Vault_load(
+    json: *const raw::c_char
+) -> CPtrResult<Vault> {
+    let fun = || {
+        let json = convert::str_in(json)?;
+        let inner: HdVault = serde_json::from_str(json)?;
+        let vault = Vault { inner };
         Ok(convert::move_out(vault))
     };
     fun().into()
@@ -39,29 +61,22 @@ pub extern "C" fn delete_Vault(vault: *mut Vault) {
 }
 
 #[no_mangle]
-pub extern "C" fn Vault_is_dirty(vault: *mut Vault) -> CPtrResult<raw::c_uchar> {
-    let vault = unsafe { convert::borrow_in(vault) };
-    let fun = || Ok(convert::bool_out(is_dirty(vault)?));
-    fun().into()
-}
-
-#[no_mangle]
 pub extern "C" fn Vault_save(vault: *mut Vault) -> CPtrResult<raw::c_char> {
-    let vault = unsafe { &*vault };
+    let vault = unsafe { convert::borrow_in(vault) };
     let fun = || {
-        let vault_json = serde_json::to_string(&vault)?;
-        set_dirty(vault, false)?;
+        let vault_json = serde_json::to_string(&vault.inner)?;
+        vault.set_dirty(false)?;
         Ok(convert::string_out(vault_json))
     };
     fun().into()
 }
 
 #[no_mangle]
-pub extern "C" fn Vault_load(json: *const raw::c_char) -> CPtrResult<Vault> {
+pub extern "C" fn Vault_dirty_get(vault: *mut Vault) -> CPtrResult<raw::c_uchar> {
+    let vault = unsafe { convert::borrow_in(vault) };
     let fun = || {
-        let json = convert::str_in(json)?;
-        let vault = serde_json::from_str(json)?;
-        Ok(convert::move_out(vault))
+        let is_dirty = vault.is_dirty()?;
+        Ok(convert::bool_out(is_dirty))
     };
     fun().into()
 }
