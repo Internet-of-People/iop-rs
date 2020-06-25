@@ -26,17 +26,20 @@ use wasm_bindgen::prelude::*;
 
 // imports from own crates
 
-use iop_keyvault::{multicipher::*, Networks, PrivateKey as _, PublicKey as _};
+use iop_keyvault::{multicipher::*, Networks, PublicKey as _};
 use iop_keyvault_wasm::*;
 use iop_morpheus_core::{
     crypto::{
         hd::{hydra as hd_hydra, morpheus as hd_morpheus, BoundPlugin, Vault, VaultPlugin},
         json_digest::{canonical_json, selective_digest_json},
-        sign::{Signable, Signed},
+        sign::{PrivateKeySigner, Signable, Signed, SyncMorpheusSigner},
     },
     data::{
+        auth::Authentication,
+        claim::{WitnessRequest, WitnessStatement},
         did::Did,
         diddoc::BlockHeight,
+        present::ClaimPresentation,
         validation::{ValidationIssue, ValidationResult},
     },
 };

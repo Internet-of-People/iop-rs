@@ -36,12 +36,61 @@ impl JsMorpheusPrivate {
     pub fn sign_did_operations(
         &self, id: &JsMKeyId, message: &[u8],
     ) -> Result<JsSignedBytes, JsValue> {
+        let signer = self.create_signer(id)?;
+        let (public_key, signature) = signer.sign(message).map_err_to_js()?;
+
+        let js_pk = JsMPublicKey::from(public_key);
+        let js_sig = JsMSignature::from(signature);
+        JsSignedBytes::new(&js_pk, message, &js_sig)
+    }
+
+    #[wasm_bindgen(js_name = signWitnessRequest)]
+    pub fn sign_witness_request(
+        &self, id: &JsMKeyId, js_req: &JsValue,
+    ) -> Result<JsSignedJson, JsValue> {
+        let signer = self.create_signer(id)?;
+        let request: WitnessRequest = js_req.into_serde().map_err(err_to_js)?;
+        let signed_request = signer.sign_witness_request(request).map_err(err_to_js)?;
+
+        Self::to_signed_json(signed_request)
+    }
+
+    #[wasm_bindgen(js_name = signWitnessStatement)]
+    pub fn sign_witness_statement(
+        &self, id: &JsMKeyId, js_stmt: &JsValue,
+    ) -> Result<JsSignedJson, JsValue> {
+        let signer = self.create_signer(id)?;
+        let statement: WitnessStatement = js_stmt.into_serde().map_err(err_to_js)?;
+        let signed_statement = signer.sign_witness_statement(statement).map_err(err_to_js)?;
+
+        Self::to_signed_json(signed_statement)
+    }
+
+    #[wasm_bindgen(js_name = signClaimPresentation)]
+    pub fn sign_claim_presentation(
+        &self, id: &JsMKeyId, js_presentation: &JsValue,
+    ) -> Result<JsSignedJson, JsValue> {
+        let signer = self.create_signer(id)?;
+        let presentation: ClaimPresentation = js_presentation.into_serde().map_err(err_to_js)?;
+        let signed_presentation =
+            signer.sign_claim_presentation(presentation).map_err(err_to_js)?;
+
+        Self::to_signed_json(signed_presentation)
+    }
+
+    fn create_signer(&self, id: &JsMKeyId) -> Result<PrivateKeySigner, JsValue> {
         let js_sk = self.key_by_id(id)?;
         let sk: MPrivateKey = js_sk.inner().private_key();
-        let sig: MSignature = sk.sign(message);
-        let js_pk = JsMPublicKey::from(sk.public_key());
-        let js_sig = JsMSignature::from(sig);
-        JsSignedBytes::new(&js_pk, message, &js_sig)
+        Ok(PrivateKeySigner::new(sk, Authentication::KeyId(id.inner().to_owned())))
+    }
+
+    fn to_signed_json<T: Signable>(signed: Signed<T>) -> Result<JsSignedJson, JsValue> {
+        let signed_json = Signed::new(
+            signed.public_key().to_owned(),
+            serde_json::to_value(signed.content()).map_err(err_to_js)?,
+            signed.signature().to_owned(),
+        );
+        Ok(signed_json.into())
     }
 }
 
