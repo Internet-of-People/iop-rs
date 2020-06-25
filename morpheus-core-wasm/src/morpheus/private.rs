@@ -81,7 +81,7 @@ impl JsMorpheusPrivate {
     fn create_signer(&self, id: &JsMKeyId) -> Result<PrivateKeySigner, JsValue> {
         let js_sk = self.key_by_id(id)?;
         let sk: MPrivateKey = js_sk.inner().private_key();
-        Ok(PrivateKeySigner::new(sk, Authentication::KeyId(id.inner().to_owned())))
+        Ok(PrivateKeySigner::new(sk))
     }
 
     fn to_signed_json<T: Signable>(signed: Signed<T>) -> Result<JsSignedJson, JsValue> {

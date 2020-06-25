@@ -35,7 +35,6 @@ use iop_morpheus_core::{
         sign::{PrivateKeySigner, Signable, Signed, SyncMorpheusSigner},
     },
     data::{
-        auth::Authentication,
         claim::{WitnessRequest, WitnessStatement},
         did::Did,
         diddoc::BlockHeight,
