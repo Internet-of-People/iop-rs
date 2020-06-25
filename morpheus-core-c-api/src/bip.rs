@@ -10,7 +10,7 @@ pub extern "C" fn Bip39_generate_phrase(lang: *const raw::c_char) -> CPtrResult<
         let phrase = bip39.generate();
         Ok(convert::string_out(phrase.as_phrase().to_string()))
     };
-    unsafe { CPtrResult::run(fun) }
+    fun().into()
 }
 
 #[no_mangle]
@@ -24,7 +24,7 @@ pub extern "C" fn Bip39_validate_phrase(
         bip39.validate(phrase)?;
         Ok(())
     };
-    unsafe { CPtrResult::run_void(fun) }
+    fun().into()
 }
 
 #[no_mangle]
@@ -40,5 +40,5 @@ pub extern "C" fn Bip39_list_words(
         let raw_slice = convert::RawSlice::from(matching_words);
         Ok(convert::move_out(raw_slice))
     };
-    unsafe { CPtrResult::run(fun) }
+    fun().into()
 }
