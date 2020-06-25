@@ -9,9 +9,10 @@ mod morpheus;
 mod vault;
 
 use std::os::raw;
+use std::ptr::null;
 // use std::panic::catch_unwind; // TODO consider panic unwinding strategies
 
 use failure::Fallible;
 
-use self::call_context::CallContext;
+use self::call_context::CPtrResult;
 use self::convert::RawSlice;

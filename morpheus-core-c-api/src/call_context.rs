@@ -1,25 +1,43 @@
 use std::os::raw;
 // use std::panic::catch_unwind; // TODO consider panic unwinding strategies
 
-use failure::Fallible;
-
-use super::convert;
+use super::*;
 
 #[repr(C)]
-pub struct CallContext<T> {
-    success: T,
-    error: *mut raw::c_char,
+pub struct CResult<T> {
+    success: *const T,
+    error: *const raw::c_char,
 }
 
-impl<T: 'static> CallContext<T> {
-    fn dispatch(&mut self, result: Fallible<T>) {
-        match result {
-            Ok(val) => self.success = val,
-            Err(err) => self.error = convert::string_out(err.to_string()),
-        }
+#[repr(C)]
+pub struct CPtrResult<T>(*mut CResult<T>);
+
+impl<T: 'static> CPtrResult<T> {
+    pub fn run(f: impl FnOnce() -> Fallible<*mut T>) -> Self {
+        let cptr = f().into();
+        Self(convert::move_out(cptr))
     }
 
-    pub fn run(&mut self, f: impl FnOnce() -> Fallible<T>) {
-        self.dispatch(f())
+    pub fn run_void(f: impl FnOnce() -> Fallible<()>) -> Self {
+        let cptr = f().map(|()| null()).into();
+        Self(convert::move_out(cptr))
+    }
+}
+
+impl<T> From<Fallible<*const T>> for CResult<T> {
+    fn from(result: Fallible<*const T>) -> Self {
+        match result {
+            Ok(val) => CResult { success: val, error: null() },
+            Err(err) => CResult { success: null(), error: convert::string_out(err.to_string()) },
+        }
+    }
+}
+
+impl<T> From<Fallible<*mut T>> for CResult<T> {
+    fn from(result: Fallible<*mut T>) -> Self {
+        match result {
+            Ok(val) => CResult { success: val, error: null() },
+            Err(err) => CResult { success: null(), error: convert::string_out(err.to_string()) },
+        }
     }
 }
