@@ -19,7 +19,7 @@ impl Morpheus {
 }
 
 #[no_mangle]
-pub extern "C" fn vault_morpheus(
+pub extern "C" fn Vault_morpheus(
     vault: *mut Vault, unlock_pwd: *const raw::c_char, context: *mut CallContext<*mut Morpheus>,
 ) {
     let vault = unsafe { convert::borrow_mut_in(vault) };
@@ -32,7 +32,7 @@ pub extern "C" fn vault_morpheus(
 }
 
 #[no_mangle]
-pub extern "C" fn morpheus_free(morpheus: *mut Morpheus) {
+pub extern "C" fn delete_Morpheus(morpheus: *mut Morpheus) {
     if morpheus.is_null() {
         return;
     }
@@ -41,7 +41,7 @@ pub extern "C" fn morpheus_free(morpheus: *mut Morpheus) {
 }
 
 #[no_mangle]
-pub extern "C" fn morpheus_persona(
+pub extern "C" fn Morpheus_persona(
     morpheus: *mut Morpheus, idx: i32, context: *mut CallContext<*mut raw::c_char>,
 ) {
     let morpheus = unsafe { convert::borrow_in(morpheus) };

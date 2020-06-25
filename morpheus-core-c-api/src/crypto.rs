@@ -3,7 +3,7 @@ use super::*;
 use iop_morpheus_core::crypto::{json_digest, sign::Nonce};
 
 #[no_mangle]
-pub extern "C" fn json_mask(
+pub extern "C" fn Json_selective_digest(
     raw_json: *const raw::c_char, raw_keep_paths: *const raw::c_char,
     context: *mut CallContext<*mut raw::c_char>,
 ) {
@@ -18,7 +18,7 @@ pub extern "C" fn json_mask(
 }
 
 #[no_mangle]
-pub extern "C" fn nonce_new(context: *mut CallContext<*mut raw::c_char>) {
+pub extern "C" fn Nonce_generate(context: *mut CallContext<*mut raw::c_char>) {
     let fun = || {
         let nonce = Nonce::generate();
         Ok(convert::string_out(nonce.0))

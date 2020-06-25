@@ -3,7 +3,7 @@ use super::*;
 use iop_keyvault::Bip39;
 
 #[no_mangle]
-pub extern "C" fn bip39_generate_phrase(
+pub extern "C" fn Bip39_generate_phrase(
     lang: *const raw::c_char, context: *mut CallContext<*mut raw::c_char>,
 ) {
     let fun = || {
@@ -16,7 +16,7 @@ pub extern "C" fn bip39_generate_phrase(
 }
 
 #[no_mangle]
-pub extern "C" fn bip39_validate_phrase(
+pub extern "C" fn Bip39_validate_phrase(
     lang: *const raw::c_char, phrase: *const raw::c_char,
     context: *mut CallContext<*const raw::c_void>,
 ) {
@@ -31,7 +31,7 @@ pub extern "C" fn bip39_validate_phrase(
 }
 
 #[no_mangle]
-pub extern "C" fn bip39_list_words(
+pub extern "C" fn Bip39_list_words(
     lang: *const raw::c_char, pref: *const raw::c_char,
     context: *mut CallContext<*mut RawSlice<*mut raw::c_char>>,
 ) {

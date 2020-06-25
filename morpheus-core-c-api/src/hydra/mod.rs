@@ -23,7 +23,7 @@ impl Hydra {
 }
 
 #[no_mangle]
-pub extern "C" fn vault_hydra(
+pub extern "C" fn Vault_hydra(
     vault: *mut Vault, unlock_pwd: *const raw::c_char, network: *const raw::c_char, account: i32,
     context: *mut CallContext<*mut Hydra>,
 ) {
@@ -38,7 +38,7 @@ pub extern "C" fn vault_hydra(
 }
 
 #[no_mangle]
-pub extern "C" fn hydra_free(hydra: *mut Hydra) {
+pub extern "C" fn delete_Hydra(hydra: *mut Hydra) {
     if hydra.is_null() {
         return;
     }
@@ -47,7 +47,7 @@ pub extern "C" fn hydra_free(hydra: *mut Hydra) {
 }
 
 #[no_mangle]
-pub extern "C" fn hydra_address(
+pub extern "C" fn Hydra_address(
     hydra: *mut Hydra, idx: i32, context: *mut CallContext<*mut raw::c_char>,
 ) {
     let hydra = unsafe { convert::borrow_in(hydra) };
