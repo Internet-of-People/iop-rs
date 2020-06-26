@@ -70,12 +70,14 @@ void main(List<String> arguments) {
     print('Loaded the same vault: ${sdk.vaultToJson(vault) == vaultJson}');
     print('Vault dirty flag: ${sdk.vaultIsDirty(vault)}');
 
-    final morpheus = sdk.vaultMorpheus(vault, unlockPassword);
+    sdk.morpheusRewind(vault, unlockPassword);
+    final morpheus = sdk.morpheusGet(vault);
     var persona = sdk.morpheusPersona(morpheus, 0);
     print('Persona 0: $persona');
     sdk.freeMorpheus(morpheus);
 
-    final hydra = sdk.vaultHydra(vault, unlockPassword, 'HYD testnet', 0);
+    sdk.hydraRewind(vault, unlockPassword, 'HYD testnet', 0);
+    final hydra = sdk.hydraGet(vault, 'HYD testnet', 0);
     var address = sdk.hydraAddress(hydra, 0);
     print('Hydra address 0: $address');
     sdk.freeHydra(hydra);
