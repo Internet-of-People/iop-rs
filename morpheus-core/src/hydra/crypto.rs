@@ -1,4 +1,4 @@
-use failure::Fallible;
+use failure::{ensure, Fallible};
 
 use crate::hydra::transaction::TransactionData;
 use iop_keyvault::{secp256k1::*, PrivateKey as _};
@@ -9,6 +9,10 @@ pub trait HydraSigner {
 
 impl HydraSigner for SecpPrivateKey {
     fn sign_hydra_transaction(&self, tx: &mut TransactionData) -> Fallible<()> {
+        ensure!(
+            tx.sender_public_key == self.public_key().to_string(),
+            "Attempt to sign transaction with key different from tx.sender_public_key"
+        );
         let bytes = tx.to_bytes(true, true, false)?;
         let signature = self.sign(&bytes);
         tx.signature = Some(hex::encode(signature.to_der()));

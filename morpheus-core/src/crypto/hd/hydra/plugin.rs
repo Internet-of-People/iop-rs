@@ -76,21 +76,6 @@ impl Plugin {
         Ok(BoundPlugin::new(vault.to_owned(), plugin.to_owned()))
     }
 
-    pub fn xpub(&self) -> String {
-        let imp = self.inner.borrow();
-        imp.public_state.xpub.to_owned()
-    }
-
-    pub fn receive_keys(&self) -> u32 {
-        let imp = self.inner.borrow();
-        imp.public_state.receive_keys
-    }
-
-    pub fn change_keys(&self) -> u32 {
-        let imp = self.inner.borrow();
-        imp.public_state.change_keys
-    }
-
     pub fn network(&self) -> &'static dyn Network<Suite = Secp256k1> {
         let imp = self.inner.borrow();
         Networks::by_name(&imp.parameters.network).unwrap()
@@ -101,26 +86,12 @@ impl Plugin {
         imp.parameters.account
     }
 
-    pub(super) fn touch_receive_idx(
-        &mut self, idx: i32, vault_dirty: &mut dyn State<bool>,
-    ) -> Fallible<()> {
-        ensure!(idx >= 0, "Key index cannot be negative");
-        let required_keys = (idx as u32) + 1;
-        let receive_keys = {
-            let imp = self.inner.borrow();
-            imp.public_state.receive_keys
-        };
-        if required_keys > receive_keys {
-            let mut imp = self.inner.borrow_mut();
-            imp.public_state.receive_keys = required_keys;
-            let mut dirty = vault_dirty.try_borrow_mut()?;
-            *dirty = true;
-        }
-        Ok(())
-    }
-
     fn create_account(parameters: &Parameters, seed: &Seed) -> Fallible<Bip44Account<Secp256k1>> {
         let network = Networks::by_name(&parameters.network)?;
         Bip44.network(seed, network)?.account(parameters.account)
+    }
+
+    pub(super) fn to_state(&self) -> Box<dyn State<PublicState>> {
+        State::map(&self.inner, |s| &s.public_state, |s| &mut s.public_state)
     }
 }

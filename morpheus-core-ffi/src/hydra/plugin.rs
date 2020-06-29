@@ -49,16 +49,3 @@ pub extern "C" fn delete_HydraPlugin(hydra: *mut CHydraPlugin) {
     let hydra = unsafe { Box::from_raw(hydra) };
     drop(hydra); // NOTE redundant, but clearer than let _plugin = ...;
 }
-
-#[no_mangle]
-pub extern "C" fn HydraPlugin_address(
-    hydra: *mut CHydraPlugin, idx: i32,
-) -> CPtrResult<raw::c_char> {
-    let hydra = unsafe { convert::borrow_in(hydra) };
-    let fun = || {
-        let address = hydra.plugin.public()?.key(idx)?;
-        let adress_str = address.to_p2pkh_addr();
-        Ok(convert::string_out(adress_str))
-    };
-    cresult(fun())
-}

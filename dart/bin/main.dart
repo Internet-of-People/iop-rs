@@ -78,8 +78,22 @@ void main(List<String> arguments) {
 
     sdk.hydraRewind(vault, unlockPassword, 'HYD testnet', 0);
     final hydra = sdk.hydraGet(vault, 'HYD testnet', 0);
-    var address = sdk.hydraAddress(hydra, 0);
+
+    final hydraPublic = sdk.hydraPublic(hydra);
+    var address = sdk.hydraAddress(hydraPublic, 0);
+    sdk.freeHydraPublic(hydraPublic);
     print('Hydra address 0: $address');
+
+    final hydraTransferTxJson = File('bin/hydraTransferTx.json').readAsStringSync();
+    print('Hydra transfer Tx to sign: $hydraTransferTxJson');
+    final hydraPrivate = sdk.hydraPrivate(hydra, unlockPassword);
+    final signedTransferTxJson = sdk.signHydraTx(hydraPrivate, address, hydraTransferTxJson);
+    final signedTransferTxBatch = '{"transactions":[$signedTransferTxJson]}';
+    sdk.freeHydraPrivate(hydraPrivate);
+    print('Signed Hydra transfer Tx');
+    print("curl --header 'Content-Type: application/json' --request POST --data '$signedTransferTxBatch' http://test.hydra.iop.global:4703/api/v2/transactions");
+
+    print('Closing Hydra plugin');
     sdk.freeHydra(hydra);
 
 //    final vaultPath =

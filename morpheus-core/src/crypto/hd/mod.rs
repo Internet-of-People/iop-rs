@@ -39,3 +39,5 @@ use iop_keyvault::{
 // imports from super
 
 use super::*;
+
+use crate::hydra::transaction::TransactionData as HydraTransactionData;
