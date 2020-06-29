@@ -16,3 +16,4 @@ use failure::Fallible;
 
 use crate::convert::CSlice;
 use crate::cres::*;
+use iop_morpheus_core::crypto::hd::{BoundPlugin, Vault};

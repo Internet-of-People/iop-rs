@@ -1,12 +1,9 @@
 use super::*;
 
 use iop_keyvault::PublicKey;
-use iop_morpheus_core::crypto::hd::{
-    morpheus::{Plugin, Private, Public},
-    BoundPlugin, Vault,
-};
+use iop_morpheus_core::crypto::hd::morpheus::{Plugin, Private, Public};
 
-pub struct MorpheusPlugin {
+pub struct CMorpheusPlugin {
     plugin: BoundPlugin<Plugin, Public, Private>,
 }
 
@@ -24,18 +21,18 @@ pub extern "C" fn MorpheusPlugin_rewind(
 }
 
 #[no_mangle]
-pub extern "C" fn MorpheusPlugin_get(vault: *mut Vault) -> CPtrResult<MorpheusPlugin> {
+pub extern "C" fn MorpheusPlugin_get(vault: *mut Vault) -> CPtrResult<CMorpheusPlugin> {
     let vault = unsafe { convert::borrow_mut_in(vault) };
     let fun = || {
         let plugin = Plugin::get(vault)?;
-        let morpheus = MorpheusPlugin { plugin };
+        let morpheus = CMorpheusPlugin { plugin };
         Ok(convert::move_out(morpheus))
     };
     cresult(fun())
 }
 
 #[no_mangle]
-pub extern "C" fn delete_MorpheusPlugin(morpheus: *mut MorpheusPlugin) {
+pub extern "C" fn delete_MorpheusPlugin(morpheus: *mut CMorpheusPlugin) {
     if morpheus.is_null() {
         return;
     }
@@ -45,7 +42,7 @@ pub extern "C" fn delete_MorpheusPlugin(morpheus: *mut MorpheusPlugin) {
 
 #[no_mangle]
 pub extern "C" fn MorpheusPlugin_persona(
-    morpheus: *mut MorpheusPlugin, idx: i32,
+    morpheus: *mut CMorpheusPlugin, idx: i32,
 ) -> CPtrResult<raw::c_char> {
     let morpheus = unsafe { convert::borrow_in(morpheus) };
     let fun = || {

@@ -2,7 +2,7 @@
 members = [
     "morpheus-core",
     "morpheus-core-wasm",
-    "morpheus-core-c-api",
+    "morpheus-core-ffi",
     "morpheus-sdk",
 ]
 

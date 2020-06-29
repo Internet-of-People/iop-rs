@@ -1,13 +1,10 @@
 use super::*;
 
 use iop_keyvault::Networks;
-use iop_morpheus_core::crypto::hd::{
-    hydra::{Parameters, Plugin, Private, Public},
-    BoundPlugin, Vault,
-};
+use iop_morpheus_core::crypto::hd::{hydra::Parameters, BoundPlugin, Vault};
 
-pub struct HydraPlugin {
-    plugin: BoundPlugin<Plugin, Public, Private>,
+pub struct CHydraPlugin {
+    pub(crate) plugin: BoundPlugin<Plugin, Public, Private>,
 }
 
 fn params(network: *const raw::c_char, account: i32) -> Fallible<Parameters> {
@@ -33,19 +30,19 @@ pub extern "C" fn HydraPlugin_rewind(
 #[no_mangle]
 pub extern "C" fn HydraPlugin_get(
     vault: *mut Vault, network: *const raw::c_char, account: i32,
-) -> CPtrResult<HydraPlugin> {
+) -> CPtrResult<CHydraPlugin> {
     let vault = unsafe { convert::borrow_mut_in(vault) };
     let fun = || {
         let params = params(network, account)?;
         let plugin = Plugin::get(&vault, &params)?;
-        let hydra = HydraPlugin { plugin };
+        let hydra = CHydraPlugin { plugin };
         Ok(convert::move_out(hydra))
     };
     cresult(fun())
 }
 
 #[no_mangle]
-pub extern "C" fn delete_HydraPlugin(hydra: *mut HydraPlugin) {
+pub extern "C" fn delete_HydraPlugin(hydra: *mut CHydraPlugin) {
     if hydra.is_null() {
         return;
     }
@@ -55,7 +52,7 @@ pub extern "C" fn delete_HydraPlugin(hydra: *mut HydraPlugin) {
 
 #[no_mangle]
 pub extern "C" fn HydraPlugin_address(
-    hydra: *mut HydraPlugin, idx: i32,
+    hydra: *mut CHydraPlugin, idx: i32,
 ) -> CPtrResult<raw::c_char> {
     let hydra = unsafe { convert::borrow_in(hydra) };
     let fun = || {
