@@ -1,7 +1,4 @@
-use std::ffi;
-use std::os::raw;
-
-use failure::Fallible;
+use super::*;
 
 pub(crate) unsafe fn borrow_in<'a, T>(value: *const T) -> &'a T {
     &*value
