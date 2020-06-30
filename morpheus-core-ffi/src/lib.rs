@@ -5,6 +5,7 @@ mod crypto;
 mod ffi;
 mod hydra;
 mod morpheus;
+mod tx;
 mod vault;
 
 // use std::panic::catch_unwind; // TODO consider panic unwinding strategies

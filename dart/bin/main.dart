@@ -41,8 +41,8 @@ void main(List<String> arguments) {
     final words = sdk.bip39ListWords('en', 'woo');
     print('Matching Bip39 words: $words');
 
-    final nonce = sdk.generateNonce();
-    print('Generated nonce: $nonce');
+    final dataNonce = sdk.generateNonce();
+    print('Generated nonce: $dataNonce');
 
     final contentId = 'cjuzC-XxgzNMwYXtw8aMIAeS2Xjlw1hlSNKTvVtUwPuyYo';
     final maskedContentId = sdk.maskJson('"${contentId}"', '.');
@@ -76,15 +76,20 @@ void main(List<String> arguments) {
     print('Persona 0: $persona');
     sdk.freeMorpheus(morpheus);
 
-    sdk.hydraRewind(vault, unlockPassword, 'HYD testnet', 0);
-    final hydra = sdk.hydraGet(vault, 'HYD testnet', 0);
+    final hydraNetwork = 'HYD testnet';
+    sdk.hydraRewind(vault, unlockPassword, hydraNetwork, 0);
+    final hydra = sdk.hydraGet(vault, hydraNetwork, 0);
 
     final hydraPublic = sdk.hydraPublic(hydra);
     var address = sdk.hydraAddress(hydraPublic, 0);
     sdk.freeHydraPublic(hydraPublic);
     print('Hydra address 0: $address');
 
-    final hydraTransferTxJson = File('bin/hydraTransferTx.json').readAsStringSync();
+    // final hydraTransferTxJson = File('bin/hydraTransferTx.json').readAsStringSync();
+    final senderPubKey = "02db11c07afd6ec05980284af58105329d41e9882947188022350219cca9baa3e7";
+    final recipient = "tjseecxRmob5qBS2T3qc8frXDKz3YUGB8J";
+    final walletNonce = 15;
+    final hydraTransferTxJson = sdk.hydraTransferTx(hydraNetwork, senderPubKey, recipient, 3141593, walletNonce);
     print('Hydra transfer Tx to sign: $hydraTransferTxJson');
     final hydraPrivate = sdk.hydraPrivate(hydra, unlockPassword);
     final signedTransferTxJson = sdk.signHydraTx(hydraPrivate, address, hydraTransferTxJson);

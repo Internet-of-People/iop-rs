@@ -43,7 +43,7 @@ pub struct TransactionData {
     pub second_signature: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub sign_signature: Option<String>,
-    #[serde(skip_serializing_if = "Vec::is_empty")]
+    #[serde(skip_serializing_if = "Vec::is_empty", default)]
     pub signatures: Vec<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub block_id: Option<String>,
