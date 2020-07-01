@@ -23,6 +23,37 @@ impl JsHydraPrivate {
         let inner = self.inner.key_by_pk(id.inner()).map_err_to_js()?;
         Ok(JsBip44Key::from(inner))
     }
+
+    #[wasm_bindgen(getter)]
+    pub fn xpub(&self) -> Result<String, JsValue> {
+        let res = self.inner().xpub().map_err_to_js()?;
+        Ok(res)
+    }
+
+    #[wasm_bindgen(getter = receiveKeys)]
+    pub fn receive_keys(&self) -> Result<u32, JsValue> {
+        let res = self.inner().receive_keys().map_err_to_js()?;
+        Ok(res)
+    }
+
+    #[wasm_bindgen(getter = changeKeys)]
+    pub fn change_keys(&self) -> Result<u32, JsValue> {
+        let res = self.inner().change_keys().map_err_to_js()?;
+        Ok(res)
+    }
+
+    #[wasm_bindgen(js_name = signHydraTransaction)]
+    pub fn sign_hydra_transaction(&self, hyd_addr: &str, tx: &JsValue) -> Result<JsValue, JsValue> {
+        let mut tx: HydraTransactionData =
+            tx.into_serde().context("Parsing ITransactionData").map_err_to_js()?;
+        self.inner
+            .sign_hydra_transaction(hyd_addr, &mut tx)
+            .context("Signing ITransactionData")
+            .map_err_to_js()?;
+        let signed_tx =
+            JsValue::from_serde(&tx).context("Serializing ITransactionData").map_err_to_js()?;
+        Ok(signed_tx)
+    }
 }
 
 impl From<HydraPrivate> for JsHydraPrivate {

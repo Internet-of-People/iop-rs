@@ -52,7 +52,7 @@ impl JsMorpheusPrivate {
         let request: WitnessRequest = js_req.into_serde().map_err(err_to_js)?;
         let signed_request = signer.sign_witness_request(request).map_err(err_to_js)?;
 
-        Self::to_signed_json(signed_request)
+        Self::create_signed_json(&signed_request)
     }
 
     #[wasm_bindgen(js_name = signWitnessStatement)]
@@ -63,7 +63,7 @@ impl JsMorpheusPrivate {
         let statement: WitnessStatement = js_stmt.into_serde().map_err(err_to_js)?;
         let signed_statement = signer.sign_witness_statement(statement).map_err(err_to_js)?;
 
-        Self::to_signed_json(signed_statement)
+        Self::create_signed_json(&signed_statement)
     }
 
     #[wasm_bindgen(js_name = signClaimPresentation)]
@@ -75,7 +75,7 @@ impl JsMorpheusPrivate {
         let signed_presentation =
             signer.sign_claim_presentation(presentation).map_err(err_to_js)?;
 
-        Self::to_signed_json(signed_presentation)
+        Self::create_signed_json(&signed_presentation)
     }
 
     fn create_signer(&self, id: &JsMKeyId) -> Result<PrivateKeySigner, JsValue> {
@@ -84,7 +84,7 @@ impl JsMorpheusPrivate {
         Ok(PrivateKeySigner::new(sk))
     }
 
-    fn to_signed_json<T: Signable>(signed: Signed<T>) -> Result<JsSignedJson, JsValue> {
+    fn create_signed_json<T: Signable>(signed: &Signed<T>) -> Result<JsSignedJson, JsValue> {
         let signed_json = Signed::new(
             signed.public_key().to_owned(),
             serde_json::to_value(signed.content()).map_err(err_to_js)?,

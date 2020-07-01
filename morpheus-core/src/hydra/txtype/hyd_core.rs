@@ -1,12 +1,4 @@
-use std::collections::HashMap;
-
-use serde::{Deserialize, Serialize};
-use serde_repr::{Deserialize_repr, Serialize_repr};
-
-use crate::hydra::{
-    transaction::TransactionData,
-    txtype::{Aip29Transaction, CommonTransactionFields},
-};
+use super::*;
 
 #[derive(Clone, Copy, Debug, Deserialize_repr, Eq, Hash, PartialEq, Serialize_repr)]
 #[repr(u16)]

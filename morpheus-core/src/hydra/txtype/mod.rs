@@ -1,25 +1,19 @@
-pub mod core;
+pub mod hyd_core;
 pub mod morpheus;
 
 use super::*;
 
-use crate::hydra::transaction::TransactionData;
-use iop_keyvault::{
-    secp256k1::{hyd, Secp256k1},
-    Network,
-};
-
 #[derive(Clone, Copy, Debug, Deserialize, Eq, Hash, PartialEq, Serialize)]
 #[serde(untagged)]
 pub enum TransactionType {
-    Core(core::TransactionType),
+    Core(hyd_core::TransactionType),
     Morpheus(morpheus::TransactionType),
 }
 
 impl TransactionType {
     pub fn type_group(self) -> u32 {
         match self {
-            Self::Core(_) => core::TransactionType::TYPE_GROUP,
+            Self::Core(_) => hyd_core::TransactionType::TYPE_GROUP,
             Self::Morpheus(_) => morpheus::TransactionType::TYPE_GROUP,
         }
     }
@@ -35,14 +29,14 @@ impl TransactionType {
 // TODO consider using a better programming construction than this Default here
 impl Default for TransactionType {
     fn default() -> Self {
-        Self::Core(core::TransactionType::Transfer)
+        Self::Core(hyd_core::TransactionType::Transfer)
     }
 }
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
 #[serde(untagged)]
 pub enum Asset {
-    Core(core::Asset),
+    Core(hyd_core::Asset),
     Morpheus(morpheus::Asset),
 }
 
@@ -106,7 +100,7 @@ mod test {
     use crate::hydra::{
         crypto::HydraSigner,
         transaction::{TransactionData, TxBatch},
-        txtype::{core, morpheus, Aip29Transaction, CommonTransactionFields},
+        txtype::{hyd_core, morpheus, Aip29Transaction, CommonTransactionFields},
     };
     use iop_keyvault::{multicipher::MKeyId, secp256k1::hyd, PublicKey, Seed};
 
@@ -152,7 +146,7 @@ mod test {
             manual_fee: Some(1_000_000),
             ..common_fields.clone()
         };
-        let transfer_tx = core::TransferTransaction::new(
+        let transfer_tx = hyd_core::TransferTransaction::new(
             transfer_common,
             "tjseecxRmob5qBS2T3qc8frXDKz3YUGB8J".to_owned(),
         );
@@ -172,8 +166,8 @@ mod test {
         show_tx_json("Register-before-proof transaction:", vec![reg_proof_tx_data])?;
 
         // TODO consider implementing other Core transaction types as well
-        // let recipients = vec![core::PaymentsItem { amount: 1, recipient_id: "tBlah" }];
-        // let multitransfer_tx = core::MultiTransferTransaction::new(core_tx_fields, recipients);
+        // let recipients = vec![hyd_core::PaymentsItem { amount: 1, recipient_id: "tBlah" }];
+        // let multitransfer_tx = hyd_core::MultiTransferTransaction::new(core_tx_fields, recipients);
 
         // TODO consider implementing second_sig
         // TODO consider implementing multisig

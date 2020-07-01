@@ -12,6 +12,24 @@ impl JsHydraPublic {
         Ok(JsBip44PublicKey::from(inner))
     }
 
+    #[wasm_bindgen(getter)]
+    pub fn xpub(&self) -> Result<String, JsValue> {
+        let res = self.inner().xpub().map_err_to_js()?;
+        Ok(res)
+    }
+
+    #[wasm_bindgen(getter = receiveKeys)]
+    pub fn receive_keys(&self) -> Result<u32, JsValue> {
+        let res = self.inner().receive_keys().map_err_to_js()?;
+        Ok(res)
+    }
+
+    #[wasm_bindgen(getter = changeKeys)]
+    pub fn change_keys(&self) -> Result<u32, JsValue> {
+        let res = self.inner().change_keys().map_err_to_js()?;
+        Ok(res)
+    }
+
     // #[wasm_bindgen(js_name = keyById)]
     // pub fn key_by_id(&self, id: &JsSecpKeyId) -> Result<JsSecpPublicKey, JsValue> {
     //     let inner = self.inner.key_by_id(id.inner()).map_err_to_js()?;

@@ -20,6 +20,7 @@ pub use vault::*;
 
 // imports from 3rd party crates
 
+use failure::ResultExt;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use wasm_bindgen::prelude::*;
@@ -41,4 +42,5 @@ use iop_morpheus_core::{
         present::ClaimPresentation,
         validation::{ValidationIssue, ValidationResult},
     },
+    hydra::TransactionData as HydraTransactionData,
 };

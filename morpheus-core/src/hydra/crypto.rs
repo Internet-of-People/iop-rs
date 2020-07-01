@@ -1,7 +1,4 @@
-use failure::{ensure, Fallible};
-
-use crate::hydra::transaction::TransactionData;
-use iop_keyvault::{secp256k1::*, PrivateKey as _};
+use super::*;
 
 pub trait HydraSigner {
     fn sign_hydra_transaction(&self, tx: &mut TransactionData) -> Fallible<()>;

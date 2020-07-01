@@ -1,11 +1,4 @@
-use std::io::prelude::*;
-
-use byteorder::{LittleEndian, WriteBytesExt};
-use failure::{bail, err_msg, Fallible};
-
-use crate::hydra::transaction::*;
-use crate::hydra::txtype::*;
-use iop_keyvault::secp256k1::from_base58check;
+use super::*;
 
 pub fn to_bytes(
     tx: &TransactionData, skip_signature: bool, skip_second_signature: bool,
@@ -15,7 +8,7 @@ pub fn to_bytes(
     serialize_vendor_field(tx, &mut bytes)?;
 
     match tx.type_group {
-        Some(core::TransactionType::TYPE_GROUP) => serialize_core_type(tx, &mut bytes)?,
+        Some(hyd_core::TransactionType::TYPE_GROUP) => serialize_core_type(tx, &mut bytes)?,
         Some(morpheus::TransactionType::TYPE_GROUP) => {
             let asset = match tx.asset {
                 Some(Asset::Morpheus(ref morpheus_asset)) => morpheus_asset,
@@ -44,7 +37,7 @@ pub fn serialize_common(transaction: &TransactionData) -> Fallible<Vec<u8>> {
     bytes.write_u8(transaction.network.ok_or_else(|| err_msg("Network is missing"))?)?;
 
     bytes.write_u32::<LittleEndian>(
-        transaction.type_group.unwrap_or(core::TransactionType::TYPE_GROUP),
+        transaction.type_group.unwrap_or(hyd_core::TransactionType::TYPE_GROUP),
     )?;
     bytes.write_u16::<LittleEndian>(transaction.transaction_type.into_u16())?;
     bytes
@@ -71,27 +64,27 @@ pub fn serialize_core_type(transaction: &TransactionData, mut bytes: &mut Vec<u8
         _ => bail!("Implementation error: handling wrong TX type"),
     };
     match core_type {
-        core::TransactionType::Transfer => serialize_transfer(transaction, &mut bytes)?,
-        core::TransactionType::SecondSignatureRegistration => {
+        hyd_core::TransactionType::Transfer => serialize_transfer(transaction, &mut bytes)?,
+        hyd_core::TransactionType::SecondSignatureRegistration => {
             unimplemented!()
             //serialize_second_signature_registration(transaction, &mut bytes)?
         }
-        core::TransactionType::DelegateRegistration => {
+        hyd_core::TransactionType::DelegateRegistration => {
             unimplemented!()
             //serialize_delegate_registration(transaction, &mut bytes)?
         }
-        core::TransactionType::Vote => {
+        hyd_core::TransactionType::Vote => {
             unimplemented!()
             //serialize_vote(transaction, &mut bytes)?
         }
-        core::TransactionType::MultiSignatureRegistration => {
+        hyd_core::TransactionType::MultiSignatureRegistration => {
             unimplemented!()
             // serialize_multi_signature_registration(transaction, &mut bytes)
         }
-        core::TransactionType::Ipfs => (),
-        core::TransactionType::TimelockTransfer => (),
-        core::TransactionType::MultiPayment => (),
-        core::TransactionType::DelegateResignation => (),
+        hyd_core::TransactionType::Ipfs => (),
+        hyd_core::TransactionType::TimelockTransfer => (),
+        hyd_core::TransactionType::MultiPayment => (),
+        hyd_core::TransactionType::DelegateResignation => (),
     };
     Ok(())
 }

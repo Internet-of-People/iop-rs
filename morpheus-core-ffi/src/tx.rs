@@ -1,7 +1,9 @@
 use super::*;
 
 use iop_keyvault::Networks;
-use iop_morpheus_core::hydra::txtype::{core, morpheus, Aip29Transaction, CommonTransactionFields};
+use iop_morpheus_core::hydra::txtype::{
+    hyd_core, morpheus, Aip29Transaction, CommonTransactionFields,
+};
 
 #[no_mangle]
 pub extern "C" fn TxBuilder_hydraTransferTx(
@@ -19,7 +21,7 @@ pub extern "C" fn TxBuilder_hydraTransferTx(
             nonce,
             ..Default::default()
         };
-        let transfer_tx = core::TransferTransaction::new(common_fields, recipient_id);
+        let transfer_tx = hyd_core::TransferTransaction::new(common_fields, recipient_id);
         let tx_str = serde_json::to_string(&transfer_tx.to_data())?;
         Ok(convert::string_out(tx_str))
     };

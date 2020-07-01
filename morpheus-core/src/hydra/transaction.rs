@@ -1,8 +1,4 @@
-use failure::Fallible;
-use serde::{Deserialize, Serialize};
-use sha2::{Digest, Sha256};
-
-use crate::hydra::txtype::{Asset, TransactionType};
+use super::*;
 
 #[derive(Clone, Debug, Default, Deserialize, Serialize)]
 pub struct TxBatch {
@@ -66,7 +62,6 @@ impl TransactionData {
     pub fn to_bytes(
         &self, skip_signature: bool, skip_second_signature: bool, skip_multisignatures: bool,
     ) -> Fallible<Vec<u8>> {
-        use crate::hydra::serializer;
         serializer::to_bytes(self, skip_signature, skip_second_signature, skip_multisignatures)
     }
 

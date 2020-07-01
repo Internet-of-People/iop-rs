@@ -24,6 +24,36 @@ pub extern "C" fn delete_HydraPrivate(private: *mut Private) {
     drop(private); // NOTE redundant, but clearer than let _plugin = ...;
 }
 
+#[no_mangle]
+pub extern "C" fn HydraPrivate_xpub_get(private: *mut Private) -> CPtrResult<raw::c_char> {
+    let private = unsafe { convert::borrow_in(private) };
+    let fun = || {
+        let xpub = private.xpub()?;
+        Ok(convert::string_out(xpub))
+    };
+    cresult(fun())
+}
+
+#[no_mangle]
+pub extern "C" fn HydraPrivate_receive_keys_get(private: *mut Private) -> CPtrResult<u32> {
+    let private = unsafe { convert::borrow_in(private) };
+    let fun = || {
+        let receive_keys = private.receive_keys()?;
+        Ok(convert::move_out(receive_keys))
+    };
+    cresult(fun())
+}
+
+#[no_mangle]
+pub extern "C" fn HydraPrivate_change_keys_get(private: *mut Private) -> CPtrResult<u32> {
+    let private = unsafe { convert::borrow_in(private) };
+    let fun = || {
+        let change_keys = private.change_keys()?;
+        Ok(convert::move_out(change_keys))
+    };
+    cresult(fun())
+}
+
 // TODO move these infrastructural features into morpheus-core, especially for potential reuse in Wasm
 // TODO hyd_addr should be typed and be valid after parsing
 // TODO tx should be typed and be a result of some HydraTxBuilder

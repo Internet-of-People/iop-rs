@@ -40,6 +40,7 @@ pub extern "C" fn delete_MorpheusPlugin(morpheus: *mut CMorpheusPlugin) {
     drop(morpheus); // NOTE redundant, but clearer than let _plugin = ...;
 }
 
+// TODO Temporary function to test integration.
 #[no_mangle]
 pub extern "C" fn MorpheusPlugin_persona(
     morpheus: *mut CMorpheusPlugin, idx: i32,
