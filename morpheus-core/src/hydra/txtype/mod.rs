@@ -113,7 +113,7 @@ mod test {
     #[test]
     fn builder() -> Fallible<()> {
         let unlock_password = "test";
-        let mut vault = Vault::create(Seed::DEMO_PHRASE, "", unlock_password)?;
+        let mut vault = Vault::create(None, Seed::DEMO_PHRASE, "", unlock_password)?;
 
         let hyd_params = hydra::Parameters::new(&hyd::Testnet, 0);
         hydra::Plugin::rewind(&mut vault, unlock_password, &hyd_params)?;

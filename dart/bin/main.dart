@@ -55,7 +55,7 @@ void main(List<String> arguments) {
     print('Creating vault...');
     final word25 = "";
     final unlockPassword = "testing";
-    var vault = sdk.createVault(
+    var vault = sdk.createVault('en',
       'include pear escape sail spy orange cute despair witness trouble sleep torch wire burst unable brass expose fiction drift clock duck oxygen aerobic already',
       word25, unlockPassword);
 

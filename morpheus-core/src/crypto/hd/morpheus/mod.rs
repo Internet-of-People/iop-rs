@@ -21,7 +21,7 @@ mod test {
     #[test]
     fn api() -> Fallible<()> {
         let unlock_password = "correct horse battery staple";
-        let mut vault = Vault::create(Seed::DEMO_PHRASE, "", unlock_password)?;
+        let mut vault = Vault::create(None, Seed::DEMO_PHRASE, "", unlock_password)?;
         Plugin::rewind(&mut vault, unlock_password)?;
 
         let morpheus = Plugin::get(&vault)?;

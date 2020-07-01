@@ -17,7 +17,7 @@ mod test {
     #[test]
     fn api() -> Fallible<()> {
         let unlock_password = "correct horse battery staple";
-        let mut vault = Vault::create(Seed::DEMO_PHRASE, "", unlock_password)?;
+        let mut vault = Vault::create(None, Seed::DEMO_PHRASE, "", unlock_password)?;
         let parameters = Parameters::new(&hyd::Testnet, 0);
         hydra::Plugin::rewind(&mut vault, unlock_password, &parameters)?;
 

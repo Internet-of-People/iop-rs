@@ -43,9 +43,14 @@ impl Vault {
     }
 
     pub fn create(
-        phrase: impl AsRef<str>, bip39_password: impl AsRef<str>, unlock_password: impl AsRef<str>,
+        lang_code: Option<&str>, phrase: impl AsRef<str>, bip39_password: impl AsRef<str>,
+        unlock_password: impl AsRef<str>,
     ) -> Fallible<Vault> {
-        let seed = Bip39::new().phrase(phrase)?.password(bip39_password);
+        let bip39 = match lang_code {
+            None => Bip39::new(),
+            Some(code) => Bip39::language_code(code)?,
+        };
+        let seed = bip39.phrase(phrase)?.password(bip39_password);
         let encrypted_seed = Self::encrypt_seed(&seed, unlock_password.as_ref())?;
         Ok(Self::new(encrypted_seed, Vec::new()))
     }
