@@ -40,11 +40,14 @@ pub fn serialize_common(transaction: &TransactionData) -> Fallible<Vec<u8>> {
         transaction.type_group.unwrap_or(hyd_core::TransactionType::TYPE_GROUP),
     )?;
     bytes.write_u16::<LittleEndian>(transaction.transaction_type.into_u16())?;
-    bytes
-        .write_u64::<LittleEndian>(transaction.nonce.ok_or_else(|| err_msg("Nonce is missing"))?)?;
+    let nonce: u64 =
+        transaction.nonce.as_ref().ok_or_else(|| err_msg("Nonce is missing"))?.parse()?;
+    bytes.write_u64::<LittleEndian>(nonce)?;
 
     bytes.write_all(&hex::decode(&transaction.sender_public_key)?)?;
-    bytes.write_u64::<LittleEndian>(transaction.fee)?;
+
+    let fee: u64 = transaction.fee.parse()?;
+    bytes.write_u64::<LittleEndian>(fee)?;
     Ok(bytes)
 }
 
@@ -90,7 +93,8 @@ pub fn serialize_core_type(transaction: &TransactionData, mut bytes: &mut Vec<u8
 }
 
 fn serialize_transfer(transaction: &TransactionData, bytes: &mut Vec<u8>) -> Fallible<()> {
-    bytes.write_u64::<LittleEndian>(transaction.amount)?;
+    let amount: u64 = transaction.amount.parse()?;
+    bytes.write_u64::<LittleEndian>(amount)?;
     bytes.write_u32::<LittleEndian>(transaction.expiration.unwrap_or(0))?;
 
     let recipient =

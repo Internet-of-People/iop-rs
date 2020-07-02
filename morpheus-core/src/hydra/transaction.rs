@@ -19,10 +19,10 @@ pub struct TransactionData {
     //pub transaction_type: u32,
     // pub timestamp: u32, // present in the v2 schema only for v1 compatibility
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub nonce: Option<u64>,
+    pub nonce: Option<String>,
     pub sender_public_key: String,
-    pub fee: u64,
-    pub amount: u64,
+    pub fee: String,
+    pub amount: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub expiration: Option<u32>, // TODO check if this has to be more complex data or int is enough
     #[serde(skip_serializing_if = "Option::is_none")]

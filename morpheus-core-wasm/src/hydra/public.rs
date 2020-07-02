@@ -30,11 +30,11 @@ impl JsHydraPublic {
         Ok(res)
     }
 
-    // #[wasm_bindgen(js_name = keyById)]
-    // pub fn key_by_id(&self, id: &JsSecpKeyId) -> Result<JsSecpPublicKey, JsValue> {
-    //     let inner = self.inner.key_by_id(id.inner()).map_err_to_js()?;
-    //     Ok(JsSecpPublicKey::from(inner))
-    // }
+    #[wasm_bindgen(js_name = keyByAddress)]
+    pub fn key_by_p2pkh_addr(&self, addr: &str) -> Result<JsBip44PublicKey, JsValue> {
+        let inner = self.inner.key_by_p2pkh_addr(addr).map_err_to_js()?;
+        Ok(JsBip44PublicKey::from(inner))
+    }
 }
 
 impl From<HydraPublic> for JsHydraPublic {

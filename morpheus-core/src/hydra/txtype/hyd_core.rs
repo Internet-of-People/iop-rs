@@ -59,7 +59,7 @@ impl Aip29Transaction for TransferTransaction {
         let mut tx_data: TransactionData = self.common_fields.to_data();
         tx_data.set_type(crate::hydra::txtype::TransactionType::Core(TransactionType::Transfer));
         tx_data.recipient_id = Some(self.recipient_id.to_owned());
-        tx_data.fee = self.common_fields.calculate_fee(self);
+        tx_data.fee = self.common_fields.calculate_fee(self).to_string();
         tx_data
     }
 }

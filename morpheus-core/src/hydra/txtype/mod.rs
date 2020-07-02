@@ -79,8 +79,8 @@ impl CommonTransactionFields {
         tx_data.version = Some(2);
 
         tx_data.sender_public_key = self.sender_public_key.to_owned();
-        tx_data.nonce = Some(self.nonce);
-        tx_data.amount = self.amount;
+        tx_data.nonce = Some(self.nonce.to_string());
+        tx_data.amount = self.amount.to_string();
         tx_data.vendor_field = self.vendor_field.to_owned();
 
         tx_data

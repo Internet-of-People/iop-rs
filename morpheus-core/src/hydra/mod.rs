@@ -18,5 +18,3 @@ use varint::VarintWrite;
 use iop_keyvault::{secp256k1::*, Network, PrivateKey as _};
 
 use txtype::*;
-
-use super::*;

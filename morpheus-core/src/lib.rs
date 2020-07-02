@@ -4,6 +4,6 @@ pub mod hydra;
 pub mod util;
 
 use failure::Fallible;
-use serde::{Deserialize, Serialize};
+use serde::Serialize;
 
 use data::{auth::Authentication, did::Did};

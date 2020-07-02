@@ -11,11 +11,11 @@ pub struct JsVault {
 
 #[wasm_bindgen(js_class = Vault)]
 impl JsVault {
-    // TODO consider adding a language parameter here
     pub fn create(
-        phrase: &str, bip39_password: &str, unlock_password: &str,
+        phrase: &str, bip39_password: &str, unlock_password: &str, language: Option<String>,
     ) -> Result<JsVault, JsValue> {
-        let inner = Vault::create(None, phrase, bip39_password, unlock_password).map_err_to_js()?;
+        let inner = Vault::create(language.as_deref(), phrase, bip39_password, unlock_password)
+            .map_err_to_js()?;
         Ok(Self { inner })
     }
 

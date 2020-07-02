@@ -46,7 +46,7 @@ impl Aip29Transaction for Transaction {
         let mut tx_data: TransactionData = self.common_fields.to_data();
         tx_data.set_type(crate::hydra::txtype::TransactionType::Morpheus(TransactionType::Normal));
         tx_data.asset = Some(crate::hydra::txtype::Asset::Morpheus(self.asset.to_owned()));
-        tx_data.fee = self.common_fields.calculate_fee(self);
+        tx_data.fee = self.common_fields.calculate_fee(self).to_string();
         tx_data
     }
 }
