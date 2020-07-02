@@ -7,6 +7,8 @@ pub struct JsMorpheusPrivateKind {
 
 #[wasm_bindgen(js_class = MorpheusPrivateKind)]
 impl JsMorpheusPrivateKind {
+    // TODO .bip32Path and .network
+
     #[wasm_bindgen(getter)]
     pub fn kind(&self) -> String {
         format!("{:?}", self.inner.path())

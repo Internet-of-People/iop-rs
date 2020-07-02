@@ -8,7 +8,7 @@ pub struct CHydraPlugin {
 }
 
 fn params(network: *const raw::c_char, account: i32) -> Fallible<Parameters> {
-    let network = convert::str_in(network)?;
+    let network = unsafe { convert::str_in(network)? };
     let network = Networks::by_name(network)?;
     Ok(Parameters::new(network, account))
 }
@@ -19,7 +19,7 @@ pub extern "C" fn HydraPlugin_rewind(
 ) -> CPtrResult<raw::c_void> {
     let vault = unsafe { convert::borrow_mut_in(vault) };
     let mut fun = || {
-        let unlock_password = convert::str_in(unlock_pwd)?;
+        let unlock_password = unsafe { convert::str_in(unlock_pwd)? };
         let params = params(network, account)?;
         Plugin::rewind(vault, unlock_password, &params)?;
         Ok(())

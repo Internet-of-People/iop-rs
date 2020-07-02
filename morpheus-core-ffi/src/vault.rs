@@ -25,10 +25,10 @@ pub extern "C" fn Vault_create(
     unlock_pwd: *const raw::c_char,
 ) -> CPtrResult<CVault> {
     let fun = || {
-        let lang = convert::str_in(lang)?;
-        let seed = convert::str_in(seed)?;
-        let bip39_password = convert::str_in(word25)?;
-        let unlock_password = convert::str_in(unlock_pwd)?;
+        let lang = unsafe { convert::str_in(lang)? };
+        let seed = unsafe { convert::str_in(seed)? };
+        let bip39_password = unsafe { convert::str_in(word25)? };
+        let unlock_password = unsafe { convert::str_in(unlock_pwd)? };
         let inner = Vault::create(Some(lang), seed, bip39_password, unlock_password)?;
         let vault = CVault { inner };
         Ok(convert::move_out(vault))
@@ -39,7 +39,7 @@ pub extern "C" fn Vault_create(
 #[no_mangle]
 pub extern "C" fn Vault_load(json: *const raw::c_char) -> CPtrResult<CVault> {
     let fun = || {
-        let json = convert::str_in(json)?;
+        let json = unsafe { convert::str_in(json)? };
         let inner: Vault = serde_json::from_str(json)?;
         let vault = CVault { inner };
         Ok(convert::move_out(vault))

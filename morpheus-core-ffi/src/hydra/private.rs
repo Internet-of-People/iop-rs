@@ -8,7 +8,7 @@ pub extern "C" fn HydraPlugin_private(
 ) -> CPtrResult<Private> {
     let hydra = unsafe { convert::borrow_in(hydra) };
     let fun = || {
-        let unlock_password = convert::str_in(unlock_pwd)?;
+        let unlock_password = unsafe { convert::str_in(unlock_pwd)? };
         let private = hydra.plugin.private(unlock_password)?;
         Ok(convert::move_out(private))
     };
@@ -63,8 +63,8 @@ pub extern "C" fn HydraPrivate_sign_hydra_tx(
 ) -> CPtrResult<raw::c_char> {
     let private = unsafe { convert::borrow_mut_in(private) };
     let fun = || {
-        let hyd_addr = convert::str_in(hyd_addr)?;
-        let tx_str = convert::str_in(unsigned_tx)?;
+        let hyd_addr = unsafe { convert::str_in(hyd_addr)? };
+        let tx_str = unsafe { convert::str_in(unsigned_tx)? };
         let mut tx_data: TransactionData = serde_json::from_str(tx_str)?;
         private.sign_hydra_transaction(hyd_addr, &mut tx_data)?;
         let signed_tx_str = serde_json::to_string(&tx_data)?;

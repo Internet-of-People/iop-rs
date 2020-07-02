@@ -24,6 +24,8 @@ impl PublicKind {
         Ok(state.is_empty())
     }
 
+    // In theory this could return Fallible<MorpheusPublicKey>, but that would need an EdExtPublicKey.
+    // Since we do not have public derivation in ed25519, it is not worth the hassle.
     pub fn key(&self, idx: i32) -> Fallible<MPublicKey> {
         ensure!(idx >= 0, "Key index cannot be negative");
         let idx = idx as usize;
