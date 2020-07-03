@@ -49,14 +49,27 @@ pub extern "C" fn HydraPublic_change_keys_get(public: *mut Public) -> CPtrResult
     cresult(fun())
 }
 
-// TODO better fit to Wasm interface, this is still only for experimentation
 #[no_mangle]
-pub extern "C" fn HydraPublic_address(public: *mut Public, idx: i32) -> CPtrResult<raw::c_char> {
+pub extern "C" fn HydraPublic_key(
+    public: *mut Public, idx: i32,
+) -> CPtrResult<Bip44PublicKey<Secp256k1>> {
     let fun = || {
         let public = unsafe { convert::borrow_mut_in(public) };
-        let address = public.key(idx)?;
-        let adress_str = address.to_p2pkh_addr();
-        Ok(convert::string_out(adress_str))
+        let pk = public.key(idx)?;
+        Ok(convert::move_out(pk))
+    };
+    cresult(fun())
+}
+
+#[no_mangle]
+pub extern "C" fn HydraPublic_key_by_address(
+    public: *mut Public, address: *const raw::c_char,
+) -> CPtrResult<Bip44PublicKey<Secp256k1>> {
+    let public = unsafe { convert::borrow_in(public) };
+    let fun = || {
+        let address = unsafe { convert::str_in(address) }?;
+        let pk = public.key_by_p2pkh_addr(address)?;
+        Ok(convert::move_out(pk))
     };
     cresult(fun())
 }

@@ -10,9 +10,9 @@ impl<T> CSlice<T> {
     pub fn as_slice(&self) -> &[T] {
         unsafe { std::slice::from_raw_parts(self.first, self.length) }
     }
-    pub fn as_mut_slice(&mut self) -> &mut [T] {
-        unsafe { std::slice::from_raw_parts_mut(self.first, self.length) }
-    }
+    // pub fn as_mut_slice(&mut self) -> &mut [T] {
+    //     unsafe { std::slice::from_raw_parts_mut(self.first, self.length) }
+    // }
 }
 
 impl<T> From<Box<[T]>> for CSlice<T> {

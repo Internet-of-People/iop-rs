@@ -25,6 +25,16 @@ pub extern "C" fn delete_HydraPrivate(private: *mut Private) {
 }
 
 #[no_mangle]
+pub extern "C" fn HydraPrivate_neuter(private: *mut Private) -> CPtrResult<Public> {
+    let fun = || {
+        let private = unsafe { convert::borrow_in(private) };
+        let public = private.neuter();
+        Ok(convert::move_out(public))
+    };
+    cresult(fun())
+}
+
+#[no_mangle]
 pub extern "C" fn HydraPrivate_xpub_get(private: *mut Private) -> CPtrResult<raw::c_char> {
     let private = unsafe { convert::borrow_in(private) };
     let fun = || {
@@ -54,9 +64,7 @@ pub extern "C" fn HydraPrivate_change_keys_get(private: *mut Private) -> CPtrRes
     cresult(fun())
 }
 
-// TODO move these infrastructural features into morpheus-core, especially for potential reuse in Wasm
-// TODO hyd_addr should be typed and be valid after parsing
-// TODO tx should be typed and be a result of some HydraTxBuilder
+// TODO consider using strong typing for tx
 #[no_mangle]
 pub extern "C" fn HydraPrivate_sign_hydra_tx(
     private: *mut Private, hyd_addr: *const raw::c_char, unsigned_tx: *const raw::c_char,
@@ -69,6 +77,31 @@ pub extern "C" fn HydraPrivate_sign_hydra_tx(
         private.sign_hydra_transaction(hyd_addr, &mut tx_data)?;
         let signed_tx_str = serde_json::to_string(&tx_data)?;
         Ok(convert::string_out(signed_tx_str))
+    };
+    cresult(fun())
+}
+
+#[no_mangle]
+pub extern "C" fn HydraPrivate_key(
+    private: *mut Private, idx: i32,
+) -> CPtrResult<Bip44Key<Secp256k1>> {
+    let fun = || {
+        let private = unsafe { convert::borrow_mut_in(private) };
+        let key = private.key(idx)?;
+        Ok(convert::move_out(key))
+    };
+    cresult(fun())
+}
+
+#[no_mangle]
+pub extern "C" fn HydraPrivate_key_by_pk(
+    private: *mut Private, pub_key: *mut SecpPublicKey,
+) -> CPtrResult<Bip44Key<Secp256k1>> {
+    let private = unsafe { convert::borrow_in(private) };
+    let pub_key = unsafe { convert::borrow_in(pub_key) };
+    let fun = || {
+        let key = private.key_by_pk(&pub_key)?;
+        Ok(convert::move_out(key))
     };
     cresult(fun())
 }
