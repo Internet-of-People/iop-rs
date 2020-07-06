@@ -36,17 +36,3 @@ pub extern "C" fn delete_MorpheusPlugin(morpheus: *mut CMorpheusPlugin) {
     let morpheus = unsafe { Box::from_raw(morpheus) };
     drop(morpheus); // NOTE redundant, but clearer than let _plugin = ...;
 }
-
-// TODO Temporary function to test integration.
-#[no_mangle]
-pub extern "C" fn MorpheusPlugin_persona(
-    morpheus: *mut CMorpheusPlugin, idx: i32,
-) -> CPtrResult<raw::c_char> {
-    let morpheus = unsafe { convert::borrow_in(morpheus) };
-    let fun = || {
-        let persona = morpheus.plugin.public()?.personas()?.key(idx)?;
-        let persona_str = persona.key_id().to_string();
-        Ok(convert::string_out(persona_str))
-    };
-    cresult(fun())
-}

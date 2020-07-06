@@ -10,6 +10,12 @@ pub extern "C" fn delete_MSignature(sig: *mut MSignature) {
 }
 
 #[no_mangle]
+pub extern "C" fn MSignature_prefix() -> *mut raw::c_char {
+    let prefix = MSignature::PREFIX.to_string();
+    convert::string_out(prefix)
+}
+
+#[no_mangle]
 // TODO Should _from_secp functions rather take ownership of the input
 pub extern "C" fn MSignature_from_secp(secp: *mut SecpSignature) -> *mut MSignature {
     let secp = unsafe { convert::borrow_in(secp) };

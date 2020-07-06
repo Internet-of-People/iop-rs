@@ -10,7 +10,13 @@ pub extern "C" fn delete_MKeyId(id: *mut MKeyId) {
 }
 
 #[no_mangle]
-// TODO Should _from_secp functions rather take ownership of the input
+pub extern "C" fn MKeyId_prefix() -> *mut raw::c_char {
+    let prefix = MKeyId::PREFIX.to_string();
+    convert::string_out(prefix)
+}
+
+#[no_mangle]
+// TODO Should _from_secp functions rather take ownership of the input like in Rust?
 pub extern "C" fn MKeyId_from_secp(secp: *mut SecpKeyId) -> *mut MKeyId {
     let secp = unsafe { convert::borrow_in(secp) };
     convert::move_out(MKeyId::from(secp.clone()))
