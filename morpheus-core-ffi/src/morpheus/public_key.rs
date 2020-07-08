@@ -2,11 +2,7 @@ use super::*;
 
 #[no_mangle]
 pub extern "C" fn delete_MorpheusPublicKey(key: *mut MorpheusPublicKey) {
-    if key.is_null() {
-        return;
-    }
-    let key = unsafe { Box::from_raw(key) };
-    drop(key); // NOTE redundant, but clearer than let _key = ...;
+    delete(key)
 }
 
 #[no_mangle]

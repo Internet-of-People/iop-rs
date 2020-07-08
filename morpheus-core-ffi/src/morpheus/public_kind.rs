@@ -2,11 +2,7 @@ use super::*;
 
 #[no_mangle]
 pub extern "C" fn delete_MorpheusPublicKind(kind: *mut PublicKind) {
-    if kind.is_null() {
-        return;
-    }
-    let kind = unsafe { Box::from_raw(kind) };
-    drop(kind); // NOTE redundant, but clearer than let _kind = ...;
+    delete(kind)
 }
 
 #[no_mangle]

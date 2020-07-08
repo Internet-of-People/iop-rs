@@ -29,10 +29,29 @@ pub extern "C" fn MorpheusPlugin_get(vault: *mut Vault) -> CPtrResult<CMorpheusP
 }
 
 #[no_mangle]
+pub extern "C" fn MorpheusPlugin_public_get(morpheus: *mut CMorpheusPlugin) -> CPtrResult<Public> {
+    let morpheus = unsafe { convert::borrow_in(morpheus) };
+    let fun = || {
+        let public = morpheus.plugin.public()?;
+        Ok(convert::move_out(public))
+    };
+    cresult(fun())
+}
+
+#[no_mangle]
+pub extern "C" fn MorpheusPlugin_private(
+    morpheus: *mut CMorpheusPlugin, unlock_pwd: *const raw::c_char,
+) -> CPtrResult<Private> {
+    let morpheus = unsafe { convert::borrow_in(morpheus) };
+    let fun = || {
+        let unlock_password = unsafe { convert::str_in(unlock_pwd)? };
+        let private = morpheus.plugin.private(unlock_password)?;
+        Ok(convert::move_out(private))
+    };
+    cresult(fun())
+}
+
+#[no_mangle]
 pub extern "C" fn delete_MorpheusPlugin(morpheus: *mut CMorpheusPlugin) {
-    if morpheus.is_null() {
-        return;
-    }
-    let morpheus = unsafe { Box::from_raw(morpheus) };
-    drop(morpheus); // NOTE redundant, but clearer than let _plugin = ...;
+    delete(morpheus)
 }

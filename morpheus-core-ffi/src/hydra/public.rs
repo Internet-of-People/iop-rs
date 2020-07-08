@@ -1,22 +1,8 @@
 use super::*;
 
 #[no_mangle]
-pub extern "C" fn HydraPlugin_public(hydra: *mut CHydraPlugin) -> CPtrResult<Public> {
-    let hydra = unsafe { convert::borrow_in(hydra) };
-    let fun = || {
-        let public = hydra.plugin.public()?;
-        Ok(convert::move_out(public))
-    };
-    cresult(fun())
-}
-
-#[no_mangle]
 pub extern "C" fn delete_HydraPublic(public: *mut Public) {
-    if public.is_null() {
-        return;
-    }
-    let public = unsafe { Box::from_raw(public) };
-    drop(public); // NOTE redundant, but clearer than let _plugin = ...;
+    delete(public)
 }
 
 #[no_mangle]

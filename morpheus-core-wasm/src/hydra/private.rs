@@ -8,8 +8,8 @@ pub struct JsHydraPrivate {
 #[wasm_bindgen(js_class = HydraPrivate)]
 impl JsHydraPrivate {
     #[wasm_bindgen(getter = pub)]
-    pub fn neuter(&self) -> JsHydraPublic {
-        let inner = self.inner.neuter();
+    pub fn public(&self) -> JsHydraPublic {
+        let inner = self.inner.public();
         JsHydraPublic::from(inner)
     }
 

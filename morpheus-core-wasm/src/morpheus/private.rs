@@ -8,8 +8,8 @@ pub struct JsMorpheusPrivate {
 #[wasm_bindgen(js_class = MorpheusPrivate)]
 impl JsMorpheusPrivate {
     #[wasm_bindgen(getter = pub)]
-    pub fn neuter(&self) -> JsMorpheusPublic {
-        let inner = self.inner.neuter();
+    pub fn public(&self) -> JsMorpheusPublic {
+        let inner = self.inner.public();
         JsMorpheusPublic::from(inner)
     }
 
@@ -27,7 +27,7 @@ impl JsMorpheusPrivate {
 
     #[wasm_bindgen(js_name = keyById)]
     pub fn key_by_id(&self, id: &JsMKeyId) -> Result<JsMorpheusPrivateKey, JsValue> {
-        let pk = self.inner.neuter().key_by_id(id.inner()).map_err_to_js()?;
+        let pk = self.inner.public().key_by_id(id.inner()).map_err_to_js()?;
         let js_pk = JsMPublicKey::from(pk);
         self.key_by_pk(&js_pk)
     }

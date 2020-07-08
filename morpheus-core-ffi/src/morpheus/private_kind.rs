@@ -2,11 +2,7 @@ use super::*;
 
 #[no_mangle]
 pub extern "C" fn delete_MorpheusPrivateKind(kind: *mut PrivateKind) {
-    if kind.is_null() {
-        return;
-    }
-    let kind = unsafe { Box::from_raw(kind) };
-    drop(kind); // NOTE redundant, but clearer than let _kind = ...;
+    delete(kind)
 }
 
 // TODO MorpheusPrivateKind_bip32_path_get and MorpheusPrivateKind_network_get

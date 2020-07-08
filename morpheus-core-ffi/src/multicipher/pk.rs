@@ -2,11 +2,7 @@ use super::*;
 
 #[no_mangle]
 pub extern "C" fn delete_MPublicKey(pk: *mut MPublicKey) {
-    if pk.is_null() {
-        return;
-    }
-    let pk = unsafe { Box::from_raw(pk) };
-    drop(pk); // NOTE redundant, but clearer than let _pk = ...;
+    delete(pk)
 }
 
 #[no_mangle]

@@ -2,11 +2,7 @@ use super::*;
 
 #[no_mangle]
 pub extern "C" fn delete_MKeyId(id: *mut MKeyId) {
-    if id.is_null() {
-        return;
-    }
-    let id = unsafe { Box::from_raw(id) };
-    drop(id); // NOTE redundant, but clearer than let _id = ...;
+    delete(id)
 }
 
 #[no_mangle]

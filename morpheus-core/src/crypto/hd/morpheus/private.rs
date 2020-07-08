@@ -22,7 +22,7 @@ impl Private {
         Ok(PrivateKind::new(state, kind, vault_dirty))
     }
 
-    pub fn neuter(&self) -> Public {
+    pub fn public(&self) -> Public {
         Public::new(self.state.clone())
     }
 

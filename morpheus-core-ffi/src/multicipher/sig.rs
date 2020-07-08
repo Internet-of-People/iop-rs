@@ -2,11 +2,7 @@ use super::*;
 
 #[no_mangle]
 pub extern "C" fn delete_MSignature(sig: *mut MSignature) {
-    if sig.is_null() {
-        return;
-    }
-    let sig = unsafe { Box::from_raw(sig) };
-    drop(sig); // NOTE redundant, but clearer than let _sig = ...;
+    delete(sig)
 }
 
 #[no_mangle]

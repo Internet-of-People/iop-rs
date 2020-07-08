@@ -12,15 +12,11 @@ pub extern "C" fn SecpPublicKey_fromString(pk_str: *mut raw::c_char) -> CPtrResu
 
 #[no_mangle]
 pub extern "C" fn delete_SecpPublicKey(secp_pubkey: *mut SecpPublicKey) {
-    if secp_pubkey.is_null() {
-        return;
-    }
-    let secp_pubkey = unsafe { Box::from_raw(secp_pubkey) };
-    drop(secp_pubkey); // NOTE redundant, but clearer than let _plugin = ...;
+    delete(secp_pubkey)
 }
 
 #[no_mangle]
-pub extern "C" fn SecpPublicKey_toString(pk: *mut SecpPublicKey) -> CPtrResult<raw::c_char> {
+pub extern "C" fn SecpPublicKey_to_string(pk: *mut SecpPublicKey) -> CPtrResult<raw::c_char> {
     let pub_key = unsafe { convert::borrow_in(pk) };
     let fun = || {
         let key_str = pub_key.to_string();

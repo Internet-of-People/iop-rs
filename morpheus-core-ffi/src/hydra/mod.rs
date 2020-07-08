@@ -6,4 +6,3 @@ mod tx;
 use super::*;
 
 use iop_morpheus_core::crypto::hd::hydra::{Plugin, Private, Public};
-use plugin::CHydraPlugin;

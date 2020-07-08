@@ -2,11 +2,7 @@ use super::*;
 
 #[no_mangle]
 pub extern "C" fn delete_Did(did: *mut Did) {
-    if did.is_null() {
-        return;
-    }
-    let did = unsafe { Box::from_raw(did) };
-    drop(did); // NOTE redundant, but clearer than let _did = ...;
+    delete(did)
 }
 
 #[no_mangle]

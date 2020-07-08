@@ -49,11 +49,7 @@ pub extern "C" fn Vault_load(json: *const raw::c_char) -> CPtrResult<CVault> {
 
 #[no_mangle]
 pub extern "C" fn delete_Vault(vault: *mut CVault) {
-    if vault.is_null() {
-        return;
-    }
-    let vault = unsafe { Box::from_raw(vault) };
-    drop(vault); // NOTE redundant, but clearer than let _vault = ...;
+    delete(vault)
 }
 
 #[no_mangle]

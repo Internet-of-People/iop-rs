@@ -27,3 +27,11 @@ use iop_morpheus_core::{
 };
 
 use crate::ffi::{convert, *};
+
+fn delete<T>(t: *mut T) {
+    if t.is_null() {
+        return;
+    }
+    let t = unsafe { Box::from_raw(t) };
+    drop(t); // NOTE redundant, but clearer than let _t = ...;
+}

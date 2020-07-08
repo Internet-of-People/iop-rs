@@ -2,11 +2,7 @@ use super::*;
 
 #[no_mangle]
 pub extern "C" fn delete_MPrivateKey(sk: *mut MPrivateKey) {
-    if sk.is_null() {
-        return;
-    }
-    let sk = unsafe { Box::from_raw(sk) };
-    drop(sk); // NOTE redundant, but clearer than let _sk = ...;
+    delete(sk)
 }
 
 #[no_mangle]
