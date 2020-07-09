@@ -19,7 +19,8 @@ use std::str::FromStr;
 use failure::Fallible;
 
 use iop_keyvault::{
-    multicipher::*, secp256k1::*, Bip44Key, Bip44PublicKey, PrivateKey as _, PublicKey as _,
+    multicipher::*, secp256k1::*, Bip32Node, Bip32PublicNode, Bip44Key, Bip44PublicKey,
+    PrivateKey as _, PublicKey as _,
 };
 use iop_morpheus_core::{
     crypto::hd::{BoundPlugin, Vault},
