@@ -51,6 +51,11 @@ impl SecpPublicKey {
     pub fn ark_key_id(&self) -> SecpKeyId {
         SecpKeyId::from_ark_pk(self)
     }
+
+    /// ARK uses a non-standards hashing of the compressed public key.
+    pub fn validate_ark_id(&self, key_id: &SecpKeyId) -> bool {
+        &self.ark_key_id() == key_id
+    }
 }
 
 impl Add<&[u8]> for &SecpPublicKey {

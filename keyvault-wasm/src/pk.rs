@@ -78,9 +78,19 @@ impl JsSecpPublicKey {
         JsSecpKeyId::from(self.inner.key_id())
     }
 
+    #[wasm_bindgen(js_name = arkKeyId)]
+    pub fn ark_key_id(&self) -> JsSecpKeyId {
+        JsSecpKeyId::from(self.inner.ark_key_id())
+    }
+
     #[wasm_bindgen(js_name = validateId)]
     pub fn validate_id(&self, key_id: &JsSecpKeyId) -> bool {
         self.inner.validate_id(&key_id.inner())
+    }
+
+    #[wasm_bindgen(js_name = validateArkId)]
+    pub fn validate_ark_id(&self, key_id: &JsSecpKeyId) -> bool {
+        self.inner.validate_ark_id(&key_id.inner())
     }
 
     #[wasm_bindgen(js_name = validateEcdsa)]
