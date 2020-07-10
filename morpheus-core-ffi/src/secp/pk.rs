@@ -1,26 +1,66 @@
 use super::*;
 
 #[no_mangle]
-pub extern "C" fn SecpPublicKey_fromString(pk_str: *mut raw::c_char) -> CPtrResult<SecpPublicKey> {
+pub extern "C" fn delete_SecpPublicKey(secp_pk: *mut SecpPublicKey) {
+    delete(secp_pk)
+}
+
+#[no_mangle]
+pub extern "C" fn SecpPublicKey_fromString(hex: *mut raw::c_char) -> CPtrResult<SecpPublicKey> {
     let fun = || {
-        let pk_str = unsafe { convert::str_in(pk_str) }?;
-        let pk = SecpPublicKey::from_str(pk_str)?;
-        Ok(convert::move_out(pk))
+        let hex = unsafe { convert::str_in(hex) }?;
+        let secp_pk = SecpPublicKey::from_str(hex)?;
+        Ok(convert::move_out(secp_pk))
     };
     cresult(fun())
 }
 
 #[no_mangle]
-pub extern "C" fn delete_SecpPublicKey(secp_pubkey: *mut SecpPublicKey) {
-    delete(secp_pubkey)
+pub extern "C" fn SecpPublicKey_to_string(secp_pk: *mut SecpPublicKey) -> CPtrResult<raw::c_char> {
+    let secp_pk = unsafe { convert::borrow_in(secp_pk) };
+    let fun = || {
+        let hex = secp_pk.to_string();
+        Ok(convert::string_out(hex))
+    };
+    cresult(fun())
 }
 
 #[no_mangle]
-pub extern "C" fn SecpPublicKey_to_string(pk: *mut SecpPublicKey) -> CPtrResult<raw::c_char> {
-    let pub_key = unsafe { convert::borrow_in(pk) };
-    let fun = || {
-        let key_str = pub_key.to_string();
-        Ok(convert::string_out(key_str))
-    };
-    cresult(fun())
+pub extern "C" fn SecpPublicKey_key_id(secp_pk: *mut SecpPublicKey) -> *mut SecpKeyId {
+    let secp_pk = unsafe { convert::borrow_in(secp_pk) };
+    convert::move_out(secp_pk.key_id())
+}
+
+#[no_mangle]
+pub extern "C" fn SecpPublicKey_ark_key_id(secp_pk: *mut SecpPublicKey) -> *mut SecpKeyId {
+    let secp_pk = unsafe { convert::borrow_in(secp_pk) };
+    convert::move_out(secp_pk.ark_key_id())
+}
+
+#[no_mangle]
+pub extern "C" fn SecpPublicKey_validate_id(
+    secp_pk: *mut SecpPublicKey, secp_id: *mut SecpKeyId,
+) -> bool {
+    let secp_pk = unsafe { convert::borrow_in(secp_pk) };
+    let secp_id = unsafe { convert::borrow_in(secp_id) };
+    secp_pk.validate_id(secp_id)
+}
+
+#[no_mangle]
+pub extern "C" fn SecpPublicKey_validate_ark_id(
+    secp_pk: *mut SecpPublicKey, secp_id: *mut SecpKeyId,
+) -> bool {
+    let secp_pk = unsafe { convert::borrow_in(secp_pk) };
+    let secp_id = unsafe { convert::borrow_in(secp_id) };
+    secp_pk.validate_ark_id(secp_id)
+}
+
+#[no_mangle]
+pub extern "C" fn SecpPublicKey_validate_ecdsa(
+    secp_pk: *mut SecpPublicKey, data: *mut CSlice<u8>, secp_sig: *mut SecpSignature,
+) -> bool {
+    let secp_pk = unsafe { convert::borrow_in(secp_pk) };
+    let data = unsafe { convert::borrow_in(data) };
+    let secp_sig = unsafe { convert::borrow_in(secp_sig) };
+    secp_pk.verify(data.as_slice(), secp_sig)
 }
