@@ -55,9 +55,11 @@ void main(List<String> arguments) {
     print('Creating vault...');
     final word25 = "";
     final unlockPassword = "testing";
-    var vault = sdk.createVault('en',
-      'include pear escape sail spy orange cute despair witness trouble sleep torch wire burst unable brass expose fiction drift clock duck oxygen aerobic already',
-      word25, unlockPassword);
+    var vault = sdk.createVault(
+        'en',
+        'include pear escape sail spy orange cute despair witness trouble sleep torch wire burst unable brass expose fiction drift clock duck oxygen aerobic already',
+        word25,
+        unlockPassword);
 
     print('Vault dirty flag: ${sdk.vaultIsDirty(vault)}');
     var vaultJson = sdk.vaultToJson(vault);
@@ -86,17 +88,21 @@ void main(List<String> arguments) {
     print('Hydra address 0: $address');
 
     // final hydraTransferTxJson = File('bin/hydraTransferTx.json').readAsStringSync();
-    final senderPubKey = "02db11c07afd6ec05980284af58105329d41e9882947188022350219cca9baa3e7";
+    final senderPubKey =
+        "02db11c07afd6ec05980284af58105329d41e9882947188022350219cca9baa3e7";
     final recipient = "tjseecxRmob5qBS2T3qc8frXDKz3YUGB8J";
     final walletNonce = 15;
-    final hydraTransferTxJson = sdk.hydraTransferTx(hydraNetwork, senderPubKey, recipient, 3141593, walletNonce);
+    final hydraTransferTxJson = sdk.hydraTransferTx(
+        hydraNetwork, senderPubKey, recipient, 3141593, walletNonce);
     print('Hydra transfer Tx to sign: $hydraTransferTxJson');
     final hydraPrivate = sdk.hydraPrivate(hydra, unlockPassword);
-    final signedTransferTxJson = sdk.signHydraTx(hydraPrivate, address, hydraTransferTxJson);
+    final signedTransferTxJson =
+        sdk.signHydraTx(hydraPrivate, address, hydraTransferTxJson);
     final signedTransferTxBatch = '{"transactions":[$signedTransferTxJson]}';
     sdk.freeHydraPrivate(hydraPrivate);
     print('Signed Hydra transfer Tx');
-    print("curl --header 'Content-Type: application/json' --request POST --data '$signedTransferTxBatch' http://test.hydra.iop.global:4703/api/v2/transactions");
+    print(
+        "curl --header 'Content-Type: application/json' --request POST --data '$signedTransferTxBatch' http://test.hydra.iop.global:4703/api/v2/transactions");
 
     print('Closing Hydra plugin');
     sdk.freeHydra(hydra);

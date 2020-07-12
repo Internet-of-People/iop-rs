@@ -6,6 +6,12 @@ pub extern "C" fn delete_Did(did: *mut Did) {
 }
 
 #[no_mangle]
+pub extern "C" fn Did_prefix() -> *mut raw::c_char {
+    let prefix = Did::PREFIX.to_string();
+    convert::string_out(prefix)
+}
+
+#[no_mangle]
 pub extern "C" fn Did_from_string(input: *mut raw::c_char) -> CPtrResult<Did> {
     let fun = || {
         let input = unsafe { convert::str_in(input)? };
