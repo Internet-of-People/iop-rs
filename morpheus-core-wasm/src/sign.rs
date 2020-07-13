@@ -34,9 +34,22 @@ impl JsSignedBytes {
         JsMSignature::from(self.inner.signature().to_owned())
     }
 
-    pub fn validate(&self) -> Result<bool, JsValue> {
-        let content = self.inner.content().content_to_sign().map_err_to_js()?;
-        Ok(self.inner.public_key().verify(content, &self.inner.signature()))
+    #[wasm_bindgen]
+    pub fn validate(&self) -> bool {
+        self.inner.validate()
+    }
+
+    #[wasm_bindgen(js_name = validateWithKeyId)]
+    pub fn validate_with_keyid(&self, signer_id: &JsMKeyId) -> bool {
+        self.inner.validate_with_keyid(Some(signer_id.inner()))
+    }
+
+    #[wasm_bindgen(js_name = validateWithDidDoc)]
+    pub fn validate_with_did_doc(
+        &self, did_doc_str: &str, from_height_inc: Option<BlockHeight>,
+        until_height_exc: Option<BlockHeight>,
+    ) -> Result<JsValue, JsValue> {
+        validate_with_did_doc(&self.inner, did_doc_str, from_height_inc, until_height_exc)
     }
 }
 
@@ -86,30 +99,22 @@ impl JsSignedJson {
         JsMSignature::from(self.inner.signature().to_owned())
     }
 
+    #[wasm_bindgen]
     pub fn validate(&self) -> bool {
-        match self.inner.content().content_to_sign() {
-            Ok(content) => self.inner.public_key().verify(content, &self.inner.signature()),
-            Err(_) => false,
-        }
+        self.inner.validate()
     }
 
     #[wasm_bindgen(js_name = validateWithKeyId)]
     pub fn validate_with_keyid(&self, signer_id: &JsMKeyId) -> bool {
-        self.inner.public_key().validate_id(&signer_id.inner()) && self.validate()
+        self.inner.validate_with_keyid(Some(signer_id.inner()))
     }
 
-    // TODO return red/yellow/green instead of bool
     #[wasm_bindgen(js_name = validateWithDidDoc)]
     pub fn validate_with_did_doc(
         &self, did_doc_str: &str, from_height_inc: Option<BlockHeight>,
         until_height_exc: Option<BlockHeight>,
     ) -> Result<JsValue, JsValue> {
-        let did_doc = serde_json::from_str(did_doc_str).map_err_to_js()?;
-        let result = self
-            .inner
-            .validate_with_did_doc(&did_doc, from_height_inc, until_height_exc)
-            .map_err_to_js()?;
-        Ok(JsValidationResult { inner: result }.into())
+        validate_with_did_doc(&self.inner, did_doc_str, from_height_inc, until_height_exc)
     }
 }
 
@@ -123,6 +128,17 @@ impl Wraps<Signed<serde_json::Value>> for JsSignedJson {
     fn inner(&self) -> &Signed<Value> {
         &self.inner
     }
+}
+
+fn validate_with_did_doc<T: Signable>(
+    signed: &Signed<T>, did_doc_str: &str, from_height_inc: Option<BlockHeight>,
+    until_height_exc: Option<BlockHeight>,
+) -> Result<JsValue, JsValue> {
+    let did_doc = serde_json::from_str(did_doc_str).map_err_to_js()?;
+    let result = signed
+        .validate_with_did_doc(&did_doc, from_height_inc, until_height_exc)
+        .map_err_to_js()?;
+    Ok(JsValidationResult { inner: result }.into())
 }
 
 #[wasm_bindgen(js_name = ValidationIssue)]

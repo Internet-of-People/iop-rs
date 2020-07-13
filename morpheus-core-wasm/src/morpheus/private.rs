@@ -52,7 +52,7 @@ impl JsMorpheusPrivate {
         let request: WitnessRequest = js_req.into_serde().map_err(err_to_js)?;
         let signed_request = signer.sign_witness_request(request).map_err(err_to_js)?;
 
-        Self::create_signed_json(&signed_request)
+        into_signed_json(signed_request)
     }
 
     #[wasm_bindgen(js_name = signWitnessStatement)]
@@ -63,7 +63,7 @@ impl JsMorpheusPrivate {
         let statement: WitnessStatement = js_stmt.into_serde().map_err(err_to_js)?;
         let signed_statement = signer.sign_witness_statement(statement).map_err(err_to_js)?;
 
-        Self::create_signed_json(&signed_statement)
+        into_signed_json(signed_statement)
     }
 
     #[wasm_bindgen(js_name = signClaimPresentation)]
@@ -75,22 +75,13 @@ impl JsMorpheusPrivate {
         let signed_presentation =
             signer.sign_claim_presentation(presentation).map_err(err_to_js)?;
 
-        Self::create_signed_json(&signed_presentation)
+        into_signed_json(signed_presentation)
     }
 
     fn create_signer(&self, id: &JsMKeyId) -> Result<PrivateKeySigner, JsValue> {
         let js_sk = self.key_by_id(id)?;
         let sk: MPrivateKey = js_sk.inner().private_key();
         Ok(PrivateKeySigner::new(sk))
-    }
-
-    fn create_signed_json<T: Signable>(signed: &Signed<T>) -> Result<JsSignedJson, JsValue> {
-        let signed_json = Signed::new(
-            signed.public_key().to_owned(),
-            serde_json::to_value(signed.content()).map_err(err_to_js)?,
-            signed.signature().to_owned(),
-        );
-        Ok(signed_json.into())
     }
 }
 
@@ -104,4 +95,11 @@ impl Wraps<MorpheusPrivate> for JsMorpheusPrivate {
     fn inner(&self) -> &MorpheusPrivate {
         &self.inner
     }
+}
+
+fn into_signed_json<T: Signable>(signed: Signed<T>) -> Result<JsSignedJson, JsValue> {
+    let (public_key, content, signature, nonce) = signed.into_parts();
+    let content = serde_json::to_value(content).map_err(err_to_js)?;
+    let signed_json = Signed::from_parts(public_key, content, signature, nonce);
+    Ok(signed_json.into())
 }

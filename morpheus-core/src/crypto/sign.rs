@@ -75,27 +75,41 @@ where
         Self { public_key, content, signature, nonce: None }
     }
 
+    pub fn from_parts(
+        public_key: MPublicKey, content: T, signature: MSignature, nonce: Option<Nonce>,
+    ) -> Self {
+        Self { public_key, content, signature, nonce }
+    }
+
+    pub fn into_parts(self) -> (MPublicKey, T, MSignature, Option<Nonce>) {
+        (self.public_key, self.content, self.signature, self.nonce)
+    }
+
     pub fn content(&self) -> &T {
         &self.content
     }
+
     pub fn public_key(&self) -> &MPublicKey {
         &self.public_key
     }
+
     pub fn signature(&self) -> &MSignature {
         &self.signature
     }
 
-    pub fn validate(&self) -> Fallible<bool> {
-        let valid = self.public_key.verify(&self.content.content_to_sign()?, &self.signature);
-        Ok(valid)
+    pub fn validate(&self) -> bool {
+        match self.content.content_to_sign() {
+            Ok(content) => self.public_key.verify(content, &self.signature),
+            Err(_) => false,
+        }
     }
 
-    pub fn validate_with_keyid(&self, signer_id: Option<MKeyId>) -> Fallible<bool> {
-        let mut valid = self.validate()?;
+    pub fn validate_with_keyid(&self, signer_id: Option<&MKeyId>) -> bool {
+        let mut valid = self.validate();
         if let Some(id) = signer_id {
-            valid &= self.public_key.validate_id(&id);
+            valid &= self.public_key.validate_id(id);
         }
-        Ok(valid)
+        valid
     }
 
     // TODO add Before/AfterProofs as optional arguments here
@@ -109,7 +123,7 @@ where
         let auth = Authentication::PublicKey(self.public_key.to_owned());
         let mut issues = on_behalf_of.validate_right(&auth, Right::Impersonation, from, until)?;
 
-        if !self.validate()? {
+        if !self.validate() {
             issues.add_issue(ValidationIssueSeverity::Error, "Signature is invalid");
         }
         Ok(issues)

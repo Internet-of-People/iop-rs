@@ -4,6 +4,14 @@ pub(crate) unsafe fn borrow_in<'a, T>(value: *const T) -> &'a T {
     &*value
 }
 
+pub(crate) unsafe fn borrow_in_opt<'a, T>(value: *const T) -> Option<&'a T> {
+    if value.is_null() {
+        None
+    } else {
+        Some(borrow_in(value))
+    }
+}
+
 pub(crate) unsafe fn borrow_mut_in<'a, T>(value: *mut T) -> &'a mut T {
     &mut *value
 }

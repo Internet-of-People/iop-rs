@@ -9,7 +9,9 @@ mod hydra;
 mod morpheus;
 mod multicipher;
 mod secp;
+mod signed;
 mod tx;
+mod validation;
 mod vault;
 
 // use std::panic::catch_unwind; // TODO consider panic unwinding strategies
@@ -23,8 +25,11 @@ use iop_keyvault::{
     PrivateKey as _, PublicKey as _,
 };
 use iop_morpheus_core::{
-    crypto::hd::{BoundPlugin, Vault},
-    data::did::Did,
+    crypto::{
+        hd::{BoundPlugin, Vault},
+        sign::*,
+    },
+    data::{claim::*, did::*, diddoc::*, present::*, validation::*},
 };
 
 use crate::ffi::{convert, *};
