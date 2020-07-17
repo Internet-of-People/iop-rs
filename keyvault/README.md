@@ -11,9 +11,15 @@
 
 ## Reporting Vulnerabilities
 
+Please contact the package authors.
+
 ## Usage
 
+See the [IoP developer page](https://developer.iop.global).
+
 ## Contributing
+
+Please contact the package authors.
 
 ## License
 

@@ -1,11 +1,14 @@
 [package]
 name = "iop-keyvault"
 version = "0.0.2"
-authors = ["IoP Ventures LLC <info@iop-ventures.com>", "wigy <wigy_opensource_developer@yahoo.com>"]
-license = "LGPL-3.0-or-later"
-repository = "https://github.com/internet-of-people/prometheus"
-keywords = ["crypto", "wallet", "iop", "mercury", "morpheus", "prometheus", "vault", "key-vault"]
 edition = "2018"
+description = "A general-purpose hierarchical deterministic generator for asymmetric keys."
+authors = ["IoP Ventures LLC <info@iop-ventures.com>", "wigy <wigy_opensource_developer@yahoo.com>", "Rache Bartmoss <bartmoss@tutanota.com>"]
+license = "LGPL-3.0-or-later"
+repository = "https://github.com/Internet-of-People/keyvault-rust"
+homepage = "https://iop.global"
+keywords = ["crypto", "wallet", "iop", "vault", "ssi"]
+categories = ["cryptography", "cryptography::cryptocurrencies"]
 
 [dependencies]
 blake2 = "0.8.0"
@@ -33,5 +36,5 @@ version = "0.1.14"
 features = ["wasm-bindgen"]
 
 [dev-dependencies]
-rmp-serde = "*"
-serde_json = "*"
+rmp-serde = "0.14.3"
+serde_json = "1.0.56"

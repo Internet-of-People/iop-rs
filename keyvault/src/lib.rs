@@ -2,6 +2,9 @@
 
 //! This library provides a high-level API to be used in Morpheus as a key-vault. It wraps multiple
 //! cryptographic libraries to make it easier on the integrator.
+//! For more information on this crate and potential usage, see the [IoP developer site].
+//!
+//! [IoP developer site]: https://developer.iop.global
 
 mod bip32;
 mod bip39;
