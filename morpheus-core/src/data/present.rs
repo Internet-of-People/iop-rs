@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use crate::{
     crypto::{
         hash::Content,
-        sign::{Signable, Signed},
+        sign::{Nonce, Signable, Signed},
     },
     data::{did::Did, serde_string},
 };
@@ -37,6 +37,8 @@ pub struct ClaimPresentation {
     #[serde(rename = "provenClaims")]
     proven_claims: Vec<ProvenClaim>,
     licenses: Vec<License>,
+    #[serde(skip_serializing_if = "Option::is_none", default)]
+    nonce: Option<Nonce>,
     // if subjects are different (from each other or the creator of this presentation)
     // then the creator an optional license is needed to prove proper rights to further delegate claims
     // consider how to do it without potentially infinite data size?

@@ -26,7 +26,8 @@ pub struct WitnessRequest {
     claimant: String, // TODO should be an AuthenticationLink on the long term
     claim: Claim,
     evidence: MorpheusValue,
-    nonce: Nonce, // TODO nonce was also added to Signed<T>, remove this later
+    #[serde(skip_serializing_if = "Option::is_none", default)]
+    nonce: Option<Nonce>,
 }
 
 impl Content for WitnessRequest {}
@@ -39,7 +40,8 @@ pub struct WitnessStatement {
     process_id: ProcessId,
     claim: Claim,
     constraints: Constraints,
-    nonce: Nonce, // TODO nonce was also added to Signed<T>, remove this later
+    #[serde(skip_serializing_if = "Option::is_none", default)]
+    nonce: Option<Nonce>,
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
