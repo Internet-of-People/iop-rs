@@ -10,7 +10,7 @@ edition = "2018"
 [dependencies]
 blake2 = "0.8.0"
 digest = "0.8.0"
-ed25519-dalek = "1.0.0-pre.3"
+ed25519-dalek = "=1.0.0-pre.3"
 failure = "0.1.8"
 rand = { version = "0.7.2", features = ["getrandom"] }
 getrandom = "0.1.14"
