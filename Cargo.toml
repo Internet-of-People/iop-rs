@@ -10,6 +10,6 @@ members = [
 # iop-keyvault = { path="../keyvault-rs/keyvault" }
 # iop-keyvault-wasm = { path="../keyvault-rs/keyvault-wasm" }
 
-[patch.crates-io]
-iop-keyvault = { git="https://github.com/Internet-of-People/keyvault-rust", branch="develop" }
-iop-keyvault-wasm = { git="https://github.com/Internet-of-People/keyvault-rust", branch="develop" }
+# [patch.crates-io]
+# iop-keyvault = { git="https://github.com/Internet-of-People/keyvault-rust", branch="develop" }
+# iop-keyvault-wasm = { git="https://github.com/Internet-of-People/keyvault-rust", branch="develop" }
