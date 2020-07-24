@@ -30,5 +30,5 @@ hex = "*"
 
 
 [target.'cfg(target_os="android")'.dependencies]
-jni = { version = "0.5", default-features = false }
-android_logger = "0.5"
+jni = { version = "0.17", default-features = false }
+android_logger = "0.9"
