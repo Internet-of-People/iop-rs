@@ -1,6 +1,6 @@
 [package]
 name = "iop-morpheus-core-ffi"
-version = "0.0.1"
+version = "0.0.2"
 authors = ["IoP Ventures LLC <info@iop-ventures.com>", "Rache Bartmoss <bartmoss@tutanota.com>", "wigy <wigy_opensource_developer@yahoo.com>"]
 edition = "2018"
 
@@ -13,7 +13,7 @@ crate-type = ["rlib", "cdylib"]
 [dependencies]
 failure = "*"
 iop-keyvault = "0.0.2"
-iop-morpheus-core = { path = "../morpheus-core" }
+iop-morpheus-core = "0.0.2"
 log = "*"
 serde_json = { version = "*", features = ["preserve_order"] }
 serde_repr = "*"

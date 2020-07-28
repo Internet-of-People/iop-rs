@@ -6,9 +6,15 @@ members = [
     "morpheus-sdk",
 ]
 
-# [patch.crates-io]
+# Experiment for optimizing WASM and FFI binary sizes
+[profile.release]
+lto = true
+opt-level = 's'
+
+[patch.crates-io]
 # iop-keyvault = { path="../keyvault-rs/keyvault" }
 # iop-keyvault-wasm = { path="../keyvault-rs/keyvault-wasm" }
+iop-morpheus-core = { path="morpheus-core" }
 
 # [patch.crates-io]
 # iop-keyvault = { git="https://github.com/Internet-of-People/keyvault-rust", branch="develop" }

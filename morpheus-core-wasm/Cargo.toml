@@ -1,6 +1,6 @@
 [package]
 name = "iop-morpheus-core-wasm"
-version = "0.0.1"
+version = "0.0.2"
 authors = ["IoP Ventures LLC <info@iop-ventures.com>", "Rache Bartmoss <bartmoss@tutanota.com>", "wigy <wigy_opensource_developer@yahoo.com>"]
 edition = "2018"
 
@@ -13,16 +13,10 @@ crate-type = ["cdylib", "rlib"]
 failure = "*"
 iop-keyvault = "0.0.2"
 iop-keyvault-wasm = "0.0.2"
-iop-morpheus-core = { path = "../morpheus-core" }
+iop-morpheus-core = "0.0.2"
 js-sys = "*"
 log = "*"
 serde = "*"
 serde_json = "*"
 wasm-bindgen = { version = "*", features = ["serde-serialize"] }
 wasm-bindgen-futures = "*"
-
-
-# Further options to experiment with for optimizing Wasm binary sizes
-#[profile.release]
-#lto = true
-#opt-level = 's'

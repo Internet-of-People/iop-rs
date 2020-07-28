@@ -1,6 +1,6 @@
 [package]
 name = "iop-morpheus-sdk"
-version = "0.0.1"
+version = "0.0.2"
 authors = ["IoP Ventures LLC <info@iop-ventures.com>", "Rache Bartmoss <bartmoss@tutanota.com>", "wigy <wigy_opensource_developer@yahoo.com>"]
 license = "LGPL-3.0-or-later"
 edition = "2018"
@@ -17,7 +17,7 @@ failure = "*"
 futures = "*"
 hyper = "*"
 iop-keyvault = "0.0.2"
-iop-morpheus-core = { path = "../morpheus-core" }
+iop-morpheus-core = "0.0.2"
 log = "*"
 multihash = "*"
 rand = "*"
