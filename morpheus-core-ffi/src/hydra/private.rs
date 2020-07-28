@@ -1,7 +1,5 @@
 use super::*;
 
-use iop_morpheus_core::hydra::transaction::TransactionData;
-
 #[no_mangle]
 pub extern "C" fn delete_HydraPrivate(private: *mut Private) {
     delete(private)

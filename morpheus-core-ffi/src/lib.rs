@@ -1,4 +1,5 @@
 #![allow(clippy::not_unsafe_ptr_arg_deref)]
+#![allow(non_snake_case)]
 
 mod bip39;
 mod bip44;
@@ -6,6 +7,7 @@ mod crypto;
 mod did;
 mod ffi;
 mod hydra;
+mod hydra_signer;
 mod morpheus;
 mod multicipher;
 mod secp;
@@ -30,6 +32,7 @@ use iop_morpheus_core::{
         sign::*,
     },
     data::{claim::*, did::*, diddoc::*, present::*, validation::*},
+    hydra::{crypto::HydraSigner, transaction::TransactionData},
 };
 
 use crate::ffi::{convert, *};

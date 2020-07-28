@@ -36,3 +36,14 @@ pub extern "C" fn MorpheusPublicKind_key(
     };
     cresult(fun())
 }
+
+#[no_mangle]
+pub extern "C" fn MorpheusPublicKind_did(kind: *const PublicKind, idx: i32) -> CPtrResult<Did> {
+    let kind = unsafe { convert::borrow_in(kind) };
+    let fun = || {
+        let pk = kind.key(idx)?;
+        let did = Did::from(pk.key_id());
+        Ok(convert::move_out(did))
+    };
+    cresult(fun())
+}
