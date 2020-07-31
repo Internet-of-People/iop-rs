@@ -99,16 +99,16 @@ macro_rules! erase {
 }
 
 macro_rules! visit_fac {
-    ($left:ident($discriminator:expr) => $callback:ident($self_:tt)) => {
-        visit_fac!($left($discriminator) => $callback($self_,))
+    ($left:ident($suite:expr) => $callback:ident($self_:tt)) => {
+        visit_fac!($left($suite) => $callback($self_,))
     };
-    ($left:ident($discriminator:expr) => $callback:ident($self_:tt, $($args:tt)*)) => {
-        match $discriminator {
+    ($left:ident($suite:expr) => $callback:ident($self_:tt, $($args:tt)*)) => {
+        match $suite {
             $left!(e) => visit_fac!(@case e $callback $self_ [ $($args),* ]),
             $left!(f) => visit_fac!(@case f $callback $self_ [ $($args),* ]),
             _ => return Err(err_msg(format!(
-                "Unknown crypto suite discriminator '{}'",
-                $discriminator
+                "Unknown crypto suite suite '{}'",
+                $suite
             ))),
         }
     };
@@ -159,7 +159,7 @@ pub use pk::MPublicKey;
 pub use sig::MSignature;
 pub use sk::MPrivateKey;
 
-/// A discriminator type that is used to keep the type-safety of the erased types in [`multicipher`]
+/// A suite type that is used to keep the type-safety of the erased types in [`multicipher`]
 ///
 /// [`multicipher`]: index.html
 #[derive(Clone, Debug, Hash, Eq, PartialEq, PartialOrd)]
@@ -192,8 +192,9 @@ impl AsymmetricCrypto for MultiCipher {
 
 #[derive(Serialize, Deserialize)]
 struct ErasedBytes {
-    discriminator: u8,
-    #[serde(with = "serde_bytes")]
+    #[serde(rename = "s")]
+    suite: u8,
+    #[serde(rename = "v", with = "serde_bytes")]
     value: Vec<u8>,
 }
 

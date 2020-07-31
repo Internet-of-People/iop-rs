@@ -41,9 +41,9 @@ impl Serialize for MSignature {
     where
         S: Serializer,
     {
-        let (discriminator, bytes) = visit!(to_bytes_tuple(self));
+        let (suite, bytes) = visit!(to_bytes_tuple(self));
 
-        let erased = ErasedBytes { discriminator: discriminator.as_bytes()[0], value: bytes };
+        let erased = ErasedBytes { suite: suite.as_bytes()[0], value: bytes };
         erased.serialize(serializer)
     }
 }
@@ -55,10 +55,10 @@ macro_rules! from_bytes {
 }
 
 fn deser(erased: ErasedBytes) -> Fallible<MSignature> {
-    let discriminator = erased.discriminator as char;
+    let suite = erased.suite as char;
     let data = &erased.value;
     let value = visit_fac!(
-        stringify(discriminator.to_string().as_str()) =>
+        stringify(suite.to_string().as_str()) =>
             from_bytes(data)
     );
     Ok(value)
@@ -106,9 +106,9 @@ impl Eq for MSignature {}
 
 impl From<&MSignature> for String {
     fn from(src: &MSignature) -> Self {
-        let (discriminator, bytes) = visit!(to_bytes_tuple(src));
+        let (suite, bytes) = visit!(to_bytes_tuple(src));
         let mut output = multibase::encode(multibase::Base::Base58Btc, &bytes);
-        output.insert_str(0, discriminator);
+        output.insert_str(0, suite);
         output.insert(0, MSignature::PREFIX);
         output
     }
@@ -141,15 +141,15 @@ impl std::str::FromStr for MSignature {
             "Signatures must start with '{}'",
             Self::PREFIX
         );
-        if let Some(discriminator) = chars.next() {
+        if let Some(suite) = chars.next() {
             let (_base, binary) = multibase::decode(chars.as_str())?;
             let ret = visit_fac!(
-                stringify(discriminator.to_string().as_str()) =>
+                stringify(suite.to_string().as_str()) =>
                     from_bytes(binary)
             );
             Ok(ret)
         } else {
-            Err(err_msg("No crypto suite discriminator found"))
+            Err(err_msg("No crypto suite suite found"))
         }
     }
 }
@@ -211,22 +211,22 @@ mod test {
         }
 
         #[test]
-        fn discriminator_matters() {
+        fn suite_matters() {
             let sig1 = "sezAhoNep8B9HTRCAYaJFPL1hNgqxfjM72UD4B75s258aF6pPCtDf5trXm7mppZVzT6ynpC3jyH6h3Li7r9Rw4yjeG2".parse::<MSignature>().unwrap();
             let sig2 = "sfzAhoNep8B9HTRCAYaJFPL1hNgqxfjM72UD4B75s258aF6pPCtDf5trXm7mppZVzT6ynpC3jyH6h3Li7r9Rw4yjeG2".parse::<MSignature>().unwrap();
             assert_ne!(sig1, sig2);
         }
 
         #[test]
-        #[should_panic(expected = "Unknown crypto suite discriminator \\'g\\'")]
-        fn invalid_discriminator() {
+        #[should_panic(expected = "Unknown crypto suite suite \\'g\\'")]
+        fn invalid_suite() {
             let _sig =
                 "sgzAhoNep8B9HTRCAYaJFPL1hNgqxfjM72UD4B75s258aF6pPCtDf5trXm7mppZVzT6ynpC3jyH6h3Li7r9Rw4yjeG2".parse::<MSignature>().unwrap();
         }
 
         #[test]
-        #[should_panic(expected = "No crypto suite discriminator found")]
-        fn missing_discriminator() {
+        #[should_panic(expected = "No crypto suite suite found")]
+        fn missing_suite() {
             let _sig = "s".parse::<MSignature>().unwrap();
         }
 
@@ -275,7 +275,7 @@ mod test {
             let sig = sig_str.parse::<MSignature>().unwrap();
             let sig_bin = serde_json::to_vec(&sig).unwrap();
 
-            assert_eq!(sig_bin, br#"{"discriminator":101,"value":[1,229,86,67,0,195,96,172,114,144,134,226,204,128,110,130,138,132,135,127,30,184,229,217,116,216,115,224,101,34,73,1,85,95,184,130,21,144,163,59,172,198,30,57,112,28,249,180,107,210,91,245,240,89,91,190,36,101,81,65,67,142,122,16,11]}"#.to_vec());
+            assert_eq!(sig_bin, br#"{"s":101,"v":[1,229,86,67,0,195,96,172,114,144,134,226,204,128,110,130,138,132,135,127,30,184,229,217,116,216,115,224,101,34,73,1,85,95,184,130,21,144,163,59,172,198,30,57,112,28,249,180,107,210,91,245,240,89,91,190,36,101,81,65,67,142,122,16,11]}"#.to_vec());
 
             let sig_deser: MSignature = serde_json::from_slice(&sig_bin).unwrap();
             let sig_tostr = sig_deser.to_string();

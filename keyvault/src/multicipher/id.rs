@@ -27,9 +27,9 @@ impl Serialize for MKeyId {
     where
         S: Serializer,
     {
-        let (discriminator, bytes) = visit!(to_bytes_tuple(self));
+        let (suite, bytes) = visit!(to_bytes_tuple(self));
         let mut out = bytes;
-        out.insert(0, discriminator.as_bytes()[0]);
+        out.insert(0, suite.as_bytes()[0]);
         serde_bytes::serialize(out.as_slice(), serializer)
     }
 }
@@ -41,11 +41,11 @@ macro_rules! from_bytes {
 }
 
 fn deser(bytes: Vec<u8>) -> Fallible<MKeyId> {
-    ensure!(!bytes.is_empty(), "No crypto suite discriminator found");
-    let discriminator = bytes[0] as char;
+    ensure!(!bytes.is_empty(), "No crypto suite suite found");
+    let suite = bytes[0] as char;
     let data = &bytes[1..];
     let value = visit_fac!(
-        stringify(discriminator.to_string().as_str()) =>
+        stringify(suite.to_string().as_str()) =>
             from_bytes(data)
     );
     Ok(value)
@@ -122,9 +122,9 @@ impl Hash for MKeyId {
 
 impl From<&MKeyId> for String {
     fn from(src: &MKeyId) -> Self {
-        let (discriminator, bytes) = visit!(to_bytes_tuple(src));
+        let (suite, bytes) = visit!(to_bytes_tuple(src));
         let mut output = multibase::encode(multibase::Base::Base58Btc, &bytes);
-        output.insert_str(0, discriminator);
+        output.insert_str(0, suite);
         output.insert(0, MKeyId::PREFIX);
         output
     }
@@ -157,15 +157,15 @@ impl std::str::FromStr for MKeyId {
             "Identifiers must start with '{}'",
             Self::PREFIX
         );
-        if let Some(discriminator) = chars.next() {
+        if let Some(suite) = chars.next() {
             let (_base, binary) = multibase::decode(chars.as_str())?;
             let ret = visit_fac!(
-                stringify(discriminator.to_string().as_str()) =>
+                stringify(suite.to_string().as_str()) =>
                     from_bytes(binary)
             );
             Ok(ret)
         } else {
-            Err(err_msg("No crypto suite discriminator found"))
+            Err(err_msg("No crypto suite suite found"))
         }
     }
 }
@@ -224,21 +224,21 @@ mod test {
         }
 
         #[test]
-        fn discriminator_matters() {
+        fn suite_matters() {
             let id1 = "iez21JXEtMzXjbCK6BAYFU9ewX".parse::<MKeyId>().unwrap();
             let id2 = "ifz21JXEtMzXjbCK6BAYFU9ewX".parse::<MKeyId>().unwrap();
             assert_ne!(id1, id2);
         }
 
         #[test]
-        #[should_panic(expected = "Unknown crypto suite discriminator \\'g\\'")]
-        fn invalid_discriminator() {
+        #[should_panic(expected = "Unknown crypto suite suite \\'g\\'")]
+        fn invalid_suite() {
             let _id = "igz21JXEtMzXjbCK6BAYFU9ewX".parse::<MKeyId>().unwrap();
         }
 
         #[test]
-        #[should_panic(expected = "No crypto suite discriminator found")]
-        fn missing_discriminator() {
+        #[should_panic(expected = "No crypto suite suite found")]
+        fn missing_suite() {
             let _id = "i".parse::<MKeyId>().unwrap();
         }
 

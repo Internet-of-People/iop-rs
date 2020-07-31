@@ -67,9 +67,9 @@ impl Serialize for MPublicKey {
     where
         S: Serializer,
     {
-        let (discriminator, bytes) = visit!(to_bytes_tuple(self));
+        let (suite, bytes) = visit!(to_bytes_tuple(self));
 
-        let erased = ErasedBytes { discriminator: discriminator.as_bytes()[0], value: bytes };
+        let erased = ErasedBytes { suite: suite.as_bytes()[0], value: bytes };
         erased.serialize(serializer)
     }
 }
@@ -81,10 +81,10 @@ macro_rules! from_bytes {
 }
 
 fn deser(erased: ErasedBytes) -> Fallible<MPublicKey> {
-    let discriminator = erased.discriminator as char;
+    let suite = erased.suite as char;
     let data = &erased.value;
     let value = visit_fac!(
-        stringify(discriminator.to_string().as_str()) =>
+        stringify(suite.to_string().as_str()) =>
             from_bytes(data)
     );
     Ok(value)
@@ -132,9 +132,9 @@ impl Eq for MPublicKey {}
 
 impl From<&MPublicKey> for String {
     fn from(src: &MPublicKey) -> Self {
-        let (discriminator, bytes) = visit!(to_bytes_tuple(src));
+        let (suite, bytes) = visit!(to_bytes_tuple(src));
         let mut output = multibase::encode(multibase::Base::Base58Btc, &bytes);
-        output.insert_str(0, discriminator);
+        output.insert_str(0, suite);
         output.insert(0, MPublicKey::PREFIX);
         output
     }
@@ -167,15 +167,15 @@ impl std::str::FromStr for MPublicKey {
             "Public keys must start with '{}'",
             Self::PREFIX
         );
-        if let Some(discriminator) = chars.next() {
+        if let Some(suite) = chars.next() {
             let (_base, binary) = multibase::decode(chars.as_str())?;
             let ret = visit_fac!(
-                stringify(discriminator.to_string().as_str()) =>
+                stringify(suite.to_string().as_str()) =>
                     from_bytes(binary)
             );
             Ok(ret)
         } else {
-            Err(err_msg("No crypto suite discriminator found"))
+            Err(err_msg("No crypto suite suite found"))
         }
     }
 }
@@ -250,22 +250,22 @@ mod test {
         }
 
         #[test]
-        fn discriminator_matters() {
+        fn suite_matters() {
             let pk1 = "pez11111111111111111111111111111111".parse::<MPublicKey>().unwrap();
             let pk2 = "pfz11111111111111111111111111111111".parse::<MPublicKey>().unwrap();
             assert_ne!(pk1, pk2);
         }
 
         #[test]
-        #[should_panic(expected = "Unknown crypto suite discriminator \\'g\\'")]
-        fn invalid_discriminator() {
+        #[should_panic(expected = "Unknown crypto suite suite \\'g\\'")]
+        fn invalid_suite() {
             let _pk =
                 "pgzAgmjPHe5Qs4VakvXHGnd6NsYjaxt4suMUtf39TayrSfb".parse::<MPublicKey>().unwrap();
         }
 
         #[test]
-        #[should_panic(expected = "No crypto suite discriminator found")]
-        fn missing_discriminator() {
+        #[should_panic(expected = "No crypto suite suite found")]
+        fn missing_suite() {
             let _pk = "p".parse::<MPublicKey>().unwrap();
         }
 
@@ -312,7 +312,7 @@ mod test {
             let pk = pk_str.parse::<MPublicKey>().unwrap();
             let pk_bin = serde_json::to_vec(&pk).unwrap();
 
-            assert_eq!(pk_bin, br#"{"discriminator":101,"value":[143,233,105,63,143,166,42,67,5,161,64,185,118,76,94,224,30,69,89,99,116,79,225,130,4,180,251,148,130,73,48,138]}"#.to_vec());
+            assert_eq!(pk_bin, br#"{"s":101,"v":[143,233,105,63,143,166,42,67,5,161,64,185,118,76,94,224,30,69,89,99,116,79,225,130,4,180,251,148,130,73,48,138]}"#.to_vec());
 
             let pk_deser: MPublicKey = serde_json::from_slice(&pk_bin).unwrap();
             let pk_tostr = pk_deser.to_string();
