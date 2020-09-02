@@ -145,7 +145,7 @@ pub struct Transaction {
     common_fields: CommonTransactionFields,
     tx_type: TransactionType,
     asset: Asset,
-    recipient_id: Option<String>,
+    recipient_id: Option<String>, // TODO should be strongly typed instead of String
 }
 
 impl Transaction {

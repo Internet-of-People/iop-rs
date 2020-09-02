@@ -1,7 +1,6 @@
 mod plugin;
 mod private;
 mod public;
-mod tx;
 
 use super::*;
 
