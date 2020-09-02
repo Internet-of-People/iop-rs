@@ -22,7 +22,7 @@ pub extern "C" fn TxBuilder_hydraTransferTx(
             ..Default::default()
         };
         let transfer_tx =
-            hyd_core::TransferTransaction::new(common_fields, recipient_id.to_owned());
+            hyd_core::Transaction::new_transfer(common_fields, recipient_id.to_owned());
         let tx_str = serde_json::to_string(&transfer_tx.to_data())?;
         Ok(convert::string_out(tx_str))
     };

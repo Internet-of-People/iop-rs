@@ -105,7 +105,7 @@ mod test {
     use iop_keyvault::{multicipher::MKeyId, secp256k1::hyd, PublicKey, Seed};
 
     #[test]
-    fn builder() -> Fallible<()> {
+    fn hydra_tx_builder() -> Fallible<()> {
         let unlock_password = "test";
         let mut vault = Vault::create(None, Seed::DEMO_PHRASE, "", unlock_password)?;
 
@@ -113,9 +113,70 @@ mod test {
         hydra::Plugin::rewind(&mut vault, unlock_password, &hyd_params)?;
         let hydra_plugin = hydra::Plugin::get(&vault, &hyd_params)?;
         let hyd_bip44_pubkey0 = hydra_plugin.public()?.key(0)?;
-        //let hyd_bip44_privkey0 = hydra_plugin.private(&unlock_password)?.key(0)?;
-        //let hyd_bip44_pubkey0 = hyd_bip44_privkey0.neuter();
         let hyd_wallet_pubkey0 = hyd_bip44_pubkey0.to_public_key();
+        let hydra_priv = hydra_plugin.private(&unlock_password)?;
+        let hydra_signer = hydra_priv.key_by_pk(&hyd_wallet_pubkey0)?.to_private_key();
+
+        println!("Hydra Wallet 0 Public Key: {}", hyd_wallet_pubkey0.to_string());
+        println!("Hydra Wallet 0 Address: {}", hyd_bip44_pubkey0.to_p2pkh_addr());
+        println!(
+            "Hydra Wallet 0 Ark KeyId: {}",
+            MKeyId::from(hyd_wallet_pubkey0.ark_key_id()).to_string()
+        );
+
+        let common_fields = CommonTransactionFields {
+            sender_public_key: hyd_wallet_pubkey0.to_string(),
+            nonce: 245,
+            ..Default::default()
+        };
+
+        let transfer_common = CommonTransactionFields {
+            amount: 3_141_593,
+            manual_fee: Some(1_000_000),
+            ..common_fields.clone()
+        };
+        let transfer_tx = hyd_core::Transaction::new_transfer(
+            transfer_common,
+            "tjseecxRmob5qBS2T3qc8frXDKz3YUGB8J".to_owned(),
+        );
+        let mut transfer_tx_data = transfer_tx.to_data();
+        hydra_signer.sign_hydra_transaction(&mut transfer_tx_data)?;
+        show_tx_json("Transfer transaction:", vec![transfer_tx_data])?;
+
+        let genesis_1_pubkey = "02ae6eaed36910a51807c9dfb51c2e2988abf9008381fe4e00995e01b6714e3db2";
+
+        let vote = format!("+{}", genesis_1_pubkey);
+        let vote_tx = hyd_core::Transaction::new_vote(common_fields.clone(), &vote);
+        let mut vote_tx_data = vote_tx.to_data();
+        hydra_signer.sign_hydra_transaction(&mut vote_tx_data)?;
+        show_tx_json("Vote transaction:", vec![vote_tx_data])?;
+
+        let vote = format!("-{}", genesis_1_pubkey);
+        let unvote_tx = hyd_core::Transaction::new_vote(common_fields.clone(), &vote);
+        let mut unvote_tx_data = unvote_tx.to_data();
+        hydra_signer.sign_hydra_transaction(&mut unvote_tx_data)?;
+        show_tx_json("Unvote transaction:", vec![unvote_tx_data])?;
+
+        let reg_tx = hyd_core::Transaction::new_delegate_registration(common_fields, "bartmoss");
+        let mut reg_tx_data = reg_tx.to_data();
+        hydra_signer.sign_hydra_transaction(&mut reg_tx_data)?;
+        show_tx_json("Register delegate transaction:", vec![reg_tx_data])?;
+
+        Ok(())
+    }
+
+    #[test]
+    fn morpheus_tx_builder() -> Fallible<()> {
+        let unlock_password = "test";
+        let mut vault = Vault::create(None, Seed::DEMO_PHRASE, "", unlock_password)?;
+
+        let hyd_params = hydra::Parameters::new(&hyd::Testnet, 0);
+        hydra::Plugin::rewind(&mut vault, unlock_password, &hyd_params)?;
+        let hydra_plugin = hydra::Plugin::get(&vault, &hyd_params)?;
+        let hyd_bip44_pubkey0 = hydra_plugin.public()?.key(0)?;
+        let hyd_wallet_pubkey0 = hyd_bip44_pubkey0.to_public_key();
+        let hydra_priv = hydra_plugin.private(&unlock_password)?;
+        let hydra_signer = hydra_priv.key_by_pk(&hyd_wallet_pubkey0)?.to_private_key();
 
         println!("Hydra Wallet 0 Public Key: {}", hyd_wallet_pubkey0.to_string());
         println!("Hydra Wallet 0 Address: {}", hyd_bip44_pubkey0.to_p2pkh_addr());
@@ -140,21 +201,6 @@ mod test {
             nonce: 14,
             ..Default::default()
         };
-
-        let transfer_common = CommonTransactionFields {
-            amount: 3_141_593,
-            manual_fee: Some(1_000_000),
-            ..common_fields.clone()
-        };
-        let transfer_tx = hyd_core::TransferTransaction::new(
-            transfer_common,
-            "tjseecxRmob5qBS2T3qc8frXDKz3YUGB8J".to_owned(),
-        );
-        let mut transfer_tx_data: TransactionData = transfer_tx.to_data();
-        let hydra_priv = hydra_plugin.private(&unlock_password)?;
-        let hydra_signer = hydra_priv.key_by_pk(&hyd_wallet_pubkey0)?.to_private_key();
-        hydra_signer.sign_hydra_transaction(&mut transfer_tx_data)?;
-        show_tx_json("Transfer transaction:", vec![transfer_tx_data])?;
 
         let reg_proof_attempt = morpheus::OperationAttempt::RegisterBeforeProof {
             content_id: "<<placeholder of your 3rd favourite wisdom>>".to_owned(),

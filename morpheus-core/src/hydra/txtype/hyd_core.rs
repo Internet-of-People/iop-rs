@@ -38,32 +38,6 @@ impl TransactionType {
     }
 }
 
-#[derive(Clone, Debug)]
-pub struct TransferTransaction {
-    common_fields: CommonTransactionFields,
-    recipient_id: String,
-}
-
-impl TransferTransaction {
-    pub fn new(common_fields: CommonTransactionFields, recipient_id: String) -> Self {
-        Self { common_fields, recipient_id }
-    }
-}
-
-impl Aip29Transaction for TransferTransaction {
-    fn fee(&self) -> u64 {
-        TransactionType::Transfer.fee()
-    }
-
-    fn to_data(&self) -> TransactionData {
-        let mut tx_data: TransactionData = self.common_fields.to_data();
-        tx_data.set_type(crate::hydra::txtype::TransactionType::Core(TransactionType::Transfer));
-        tx_data.recipient_id = Some(self.recipient_id.to_owned());
-        tx_data.fee = self.common_fields.calculate_fee(self).to_string();
-        tx_data
-    }
-}
-
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum Asset {
@@ -163,5 +137,61 @@ impl Asset {
 impl Default for Asset {
     fn default() -> Self {
         Asset::None
+    }
+}
+
+#[derive(Clone, Debug)]
+pub struct Transaction {
+    common_fields: CommonTransactionFields,
+    tx_type: TransactionType,
+    asset: Asset,
+    recipient_id: Option<String>,
+}
+
+impl Transaction {
+    pub fn new_transfer(common_fields: CommonTransactionFields, recipient_id: String) -> Self {
+        Self {
+            common_fields,
+            tx_type: TransactionType::Transfer,
+            recipient_id: Some(recipient_id),
+            asset: Asset::None,
+        }
+    }
+
+    pub fn new_delegate_registration(
+        common_fields: CommonTransactionFields, username: &str,
+    ) -> Self {
+        Self {
+            common_fields,
+            tx_type: TransactionType::DelegateRegistration,
+            recipient_id: None,
+            asset: Asset::Delegate { username: username.to_owned() },
+        }
+    }
+
+    // TODO consider having a SecpPublicKey parameter, adding a "+" prefix automatically
+    //      and separating vote and unvote (adds "-" prefix) operations
+    pub fn new_vote(common_fields: CommonTransactionFields, vote: &str) -> Self {
+        Self {
+            common_fields,
+            tx_type: TransactionType::Vote,
+            recipient_id: None,
+            asset: Asset::Votes(vec![vote.to_owned()]),
+        }
+    }
+}
+
+impl Aip29Transaction for Transaction {
+    fn fee(&self) -> u64 {
+        self.tx_type.fee()
+    }
+
+    fn to_data(&self) -> TransactionData {
+        let mut tx_data: TransactionData = self.common_fields.to_data();
+        tx_data.set_type(crate::hydra::txtype::TransactionType::Core(self.tx_type));
+        tx_data.asset = Some(crate::hydra::txtype::Asset::Core(self.asset.to_owned()));
+        tx_data.recipient_id = self.recipient_id.to_owned();
+        tx_data.fee = self.common_fields.calculate_fee(self).to_string();
+        tx_data
     }
 }

@@ -1,4 +1,5 @@
 use super::*;
+use crate::hydra::txtype::hyd_core::{Asset as CoreAsset, TransactionType as CoreTxType};
 
 pub fn to_bytes(
     tx: &TransactionData, skip_signature: bool, skip_second_signature: bool,
@@ -8,7 +9,7 @@ pub fn to_bytes(
     serialize_vendor_field(tx, &mut bytes)?;
 
     match tx.type_group {
-        Some(hyd_core::TransactionType::TYPE_GROUP) => serialize_core_type(tx, &mut bytes)?,
+        Some(CoreTxType::TYPE_GROUP) => serialize_core_type(tx, &mut bytes)?,
         Some(morpheus::TransactionType::TYPE_GROUP) => {
             let asset = match tx.asset {
                 Some(Asset::Morpheus(ref morpheus_asset)) => morpheus_asset,
@@ -36,9 +37,7 @@ pub fn serialize_common(transaction: &TransactionData) -> Fallible<Vec<u8>> {
     bytes.write_u8(transaction.version.unwrap_or(0x02))?;
     bytes.write_u8(transaction.network.ok_or_else(|| err_msg("Network is missing"))?)?;
 
-    bytes.write_u32::<LittleEndian>(
-        transaction.type_group.unwrap_or(hyd_core::TransactionType::TYPE_GROUP),
-    )?;
+    bytes.write_u32::<LittleEndian>(transaction.type_group.unwrap_or(CoreTxType::TYPE_GROUP))?;
     bytes.write_u16::<LittleEndian>(transaction.transaction_type.into_u16())?;
     let nonce: u64 =
         transaction.nonce.as_ref().ok_or_else(|| err_msg("Nonce is missing"))?.parse()?;
@@ -61,33 +60,27 @@ pub fn serialize_vendor_field(transaction: &TransactionData, bytes: &mut Vec<u8>
     Ok(())
 }
 
-pub fn serialize_core_type(transaction: &TransactionData, mut bytes: &mut Vec<u8>) -> Fallible<()> {
-    let core_type = match transaction.transaction_type {
+pub fn serialize_core_type(tx: &TransactionData, mut bytes: &mut Vec<u8>) -> Fallible<()> {
+    let core_type = match tx.transaction_type {
         TransactionType::Core(core_type) => core_type,
         _ => bail!("Implementation error: handling wrong TX type"),
     };
     match core_type {
-        hyd_core::TransactionType::Transfer => serialize_transfer(transaction, &mut bytes)?,
-        hyd_core::TransactionType::SecondSignatureRegistration => {
+        CoreTxType::Transfer => serialize_transfer(tx, &mut bytes)?,
+        CoreTxType::Vote => serialize_vote(tx, &mut bytes)?,
+        CoreTxType::DelegateRegistration => serialize_delegate_registration(tx, &mut bytes)?,
+        CoreTxType::DelegateResignation => (),
+        CoreTxType::SecondSignatureRegistration => {
             unimplemented!()
             //serialize_second_signature_registration(transaction, &mut bytes)?
         }
-        hyd_core::TransactionType::DelegateRegistration => {
-            unimplemented!()
-            //serialize_delegate_registration(transaction, &mut bytes)?
-        }
-        hyd_core::TransactionType::Vote => {
-            unimplemented!()
-            //serialize_vote(transaction, &mut bytes)?
-        }
-        hyd_core::TransactionType::MultiSignatureRegistration => {
+        CoreTxType::MultiSignatureRegistration => {
             unimplemented!()
             // serialize_multi_signature_registration(transaction, &mut bytes)
         }
-        hyd_core::TransactionType::Ipfs => (),
-        hyd_core::TransactionType::TimelockTransfer => (),
-        hyd_core::TransactionType::MultiPayment => (),
-        hyd_core::TransactionType::DelegateResignation => (),
+        CoreTxType::Ipfs => unimplemented!(),
+        CoreTxType::TimelockTransfer => unimplemented!(),
+        CoreTxType::MultiPayment => unimplemented!(),
     };
     Ok(())
 }
@@ -104,36 +97,36 @@ fn serialize_transfer(transaction: &TransactionData, bytes: &mut Vec<u8>) -> Fal
     Ok(())
 }
 
+fn serialize_vote(transaction: &TransactionData, bytes: &mut Vec<u8>) -> Fallible<()> {
+    if let Some(Asset::Core(CoreAsset::Votes(votes))) = &transaction.asset {
+        let votes_hex: Vec<_> = votes
+            .iter()
+            .filter_map(|vote| {
+                let prefix = if vote.starts_with('+') { "01" } else { "00" };
+                vote.get(1..).map(|delegate| format!("{}{}", prefix, delegate))
+            })
+            .collect();
+
+        bytes.write_u8(votes.len() as u8)?;
+        bytes.write_all(&hex::decode(&votes_hex.join(""))?)?;
+    }
+    Ok(())
+}
+
+fn serialize_delegate_registration(tx: &TransactionData, bytes: &mut Vec<u8>) -> Fallible<()> {
+    if let Some(Asset::Core(CoreAsset::Delegate { username })) = &tx.asset {
+        bytes.write_u8(username.len() as u8)?;
+        bytes.write_all(&username.as_bytes())?;
+    }
+    Ok(())
+}
+
 // fn serialize_second_signature_registration(
 //     transaction: &Transaction, bytes: &mut Vec<u8>,
 // ) -> Fallible<()> {
 //     if let Some(Asset::Signature { public_key }) = &transaction.asset {
 //         let public_key_bytes = hex::decode(public_key)?;
 //         bytes.write_all(&public_key_bytes)?;
-//     }
-//     Ok(())
-// }
-//
-// fn serialize_delegate_registration(transaction: &Transaction, bytes: &mut Vec<u8>) -> Fallible<()> {
-//     if let Some(Asset::Delegate { username }) = &transaction.asset {
-//         bytes.write_u8(username.len() as u8)?;
-//         bytes.write_all(&username.as_bytes())?;
-//     }
-//     Ok(())
-// }
-//
-// fn serialize_vote(transaction: &Transaction, bytes: &mut Vec<u8>) -> Fallible<()> {
-//     if let Some(Asset::Votes(votes)) = &transaction.asset {
-//         let mut vote_bytes = vec![];
-//
-//         for vote in votes {
-//             let prefix = if vote.starts_with('+') { "01" } else { "00" };
-//             let _vote: String = vote.chars().skip(1).collect();
-//             vote_bytes.push(format!("{}{}", prefix, _vote));
-//         }
-//
-//         bytes.write_u8(votes.len() as u8)?;
-//         bytes.write_all(&hex::decode(&vote_bytes.join(""))?)?;
 //     }
 //     Ok(())
 // }
