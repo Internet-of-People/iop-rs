@@ -8,6 +8,7 @@ mod did;
 mod ffi;
 mod hydra;
 mod hydra_signer;
+mod jwt;
 mod morpheus;
 mod multicipher;
 mod secp;
@@ -29,6 +30,7 @@ use iop_keyvault::{
 use iop_morpheus_core::{
     crypto::{
         hd::{BoundPlugin, Vault},
+        jwt::*,
         sign::*,
     },
     data::{claim::*, did::*, diddoc::*, present::*, validation::*},

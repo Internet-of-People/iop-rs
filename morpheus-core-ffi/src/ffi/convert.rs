@@ -27,6 +27,14 @@ pub(crate) fn string_out(s: String) -> *mut raw::c_char {
     c_str.into_raw()
 }
 
+pub(crate) fn string_out_opt(o: Option<String>) -> *mut raw::c_char {
+    if let Some(s) = o {
+        string_out(s)
+    } else {
+        std::ptr::null_mut()
+    }
+}
+
 // TODO this normally should be just a simple c_uchar,
 //      but CallContext assumes a pointer on the C client side
 pub(crate) fn bool_out(b: bool) -> *mut raw::c_uchar {
@@ -36,4 +44,12 @@ pub(crate) fn bool_out(b: bool) -> *mut raw::c_uchar {
 
 pub(crate) fn move_out<T>(value: T) -> *mut T {
     Box::into_raw(Box::new(value))
+}
+
+pub(crate) fn move_out_opt<T>(o: Option<T>) -> *mut T {
+    if let Some(t) = o {
+        move_out(t)
+    } else {
+        std::ptr::null_mut()
+    }
 }

@@ -11,6 +11,7 @@ crate-type = ["rlib", "cdylib"]
 
 
 [dependencies]
+chrono = "*"
 failure = "*"
 iop-keyvault = "0.0.2"
 iop-morpheus-core = "0.0.2"

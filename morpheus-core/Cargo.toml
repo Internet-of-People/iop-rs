@@ -6,8 +6,11 @@ edition = "2018"
 
 
 [dependencies]
+anyhow = "*"
+chrono = { version = "*", features = ["wasmbind"] }
 failure = "*"
 iop-keyvault = "0.0.2"
+jwt-compact = { version = "*", default-features = false }
 log = "*"
 multibase = "0.8"
 rand = "*"

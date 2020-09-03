@@ -3,6 +3,7 @@
 mod did;
 mod hydra;
 mod json;
+mod jwt;
 mod morpheus;
 mod sign;
 mod vault;
@@ -12,6 +13,7 @@ mod vault;
 pub use did::*;
 pub use hydra::*;
 pub use json::*;
+pub use jwt::*;
 pub use morpheus::*;
 pub use sign::*;
 pub use vault::*;
@@ -33,6 +35,7 @@ use iop_morpheus_core::{
     crypto::{
         hd::{hydra as hd_hydra, morpheus as hd_morpheus, BoundPlugin, Vault, VaultPlugin},
         json_digest::{canonical_json, selective_digest_json},
+        jwt::{JwtBuilder, JwtParser},
         sign::{PrivateKeySigner, Signable, Signed, SyncMorpheusSigner},
     },
     data::{
