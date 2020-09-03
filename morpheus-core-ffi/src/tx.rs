@@ -30,6 +30,28 @@ pub extern "C" fn TxBuilder_hydraTransferTx(
 }
 
 #[no_mangle]
+pub extern "C" fn TxBuilder_hydraVoteTx(
+    network: *const raw::c_char, sender_public_key: *const raw::c_char, vote: *const raw::c_char,
+    nonce: u64,
+) -> CPtrResult<raw::c_char> {
+    let fun = || {
+        let network = unsafe { convert::str_in(network)? };
+        let vote = unsafe { convert::str_in(vote)? };
+        let sender_public_key = unsafe { convert::str_in(sender_public_key)? };
+        let common_fields = CommonTransactionFields {
+            network: Networks::by_name(network)?,
+            sender_public_key: sender_public_key.to_owned(),
+            nonce,
+            ..Default::default()
+        };
+        let vote_tx = hyd_core::Transaction::new_vote(common_fields, vote);
+        let tx_str = serde_json::to_string(&vote_tx.to_data())?;
+        Ok(convert::string_out(tx_str))
+    };
+    cresult(fun())
+}
+
+#[no_mangle]
 pub extern "C" fn TxBuilder_morpheusTx(
     network: *const raw::c_char, sender_public_key: *const raw::c_char,
     attempts: *const raw::c_char, nonce: u64,
