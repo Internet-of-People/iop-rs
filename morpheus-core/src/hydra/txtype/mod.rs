@@ -135,7 +135,7 @@ mod test {
             manual_fee: Some(1_000_000),
             ..common_fields.clone()
         };
-        let transfer_tx = hyd_core::Transaction::new_transfer(
+        let transfer_tx = hyd_core::Transaction::transfer(
             transfer_common,
             "tjseecxRmob5qBS2T3qc8frXDKz3YUGB8J".to_owned(),
         );
@@ -146,18 +146,18 @@ mod test {
         let genesis_1_pubkey = "02ae6eaed36910a51807c9dfb51c2e2988abf9008381fe4e00995e01b6714e3db2";
 
         let vote = format!("+{}", genesis_1_pubkey);
-        let vote_tx = hyd_core::Transaction::new_vote(common_fields.clone(), &vote);
+        let vote_tx = hyd_core::Transaction::vote(common_fields.clone(), &vote);
         let mut vote_tx_data = vote_tx.to_data();
         hydra_signer.sign_hydra_transaction(&mut vote_tx_data)?;
         show_tx_json("Vote transaction:", vec![vote_tx_data])?;
 
         let vote = format!("-{}", genesis_1_pubkey);
-        let unvote_tx = hyd_core::Transaction::new_vote(common_fields.clone(), &vote);
+        let unvote_tx = hyd_core::Transaction::vote(common_fields.clone(), &vote);
         let mut unvote_tx_data = unvote_tx.to_data();
         hydra_signer.sign_hydra_transaction(&mut unvote_tx_data)?;
         show_tx_json("Unvote transaction:", vec![unvote_tx_data])?;
 
-        let reg_tx = hyd_core::Transaction::new_delegate_registration(common_fields, "bartmoss");
+        let reg_tx = hyd_core::Transaction::delegate_registration(common_fields, "bartmoss");
         let mut reg_tx_data = reg_tx.to_data();
         hydra_signer.sign_hydra_transaction(&mut reg_tx_data)?;
         show_tx_json("Register delegate transaction:", vec![reg_tx_data])?;

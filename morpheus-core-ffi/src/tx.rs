@@ -6,7 +6,7 @@ use iop_morpheus_core::hydra::txtype::{
 };
 
 #[no_mangle]
-pub extern "C" fn TxBuilder_hydraTransferTx(
+pub extern "C" fn HydraTxBuilder_transfer(
     network: *const raw::c_char, sender_public_key: *const raw::c_char,
     recipient_id: *const raw::c_char, amount: u64, nonce: u64,
 ) -> CPtrResult<raw::c_char> {
@@ -21,8 +21,7 @@ pub extern "C" fn TxBuilder_hydraTransferTx(
             nonce,
             ..Default::default()
         };
-        let transfer_tx =
-            hyd_core::Transaction::new_transfer(common_fields, recipient_id.to_owned());
+        let transfer_tx = hyd_core::Transaction::transfer(common_fields, recipient_id.to_owned());
         let tx_str = serde_json::to_string(&transfer_tx.to_data())?;
         Ok(convert::string_out(tx_str))
     };
@@ -30,7 +29,7 @@ pub extern "C" fn TxBuilder_hydraTransferTx(
 }
 
 #[no_mangle]
-pub extern "C" fn TxBuilder_hydraVoteTx(
+pub extern "C" fn HydraTxBuilder_vote(
     network: *const raw::c_char, sender_public_key: *const raw::c_char, vote: *const raw::c_char,
     nonce: u64,
 ) -> CPtrResult<raw::c_char> {
@@ -44,7 +43,7 @@ pub extern "C" fn TxBuilder_hydraVoteTx(
             nonce,
             ..Default::default()
         };
-        let vote_tx = hyd_core::Transaction::new_vote(common_fields, vote);
+        let vote_tx = hyd_core::Transaction::vote(common_fields, vote);
         let tx_str = serde_json::to_string(&vote_tx.to_data())?;
         Ok(convert::string_out(tx_str))
     };
@@ -52,7 +51,7 @@ pub extern "C" fn TxBuilder_hydraVoteTx(
 }
 
 #[no_mangle]
-pub extern "C" fn TxBuilder_morpheusTx(
+pub extern "C" fn MorpheusTxBuilder_new(
     network: *const raw::c_char, sender_public_key: *const raw::c_char,
     attempts: *const raw::c_char, nonce: u64,
 ) -> CPtrResult<raw::c_char> {

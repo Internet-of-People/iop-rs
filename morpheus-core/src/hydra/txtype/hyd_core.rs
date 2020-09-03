@@ -149,7 +149,7 @@ pub struct Transaction {
 }
 
 impl Transaction {
-    pub fn new_transfer(common_fields: CommonTransactionFields, recipient_id: String) -> Self {
+    pub fn transfer(common_fields: CommonTransactionFields, recipient_id: String) -> Self {
         Self {
             common_fields,
             tx_type: TransactionType::Transfer,
@@ -158,9 +158,7 @@ impl Transaction {
         }
     }
 
-    pub fn new_delegate_registration(
-        common_fields: CommonTransactionFields, username: &str,
-    ) -> Self {
+    pub fn delegate_registration(common_fields: CommonTransactionFields, username: &str) -> Self {
         Self {
             common_fields,
             tx_type: TransactionType::DelegateRegistration,
@@ -171,7 +169,7 @@ impl Transaction {
 
     // TODO consider having a SecpPublicKey parameter, adding a "+" prefix automatically
     //      and separating vote and unvote (adds "-" prefix) operations
-    pub fn new_vote(common_fields: CommonTransactionFields, vote: &str) -> Self {
+    pub fn vote(common_fields: CommonTransactionFields, vote: &str) -> Self {
         Self {
             common_fields,
             tx_type: TransactionType::Vote,

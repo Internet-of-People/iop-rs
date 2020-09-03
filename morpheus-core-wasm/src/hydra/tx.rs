@@ -30,7 +30,7 @@ impl JsHydraTxBuilder {
         };
 
         let recipient_id = recipient_id.inner().to_p2pkh_addr(self.network.p2pkh_addr());
-        let transfer = hyd_core::Transaction::new_transfer(common_fields, recipient_id);
+        let transfer = hyd_core::Transaction::transfer(common_fields, recipient_id);
         JsValue::from_serde(&transfer.to_data()).map_err_to_js()
     }
 
@@ -44,7 +44,7 @@ impl JsHydraTxBuilder {
             ..Default::default()
         };
 
-        let vote = hyd_core::Transaction::new_vote(common_fields, vote);
+        let vote = hyd_core::Transaction::vote(common_fields, vote);
         JsValue::from_serde(&vote.to_data()).map_err_to_js()
     }
 }
