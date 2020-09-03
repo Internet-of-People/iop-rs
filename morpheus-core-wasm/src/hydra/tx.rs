@@ -18,7 +18,7 @@ impl JsHydraTxBuilder {
 
     // TDOO consider recipient SecpKeyId vs String
     pub fn transfer(
-        &self, recipient_id: &JsSecpKeyId, sender_pubkey: JsSecpPublicKey, amount_flake: u64,
+        &self, recipient_id: &JsSecpKeyId, sender_pubkey: &JsSecpPublicKey, amount_flake: u64,
         nonce: u64,
     ) -> Result<JsValue, JsValue> {
         let common_fields = CommonTransactionFields {
@@ -35,7 +35,7 @@ impl JsHydraTxBuilder {
     }
 
     pub fn vote(
-        &self, vote: &str, sender_pubkey: JsSecpPublicKey, nonce: u64,
+        &self, vote: &str, sender_pubkey: &JsSecpPublicKey, nonce: u64,
     ) -> Result<JsValue, JsValue> {
         let common_fields = CommonTransactionFields {
             network: self.network,

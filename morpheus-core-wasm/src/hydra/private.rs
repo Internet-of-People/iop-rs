@@ -30,6 +30,11 @@ impl JsHydraPrivate {
         Ok(res)
     }
 
+    #[wasm_bindgen(getter)]
+    pub fn xprv(&self) -> String {
+        self.inner().xprv()
+    }
+
     #[wasm_bindgen(getter = receiveKeys)]
     pub fn receive_keys(&self) -> Result<u32, JsValue> {
         let res = self.inner().receive_keys().map_err_to_js()?;

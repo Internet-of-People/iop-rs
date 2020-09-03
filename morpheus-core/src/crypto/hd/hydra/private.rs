@@ -59,6 +59,10 @@ impl Private {
         bail!("Could not find {} among Hydra keys", pk)
     }
 
+    pub fn xprv(&self) -> String {
+        self.account.to_xprv()
+    }
+
     pub fn xpub(&self) -> Fallible<String> {
         let state = self.state.try_borrow()?;
         Ok(state.xpub.to_owned())

@@ -26,6 +26,13 @@ pub extern "C" fn HydraPrivate_xpub_get(private: *mut Private) -> CPtrResult<raw
 }
 
 #[no_mangle]
+pub extern "C" fn HydraPrivate_xprv_get(private: *mut Private) -> *mut raw::c_char {
+    let private = unsafe { convert::borrow_in(private) };
+    let xprv = private.xprv();
+    convert::string_out(xprv)
+}
+
+#[no_mangle]
 pub extern "C" fn HydraPrivate_receive_keys_get(private: *mut Private) -> CPtrResult<u32> {
     let private = unsafe { convert::borrow_in(private) };
     let fun = || {
