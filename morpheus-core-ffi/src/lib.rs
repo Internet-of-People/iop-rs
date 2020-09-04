@@ -34,7 +34,7 @@ use iop_morpheus_core::{
         sign::*,
     },
     data::{claim::*, did::*, diddoc::*, present::*, validation::*},
-    hydra::{crypto::HydraSigner, transaction::TransactionData},
+    hydra::{sign::HydraSigner, transaction::TransactionData},
 };
 
 use crate::ffi::{convert, *};

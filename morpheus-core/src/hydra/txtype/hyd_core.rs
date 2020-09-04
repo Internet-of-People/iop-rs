@@ -195,7 +195,11 @@ impl Aip29Transaction for Transaction {
 
         let mut tx_data: TransactionData = self.common_fields.to_data();
         tx_data.set_type(crate::hydra::txtype::TransactionType::Core(self.tx_type));
-        tx_data.asset = Some(crate::hydra::txtype::Asset::Core(self.asset.to_owned()));
+        tx_data.asset = if self.asset.is_none() {
+            None
+        } else {
+            Some(crate::hydra::txtype::Asset::Core(self.asset.to_owned()))
+        };
         tx_data.recipient_id = self.recipient_id.as_ref().map(|addr| addr.to_p2pkh_addr(prefix));
         tx_data.fee = self.common_fields.calculate_fee(self).to_string();
         tx_data

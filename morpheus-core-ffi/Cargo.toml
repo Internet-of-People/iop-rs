@@ -13,7 +13,7 @@ crate-type = ["rlib", "cdylib"]
 [dependencies]
 chrono = "*"
 failure = "*"
-iop-keyvault = "0.0.2"
+iop-keyvault = "0.0.4"
 iop-morpheus-core = "0.0.2"
 log = "*"
 serde_json = { version = "*", features = ["preserve_order"] }

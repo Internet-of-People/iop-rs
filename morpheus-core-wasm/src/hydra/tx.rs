@@ -46,6 +46,7 @@ impl JsHydraTxBuilder {
         self.create_vote_tx(delegate, sender_pubkey, nonce, hyd_core::Transaction::unvote)
     }
 
+    #[wasm_bindgen(js_name = registerDelegate)]
     pub fn register_delegate(
         &self, sender_pubkey: &JsSecpPublicKey, delegate_name: &str, nonce: u64,
     ) -> Result<JsValue, JsValue> {

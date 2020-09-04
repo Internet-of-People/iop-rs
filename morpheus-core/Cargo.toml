@@ -9,7 +9,7 @@ edition = "2018"
 anyhow = "*"
 chrono = { version = "*", features = ["wasmbind"] }
 failure = "*"
-iop-keyvault = "0.0.2"
+iop-keyvault = "0.0.4"
 jwt-compact = { version = "*", default-features = false }
 log = "*"
 multibase = "0.8"

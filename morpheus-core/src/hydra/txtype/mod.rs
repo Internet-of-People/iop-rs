@@ -101,7 +101,7 @@ mod test {
     use crate::data::{auth::Authentication, did::Did, diddoc::Right};
     use crate::hydra::txtype::morpheus::OperationAttempt;
     use crate::hydra::{
-        crypto::HydraSigner,
+        sign::HydraSigner,
         transaction::{TransactionData, TxBatch},
         txtype::{hyd_core, morpheus, Aip29Transaction, CommonTransactionFields},
     };

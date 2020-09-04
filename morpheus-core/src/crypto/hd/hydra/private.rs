@@ -1,6 +1,6 @@
 use super::*;
 
-use crate::hydra::crypto::HydraSigner;
+use crate::hydra::sign::HydraSigner;
 
 pub struct Private {
     state: Box<dyn State<PublicState>>,

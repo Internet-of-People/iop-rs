@@ -2,6 +2,7 @@ mod parameters;
 mod plugin;
 mod private;
 mod public;
+mod sign;
 mod tx;
 
 pub use parameters::*;
