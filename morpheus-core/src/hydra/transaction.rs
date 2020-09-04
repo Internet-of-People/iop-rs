@@ -24,7 +24,7 @@ pub struct TransactionData {
     pub fee: String,
     pub amount: String,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub expiration: Option<u32>, // TODO check if this has to be more complex data or int is enough
+    pub expiration: Option<u32>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub recipient_id: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -72,7 +72,6 @@ impl TransactionData {
     //     Ok(self)
     // }
 
-    // TODO move to crypto::publickey
     // pub fn verify(&self) -> bool {
     //     self.internal_verify(&self.sender_public_key, &self.signature, &self.to_bytes(true, true))
     // }
@@ -86,13 +85,5 @@ impl TransactionData {
     //     let pk = PublicKey::from_hex(&sender_public_key).unwrap();
     //     let valid = pk.verify_signature_ecdsa(&hash, signature);
     //     valid.unwrap_or(false)
-    // }
-    //
-    // pub fn to_params(&self) -> Result<serde_json::Value, serde_json::Error> {
-    //     serde_json::to_value(self)
-    // }
-    //
-    // pub fn to_json(&self) -> Result<String, serde_json::Error> {
-    //     serde_json::to_string(self)
     // }
 }

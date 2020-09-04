@@ -145,36 +145,42 @@ pub struct Transaction {
     common_fields: CommonTransactionFields,
     tx_type: TransactionType,
     asset: Asset,
-    recipient_id: Option<String>, // TODO should be strongly typed instead of String
+    recipient_id: Option<SecpKeyId>,
 }
 
 impl Transaction {
-    pub fn transfer(common_fields: CommonTransactionFields, recipient_id: String) -> Self {
+    pub fn transfer(common_fields: CommonTransactionFields, recipient_id: &SecpKeyId) -> Self {
         Self {
             common_fields,
             tx_type: TransactionType::Transfer,
-            recipient_id: Some(recipient_id),
+            recipient_id: Some(recipient_id.to_owned()),
             asset: Asset::None,
         }
     }
 
-    pub fn delegate_registration(common_fields: CommonTransactionFields, username: &str) -> Self {
+    pub fn register_delegate(common_fields: CommonTransactionFields, delegate_name: &str) -> Self {
         Self {
             common_fields,
             tx_type: TransactionType::DelegateRegistration,
             recipient_id: None,
-            asset: Asset::Delegate { username: username.to_owned() },
+            asset: Asset::Delegate { username: delegate_name.to_owned() },
         }
     }
 
-    // TODO consider having a SecpPublicKey parameter, adding a "+" prefix automatically
-    //      and separating vote and unvote (adds "-" prefix) operations
-    pub fn vote(common_fields: CommonTransactionFields, vote: &str) -> Self {
+    pub fn vote(common_fields: CommonTransactionFields, delegate: &SecpPublicKey) -> Self {
+        Self::create_vote(common_fields, format!("+{}", delegate))
+    }
+
+    pub fn unvote(common_fields: CommonTransactionFields, delegate: &SecpPublicKey) -> Self {
+        Self::create_vote(common_fields, format!("-{}", delegate))
+    }
+
+    fn create_vote(common_fields: CommonTransactionFields, vote: String) -> Self {
         Self {
             common_fields,
             tx_type: TransactionType::Vote,
             recipient_id: None,
-            asset: Asset::Votes(vec![vote.to_owned()]),
+            asset: Asset::Votes(vec![vote]),
         }
     }
 }
@@ -185,10 +191,12 @@ impl Aip29Transaction for Transaction {
     }
 
     fn to_data(&self) -> TransactionData {
+        let prefix = self.common_fields.network.p2pkh_addr();
+
         let mut tx_data: TransactionData = self.common_fields.to_data();
         tx_data.set_type(crate::hydra::txtype::TransactionType::Core(self.tx_type));
         tx_data.asset = Some(crate::hydra::txtype::Asset::Core(self.asset.to_owned()));
-        tx_data.recipient_id = self.recipient_id.to_owned();
+        tx_data.recipient_id = self.recipient_id.as_ref().map(|addr| addr.to_p2pkh_addr(prefix));
         tx_data.fee = self.common_fields.calculate_fee(self).to_string();
         tx_data
     }

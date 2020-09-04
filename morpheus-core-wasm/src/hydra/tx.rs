@@ -1,5 +1,6 @@
 use super::*;
 
+use iop_keyvault::secp256k1::SecpPublicKey;
 use iop_keyvault::{secp256k1::Secp256k1, Network};
 use iop_morpheus_core::hydra::txtype::{hyd_core, Aip29Transaction, CommonTransactionFields};
 
@@ -23,28 +24,54 @@ impl JsHydraTxBuilder {
     ) -> Result<JsValue, JsValue> {
         let common_fields = CommonTransactionFields {
             network: self.network,
-            sender_public_key: sender_pubkey.stringify(),
+            sender_public_key: sender_pubkey.inner().to_owned(),
             amount: amount_flake,
             nonce,
             ..Default::default()
         };
 
-        let recipient_id = recipient_id.inner().to_p2pkh_addr(self.network.p2pkh_addr());
-        let transfer = hyd_core::Transaction::transfer(common_fields, recipient_id);
+        let transfer = hyd_core::Transaction::transfer(common_fields, recipient_id.inner());
         JsValue::from_serde(&transfer.to_data()).map_err_to_js()
     }
 
     pub fn vote(
-        &self, vote: &str, sender_pubkey: &JsSecpPublicKey, nonce: u64,
+        &self, delegate: &JsSecpPublicKey, sender_pubkey: &JsSecpPublicKey, nonce: u64,
+    ) -> Result<JsValue, JsValue> {
+        self.create_vote_tx(delegate, sender_pubkey, nonce, hyd_core::Transaction::vote)
+    }
+
+    pub fn unvote(
+        &self, delegate: &JsSecpPublicKey, sender_pubkey: &JsSecpPublicKey, nonce: u64,
+    ) -> Result<JsValue, JsValue> {
+        self.create_vote_tx(delegate, sender_pubkey, nonce, hyd_core::Transaction::unvote)
+    }
+
+    pub fn register_delegate(
+        &self, sender_pubkey: &JsSecpPublicKey, delegate_name: &str, nonce: u64,
     ) -> Result<JsValue, JsValue> {
         let common_fields = CommonTransactionFields {
             network: self.network,
-            sender_public_key: sender_pubkey.stringify(),
+            sender_public_key: sender_pubkey.inner().to_owned(),
             nonce,
             ..Default::default()
         };
 
-        let vote = hyd_core::Transaction::vote(common_fields, vote);
+        let tx = hyd_core::Transaction::register_delegate(common_fields, delegate_name);
+        JsValue::from_serde(&tx.to_data()).map_err_to_js()
+    }
+
+    fn create_vote_tx(
+        &self, delegate: &JsSecpPublicKey, sender_pubkey: &JsSecpPublicKey, nonce: u64,
+        build_tx: fn(CommonTransactionFields, &SecpPublicKey) -> hyd_core::Transaction,
+    ) -> Result<JsValue, JsValue> {
+        let common_fields = CommonTransactionFields {
+            network: self.network,
+            sender_public_key: sender_pubkey.inner().to_owned(),
+            nonce,
+            ..Default::default()
+        };
+
+        let vote = build_tx(common_fields, delegate.inner());
         JsValue::from_serde(&vote.to_data()).map_err_to_js()
     }
 }

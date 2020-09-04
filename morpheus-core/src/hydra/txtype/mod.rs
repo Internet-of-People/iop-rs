@@ -48,8 +48,8 @@ pub trait Aip29Transaction {
 #[derive(Clone, Debug)]
 pub struct CommonTransactionFields {
     pub network: &'static dyn Network<Suite = Secp256k1>,
-    pub sender_public_key: String, // TODO should be SecpPublicKey, but conflicts with being Default
-    pub nonce: u64, // TODO consider allowing Option<u64> here and autofilling nonce when None
+    pub sender_public_key: SecpPublicKey,
+    pub nonce: u64,
     pub amount: u64,
     pub manual_fee: Option<u64>,
     pub vendor_field: Option<String>,
@@ -59,7 +59,10 @@ impl Default for CommonTransactionFields {
     fn default() -> Self {
         Self {
             network: &hyd::Testnet,
-            sender_public_key: Default::default(),
+            // hydra gas test address from tutorials
+            sender_public_key: "03d4bda72219264ff106e21044b047b6c6b2c0dde8f49b42c848e086b97920adbf"
+                .parse()
+                .unwrap(), // panics if field is both unspecified and changes format
             nonce: Default::default(),
             amount: Default::default(),
             manual_fee: Default::default(),
@@ -78,7 +81,7 @@ impl CommonTransactionFields {
         tx_data.network = Some(self.network.p2pkh_addr()[0]);
         tx_data.version = Some(2);
 
-        tx_data.sender_public_key = self.sender_public_key.to_owned();
+        tx_data.sender_public_key = self.sender_public_key.to_string();
         tx_data.nonce = Some(self.nonce.to_string());
         tx_data.amount = self.amount.to_string();
         tx_data.vendor_field = self.vendor_field.to_owned();
@@ -102,6 +105,7 @@ mod test {
         transaction::{TransactionData, TxBatch},
         txtype::{hyd_core, morpheus, Aip29Transaction, CommonTransactionFields},
     };
+    use iop_keyvault::secp256k1::{SecpKeyId, SecpPublicKey};
     use iop_keyvault::{multicipher::MKeyId, secp256k1::hyd, PublicKey, Seed};
 
     #[test]
@@ -125,7 +129,7 @@ mod test {
         );
 
         let common_fields = CommonTransactionFields {
-            sender_public_key: hyd_wallet_pubkey0.to_string(),
+            sender_public_key: hyd_wallet_pubkey0,
             nonce: 245,
             ..Default::default()
         };
@@ -135,29 +139,27 @@ mod test {
             manual_fee: Some(1_000_000),
             ..common_fields.clone()
         };
-        let transfer_tx = hyd_core::Transaction::transfer(
-            transfer_common,
-            "tjseecxRmob5qBS2T3qc8frXDKz3YUGB8J".to_owned(),
-        );
+        let recipient_id =
+            SecpKeyId::from_p2pkh_addr("tjseecxRmob5qBS2T3qc8frXDKz3YUGB8J", &hyd::Testnet)?;
+        let transfer_tx = hyd_core::Transaction::transfer(transfer_common, &recipient_id);
         let mut transfer_tx_data = transfer_tx.to_data();
         hydra_signer.sign_hydra_transaction(&mut transfer_tx_data)?;
         show_tx_json("Transfer transaction:", vec![transfer_tx_data])?;
 
-        let genesis_1_pubkey = "02ae6eaed36910a51807c9dfb51c2e2988abf9008381fe4e00995e01b6714e3db2";
+        let genesis_1_pubkey: SecpPublicKey =
+            "02ae6eaed36910a51807c9dfb51c2e2988abf9008381fe4e00995e01b6714e3db2".parse()?;
 
-        let vote = format!("+{}", genesis_1_pubkey);
-        let vote_tx = hyd_core::Transaction::vote(common_fields.clone(), &vote);
+        let vote_tx = hyd_core::Transaction::vote(common_fields.clone(), &genesis_1_pubkey);
         let mut vote_tx_data = vote_tx.to_data();
         hydra_signer.sign_hydra_transaction(&mut vote_tx_data)?;
         show_tx_json("Vote transaction:", vec![vote_tx_data])?;
 
-        let vote = format!("-{}", genesis_1_pubkey);
-        let unvote_tx = hyd_core::Transaction::vote(common_fields.clone(), &vote);
+        let unvote_tx = hyd_core::Transaction::unvote(common_fields.clone(), &genesis_1_pubkey);
         let mut unvote_tx_data = unvote_tx.to_data();
         hydra_signer.sign_hydra_transaction(&mut unvote_tx_data)?;
         show_tx_json("Unvote transaction:", vec![unvote_tx_data])?;
 
-        let reg_tx = hyd_core::Transaction::delegate_registration(common_fields, "bartmoss");
+        let reg_tx = hyd_core::Transaction::register_delegate(common_fields, "test-delegate");
         let mut reg_tx_data = reg_tx.to_data();
         hydra_signer.sign_hydra_transaction(&mut reg_tx_data)?;
         show_tx_json("Register delegate transaction:", vec![reg_tx_data])?;
@@ -197,7 +199,7 @@ mod test {
         println!("Morpheus Persona 0 Did: {}", mph_persona_did0.to_string());
 
         let common_fields = CommonTransactionFields {
-            sender_public_key: hyd_wallet_pubkey0.to_string(),
+            sender_public_key: hyd_wallet_pubkey0,
             nonce: 14,
             ..Default::default()
         };
@@ -211,12 +213,8 @@ mod test {
         hydra_signer.sign_hydra_transaction(&mut reg_proof_tx_data)?;
         show_tx_json("Register-before-proof transaction:", vec![reg_proof_tx_data])?;
 
-        // TODO consider implementing other Core transaction types as well
         // let recipients = vec![hyd_core::PaymentsItem { amount: 1, recipient_id: "tBlah" }];
         // let multitransfer_tx = hyd_core::MultiTransferTransaction::new(core_tx_fields, recipients);
-
-        // TODO consider implementing second_sig
-        // TODO consider implementing multisig
 
         let auth: Authentication = "iez25N5WZ1Q6TQpgpyYgiu9gTX".parse()?;
         let last_tx_id =
