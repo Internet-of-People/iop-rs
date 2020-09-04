@@ -13,6 +13,11 @@ impl JsHydraPrivate {
         JsHydraPublic::from(inner)
     }
 
+    #[wasm_bindgen(getter)]
+    pub fn network(&self) -> String {
+        self.inner.network().subtree().name().to_owned()
+    }
+
     pub fn key(&mut self, idx: i32) -> Result<JsBip44Key, JsValue> {
         let inner = self.inner.key(idx).map_err_to_js()?;
         Ok(JsBip44Key::from(inner))
