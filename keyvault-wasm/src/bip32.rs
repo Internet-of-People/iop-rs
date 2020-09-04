@@ -22,6 +22,11 @@ pub struct JsBip32Node {
 #[wasm_bindgen(js_class = Bip32Node)]
 impl JsBip32Node {
     #[wasm_bindgen(getter)]
+    pub fn network(&self) -> String {
+        self.inner.subtree().name().to_owned()
+    }
+
+    #[wasm_bindgen(getter)]
     pub fn path(&self) -> String {
         self.inner.path().to_string()
     }
@@ -84,6 +89,11 @@ pub struct JsBip32PublicNode {
 
 #[wasm_bindgen(js_class = Bip32PublicNode)]
 impl JsBip32PublicNode {
+    #[wasm_bindgen(getter)]
+    pub fn network(&self) -> String {
+        self.inner.subtree().name().to_owned()
+    }
+
     #[wasm_bindgen(getter)]
     pub fn path(&self) -> String {
         self.inner.path().to_string()

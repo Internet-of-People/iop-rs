@@ -25,6 +25,11 @@ impl JsBip44Coin {
         JsBip32Node::from(self.inner.node().clone())
     }
 
+    #[wasm_bindgen(getter)]
+    pub fn network(&self) -> String {
+        self.inner.network().subtree().name().to_owned()
+    }
+
     pub fn account(&self, account: i32) -> Result<JsBip44Account, JsValue> {
         let account = self.inner.account(account).map_err_to_js()?;
         Ok(JsBip44Account::from(account))
@@ -70,6 +75,11 @@ pub struct JsBip44Account {
 impl JsBip44Account {
     pub fn node(&self) -> JsBip32Node {
         JsBip32Node::from(self.inner.node().clone())
+    }
+
+    #[wasm_bindgen(getter)]
+    pub fn network(&self) -> String {
+        self.inner.network().subtree().name().to_owned()
     }
 
     pub fn chain(&self, change: bool) -> Result<JsBip44SubAccount, JsValue> {
@@ -141,6 +151,11 @@ impl JsBip44PublicAccount {
         JsBip32PublicNode::from(self.inner.node().clone())
     }
 
+    #[wasm_bindgen(getter)]
+    pub fn network(&self) -> String {
+        self.inner.network().subtree().name().to_owned()
+    }
+
     pub fn chain(&self, change: bool) -> Result<JsBip44PublicSubAccount, JsValue> {
         let account = self.inner.chain(Chain::from(change)).map_err_to_js()?;
         Ok(JsBip44PublicSubAccount::from(account))
@@ -205,6 +220,11 @@ pub struct JsBip44SubAccount {
 impl JsBip44SubAccount {
     pub fn node(&self) -> JsBip32Node {
         JsBip32Node::from(self.inner.node().clone())
+    }
+
+    #[wasm_bindgen(getter)]
+    pub fn network(&self) -> String {
+        self.inner.network().subtree().name().to_owned()
     }
 
     pub fn key(&self, idx: i32) -> Result<JsBip44Key, JsValue> {
@@ -279,6 +299,11 @@ impl JsBip44PublicSubAccount {
         JsBip32PublicNode::from(self.inner.node().clone())
     }
 
+    #[wasm_bindgen(getter)]
+    pub fn network(&self) -> String {
+        self.inner.network().subtree().name().to_owned()
+    }
+
     pub fn key(&self, idx: i32) -> Result<JsBip44PublicKey, JsValue> {
         let key = self.inner.key(idx).map_err_to_js()?;
         Ok(JsBip44PublicKey::from(key))
@@ -346,6 +371,11 @@ impl JsBip44Key {
         JsBip32Node::from(self.inner.node().clone())
     }
 
+    #[wasm_bindgen(getter)]
+    pub fn network(&self) -> String {
+        self.inner.network().subtree().name().to_owned()
+    }
+
     #[wasm_bindgen(js_name = privateKey)]
     pub fn to_private_key(&self) -> JsSecpPrivateKey {
         self.node().to_private_key()
@@ -411,6 +441,11 @@ pub struct JsBip44PublicKey {
 impl JsBip44PublicKey {
     pub fn node(&self) -> JsBip32PublicNode {
         JsBip32PublicNode::from(self.inner.node().clone())
+    }
+
+    #[wasm_bindgen(getter)]
+    pub fn network(&self) -> String {
+        self.inner.network().subtree().name().to_owned()
     }
 
     #[wasm_bindgen(js_name = publicKey)]
