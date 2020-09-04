@@ -52,6 +52,13 @@ impl JsSecpPrivateKey {
         Ok(Self { inner })
     }
 
+    #[wasm_bindgen(js_name = fromWif)]
+    pub fn from_wif(wif: &str, network: &str) -> Result<JsSecpPrivateKey, JsValue> {
+        let network = Networks::by_name(network).map_err_to_js()?;
+        let (inner, _bip178) = SecpPrivateKey::from_wif(wif, network).map_err_to_js()?;
+        Ok(Self { inner })
+    }
+
     #[wasm_bindgen(js_name = toWif)]
     pub fn to_wif(&self, network: &str) -> Result<String, JsValue> {
         let network = Networks::by_name(network).map_err_to_js()?;

@@ -50,6 +50,16 @@ pub struct JsSecpKeyId {
     inner: SecpKeyId,
 }
 
+#[wasm_bindgen(js_class = SecpKeyId)]
+impl JsSecpKeyId {
+    #[wasm_bindgen(js_name=fromAddress)]
+    pub fn from_p2pkh_addr(address: &str, network: &str) -> Result<JsSecpKeyId, JsValue> {
+        let network = Networks::by_name(network).map_err_to_js()?;
+        let inner = SecpKeyId::from_p2pkh_addr(address, network).map_err_to_js()?;
+        Ok(inner.into())
+    }
+}
+
 impl From<SecpKeyId> for JsSecpKeyId {
     fn from(inner: SecpKeyId) -> Self {
         Self { inner }
