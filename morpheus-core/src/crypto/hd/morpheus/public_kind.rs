@@ -14,28 +14,28 @@ impl PublicKind {
         self.kind
     }
 
-    pub fn len(&self) -> Fallible<usize> {
+    pub fn len(&self) -> Result<usize> {
         let state = self.state.try_borrow()?;
         Ok(state.len())
     }
 
-    pub fn is_empty(&self) -> Fallible<bool> {
+    pub fn is_empty(&self) -> Result<bool> {
         let state = self.state.try_borrow()?;
         Ok(state.is_empty())
     }
 
-    // In theory this could return Fallible<MorpheusPublicKey>, but that would need an EdExtPublicKey.
+    // In theory this could return Result<MorpheusPublicKey>, but that would need an EdExtPublicKey.
     // Since we do not have public derivation in ed25519, it is not worth the hassle.
-    pub fn key(&self, idx: i32) -> Fallible<MPublicKey> {
+    pub fn key(&self, idx: i32) -> Result<MPublicKey> {
         ensure!(idx >= 0, "Key index cannot be negative");
         let idx = idx as usize;
         let state = self.state.try_borrow()?;
-        ensure!(idx < state.len());
+        ensure!(idx < state.len(), "Only existing keys can be queried via Morpheus Public");
         let key: MPublicKey = state[idx].parse()?;
         Ok(key)
     }
 
-    pub fn key_by_id(&self, id: &MKeyId) -> Fallible<MPublicKey> {
+    pub fn key_by_id(&self, id: &MKeyId) -> Result<MPublicKey> {
         let state = self.state.try_borrow()?;
         let count = state.len();
         for idx in 0..count {

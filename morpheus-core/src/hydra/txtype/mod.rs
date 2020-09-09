@@ -92,7 +92,7 @@ impl CommonTransactionFields {
 
 #[cfg(test)]
 mod test {
-    use failure::Fallible;
+    use super::*;
 
     use crate::crypto::{
         hd::{hydra, morpheus as hd_morpheus, Vault},
@@ -109,7 +109,7 @@ mod test {
     use iop_keyvault::{multicipher::MKeyId, secp256k1::hyd, PublicKey, Seed};
 
     #[test]
-    fn hydra_tx_builder() -> Fallible<()> {
+    fn hydra_tx_builder() -> Result<()> {
         let unlock_password = "test";
         let mut vault = Vault::create(None, Seed::DEMO_PHRASE, "", unlock_password)?;
 
@@ -168,7 +168,7 @@ mod test {
     }
 
     #[test]
-    fn morpheus_tx_builder() -> Fallible<()> {
+    fn morpheus_tx_builder() -> Result<()> {
         let unlock_password = "test";
         let mut vault = Vault::create(None, Seed::DEMO_PHRASE, "", unlock_password)?;
 
@@ -307,7 +307,7 @@ mod test {
         Ok(())
     }
 
-    fn show_tx_json(message: &str, txs: Vec<TransactionData>) -> Fallible<()> {
+    fn show_tx_json(message: &str, txs: Vec<TransactionData>) -> Result<()> {
         let tx_batch = TxBatch { transactions: txs };
         let txs_json_str = serde_json::to_string(&tx_batch)?;
         println!("{}", message);

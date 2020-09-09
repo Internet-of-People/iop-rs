@@ -21,12 +21,12 @@ impl PrivateKind {
         &self.kind.node()
     }
 
-    pub fn len(&self) -> Fallible<usize> {
+    pub fn len(&self) -> Result<usize> {
         let state = self.state.try_borrow()?;
         Ok(state.len())
     }
 
-    pub fn is_empty(&self) -> Fallible<bool> {
+    pub fn is_empty(&self) -> Result<bool> {
         let state = self.state.try_borrow()?;
         Ok(state.is_empty())
     }
@@ -35,7 +35,7 @@ impl PrivateKind {
         PublicKind::new(self.state.clone(), self.kind.path())
     }
 
-    pub fn key(&mut self, idx: i32) -> Fallible<MorpheusPrivateKey> {
+    pub fn key(&mut self, idx: i32) -> Result<MorpheusPrivateKey> {
         ensure!(idx >= 0, "Key index cannot be negative");
         let count = self.state.try_borrow()?.len();
         let required = idx as usize + 1;
@@ -51,7 +51,7 @@ impl PrivateKind {
         self.kind.key(idx)
     }
 
-    pub fn key_by_pk(&self, pk: &MPublicKey) -> Fallible<MorpheusPrivateKey> {
+    pub fn key_by_pk(&self, pk: &MPublicKey) -> Result<MorpheusPrivateKey> {
         let count = self.state.try_borrow()?.len() as i32;
         for idx in 0..count {
             let persona = self.kind.key(idx)?;

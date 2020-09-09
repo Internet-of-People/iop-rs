@@ -1,7 +1,7 @@
-use failure::{bail, Fallible};
+use super::*;
 
 // Path pattern syntax is based on JQ patterns, see https://stedolan.github.io/jq/manual/#Basicfilters
-pub fn matches(tree: &serde_json::Value, paths_pattern: &str) -> Fallible<bool> {
+pub fn matches(tree: &serde_json::Value, paths_pattern: &str) -> Result<bool> {
     for single_alternative in split_alternatives(paths_pattern) {
         if match_single(tree, single_alternative)? {
             return Ok(true);
@@ -11,7 +11,7 @@ pub fn matches(tree: &serde_json::Value, paths_pattern: &str) -> Fallible<bool> 
 }
 
 // Assumes no whitespaces and no alternate paths in parameter
-pub fn match_single(tree: &serde_json::Value, path: &str) -> Fallible<bool> {
+pub fn match_single(tree: &serde_json::Value, path: &str) -> Result<bool> {
     match tree {
         serde_json::Value::Object(map) => {
             let (property_name, path_tail_opt) = split_head_tail(path)?;
@@ -49,7 +49,7 @@ pub fn split_alternatives(paths_pattern: &str) -> Vec<&str> {
 /// assert_eq!(split_head_tail(".a").unwrap(), ("a", None));
 /// assert_eq!(split_head_tail(".a.b.c").unwrap(), ("a", Some(".b.c")));
 /// ```
-pub fn split_head_tail(path: &str) -> Fallible<(&str, Option<&str>)> {
+pub fn split_head_tail(path: &str) -> Result<(&str, Option<&str>)> {
     if !path.starts_with('.') {
         bail!("Path must start with '.' but it's: {}", path);
     }
@@ -93,7 +93,7 @@ mod tests {
     }
 
     #[test]
-    fn path_matches() -> Fallible<()> {
+    fn path_matches() -> Result<()> {
         let obj = sample_json_object();
 
         assert!(matches(&obj, "invalidpath").is_err());

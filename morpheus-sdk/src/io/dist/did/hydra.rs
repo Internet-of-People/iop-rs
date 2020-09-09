@@ -1,11 +1,10 @@
-use async_trait::async_trait;
-use failure::{err_msg, Fallible};
+use super::*;
+
 use hyper::{
     client::{Client, HttpConnector},
     Body, Request, Response, StatusCode,
 };
 
-use super::*;
 use iop_morpheus_core::{
     crypto::hash::ContentId,
     data::{did::Did, diddoc::DidDocument},
@@ -32,11 +31,11 @@ impl HydraDidLedger {
 
 #[async_trait(?Send)]
 impl LedgerQueries for HydraDidLedger {
-    async fn before_proof(&self, _content: &ContentId) -> Fallible<Option<BlockHeight>> {
+    async fn before_proof(&self, _content: &ContentId) -> Result<Option<BlockHeight>> {
         todo!()
     }
 
-    async fn document(&self, did: &Did) -> Fallible<DidDocument> {
+    async fn document(&self, did: &Did) -> Result<DidDocument> {
         let endpoint = format!("{}/morpheus/v1/did/{}/document", self.url, did);
 
         let request = Request::get(endpoint)
@@ -48,10 +47,7 @@ impl LedgerQueries for HydraDidLedger {
         let (header, body) = response.into_parts();
 
         if header.status != StatusCode::OK {
-            return Err(err_msg(format!(
-                "GET document {} failed with status {}",
-                did, header.status
-            )));
+            bail!("GET document {} failed with status {}", did, header.status);
         }
         let bytes = hyper::body::to_bytes(body).await?;
         //println!("Got response: {}", String::from_utf8(bytes.to_vec())?);
@@ -65,7 +61,7 @@ impl LedgerQueries for HydraDidLedger {
 impl LedgerOperations for HydraDidLedger {
     async fn send_transaction(
         &self, _operations: &[OperationAttempt],
-    ) -> Fallible<Box<dyn PooledLedgerTransaction>> {
+    ) -> Result<Box<dyn PooledLedgerTransaction>> {
         todo!()
     }
 }

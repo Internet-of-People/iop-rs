@@ -1,9 +1,7 @@
+use super::*;
+
 use std::fs::File;
 use std::path::{Path, PathBuf};
-
-use async_trait::async_trait;
-use failure::Fallible;
-use log::*;
 
 use crate::io::local::signer::{MorpheusSigner, SyncAdapter};
 use iop_keyvault::multicipher::MKeyId;
@@ -14,18 +12,18 @@ use iop_morpheus_core::{
 
 #[async_trait(?Send)]
 pub trait DidVault {
-    fn key_ids(&self) -> Fallible<Vec<MKeyId>>;
-    fn dids(&self) -> Fallible<Vec<Did>>;
+    fn key_ids(&self) -> Result<Vec<MKeyId>>;
+    fn dids(&self) -> Result<Vec<Did>>;
 
-    fn get_active(&self) -> Fallible<Option<Did>>;
-    async fn set_active(&mut self, did: &Did) -> Fallible<()>;
+    fn get_active(&self) -> Result<Option<Did>>;
+    async fn set_active(&mut self, did: &Did) -> Result<()>;
 
-    fn record_by_auth(&self, auth: &Authentication) -> Fallible<HdRecord>;
-    // async fn restore_id(&mut self, did: &Did) -> Fallible<()>;
-    fn signer_by_auth(&self, auth: &Authentication) -> Fallible<Box<dyn MorpheusSigner>>;
+    fn record_by_auth(&self, auth: &Authentication) -> Result<HdRecord>;
+    // async fn restore_id(&mut self, did: &Did) -> Result<()>;
+    fn signer_by_auth(&self, auth: &Authentication) -> Result<Box<dyn MorpheusSigner>>;
 
-    async fn create(&mut self, label: Option<Label>) -> Fallible<HdRecord>;
-    async fn update(&mut self, record: HdRecord) -> Fallible<()>;
+    async fn create(&mut self, label: Option<Label>) -> Result<HdRecord>;
+    async fn update(&mut self, record: HdRecord) -> Result<()>;
 }
 
 pub struct PersistentDidVault {
@@ -38,7 +36,7 @@ impl PersistentDidVault {
         Self { in_memory_vault, persister }
     }
 
-    pub async fn load(persister: Box<dyn Persister>) -> Fallible<Self> {
+    pub async fn load(persister: Box<dyn Persister>) -> Result<Self> {
         let reader = persister.reader()?;
         let vault: InMemoryDidVault = serde_json::from_reader(reader)?;
         //let vault: Self = bincode::deserialize_from(vault_file)?;
@@ -46,7 +44,7 @@ impl PersistentDidVault {
         Ok(Self::new(vault, persister))
     }
 
-    pub async fn save(&mut self) -> Fallible<()> {
+    pub async fn save(&mut self) -> Result<()> {
         let writer = self.persister.writer()?;
         serde_json::to_writer_pretty(writer, &self.in_memory_vault)?;
         //bincode::serialize_into(vault_file, self)?;
@@ -56,46 +54,46 @@ impl PersistentDidVault {
 
 #[async_trait(?Send)]
 impl DidVault for PersistentDidVault {
-    fn key_ids(&self) -> Fallible<Vec<MKeyId>> {
+    fn key_ids(&self) -> Result<Vec<MKeyId>> {
         self.in_memory_vault.key_ids()
     }
-    fn dids(&self) -> Fallible<Vec<Did>> {
+    fn dids(&self) -> Result<Vec<Did>> {
         self.in_memory_vault.dids()
     }
 
-    fn get_active(&self) -> Fallible<Option<Did>> {
+    fn get_active(&self) -> Result<Option<Did>> {
         self.in_memory_vault.get_active()
     }
 
-    async fn set_active(&mut self, did: &Did) -> Fallible<()> {
+    async fn set_active(&mut self, did: &Did) -> Result<()> {
         self.in_memory_vault.set_active(did)?;
         self.save().await
     }
 
-    fn record_by_auth(&self, auth: &Authentication) -> Fallible<HdRecord> {
+    fn record_by_auth(&self, auth: &Authentication) -> Result<HdRecord> {
         self.in_memory_vault.record_by_auth(auth)
     }
 
-    fn signer_by_auth(&self, auth: &Authentication) -> Fallible<Box<dyn MorpheusSigner>> {
+    fn signer_by_auth(&self, auth: &Authentication) -> Result<Box<dyn MorpheusSigner>> {
         let sync_signer = self.in_memory_vault.signer_by_auth(auth)?;
         Ok(Box::new(SyncAdapter::new(sync_signer)))
     }
 
-    async fn create(&mut self, label_opt: Option<Label>) -> Fallible<HdRecord> {
+    async fn create(&mut self, label_opt: Option<Label>) -> Result<HdRecord> {
         let result = self.in_memory_vault.create(label_opt)?;
         self.save().await?;
         Ok(result)
     }
 
-    async fn update(&mut self, record: HdRecord) -> Fallible<()> {
+    async fn update(&mut self, record: HdRecord) -> Result<()> {
         self.in_memory_vault.update(record)?;
         self.save().await
     }
 }
 
 pub trait Persister {
-    fn reader(&self) -> Fallible<Box<dyn std::io::Read>>;
-    fn writer(&self) -> Fallible<Box<dyn std::io::Write>>;
+    fn reader(&self) -> Result<Box<dyn std::io::Read>>;
+    fn writer(&self) -> Result<Box<dyn std::io::Write>>;
 }
 
 pub struct FilePersister {
@@ -109,13 +107,13 @@ impl FilePersister {
 }
 
 impl Persister for FilePersister {
-    fn reader(&self) -> Fallible<Box<dyn std::io::Read>> {
+    fn reader(&self) -> Result<Box<dyn std::io::Read>> {
         debug!("Loading DidVault from {:?}", self.path);
         let vault_file = File::open(&self.path)?;
         Ok(Box::new(vault_file))
     }
 
-    fn writer(&self) -> Fallible<Box<dyn std::io::Write>> {
+    fn writer(&self) -> Result<Box<dyn std::io::Write>> {
         debug!("Saving profile vault to persist its state");
         if let Some(vault_dir) = self.path.parent() {
             debug!("Recursively Creating directory {:?}", vault_dir);
@@ -133,12 +131,12 @@ mod tests {
 
     use iop_keyvault::{Bip39, Seed};
 
-    fn in_memory_vault_instance() -> Fallible<InMemoryDidVault> {
+    fn in_memory_vault_instance() -> Result<InMemoryDidVault> {
         let seed = Bip39::new().phrase(Seed::DEMO_PHRASE)?.password(Seed::PASSWORD);
         Ok(InMemoryDidVault::new(seed))
     }
 
-    async fn test_vault<T: DidVault>(vault: &mut T) -> Fallible<()> {
+    async fn test_vault<T: DidVault>(vault: &mut T) -> Result<()> {
         assert_eq!(vault.dids()?, vec![]);
 
         let record1 = vault.create(None).await?;
@@ -155,7 +153,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn persistent_vault() -> Fallible<()> {
+    async fn persistent_vault() -> Result<()> {
         let tmp_dir = tempfile::tempdir()?.into_path();
         let tmp_file = tmp_dir.join("morpheus-testvault.dat");
         let file_persister = Box::new(FilePersister::new(&tmp_file));

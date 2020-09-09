@@ -45,7 +45,7 @@ impl Vault {
     pub fn create(
         lang_code: Option<&str>, phrase: impl AsRef<str>, bip39_password: impl AsRef<str>,
         unlock_password: impl AsRef<str>,
-    ) -> Fallible<Vault> {
+    ) -> Result<Vault> {
         let bip39 = match lang_code {
             None => Bip39::new(),
             Some(code) => Bip39::language_code(code)?,
@@ -55,7 +55,7 @@ impl Vault {
         Ok(Self::new(encrypted_seed, Vec::new()))
     }
 
-    pub fn unlock(&self, unlock_password: &str) -> Fallible<Seed> {
+    pub fn unlock(&self, unlock_password: &str) -> Result<Seed> {
         let imp = self.inner.borrow();
         Self::decrypt_seed(&imp.encrypted_seed, unlock_password)
     }
@@ -65,7 +65,7 @@ impl Vault {
         imp.plugins.iter().by_ref().filter_map(|p| p.to_any().downcast().ok()).collect()
     }
 
-    pub fn add(&mut self, plugin: Box<dyn VaultPlugin>) -> Fallible<()> {
+    pub fn add(&mut self, plugin: Box<dyn VaultPlugin>) -> Result<()> {
         let mut imp = self.inner.borrow_mut();
         ensure!(
             imp.plugins.iter().all(|p| !p.eq(plugin.as_ref())),
@@ -80,13 +80,13 @@ impl Vault {
         State::map(&self.inner, |v| &v.is_dirty, |v| &mut v.is_dirty)
     }
 
-    fn encrypt_seed(seed: &Seed, unlock_password: &str) -> Fallible<String> {
+    fn encrypt_seed(seed: &Seed, unlock_password: &str) -> Result<String> {
         let nonce = nonce()?;
         let encrypted_seed_bytes = encrypt(seed.as_bytes(), unlock_password, nonce)?;
         Ok(multibase::encode(multibase::Base::Base64Url, &encrypted_seed_bytes))
     }
 
-    fn decrypt_seed(seed: &str, unlock_password: &str) -> Fallible<Seed> {
+    fn decrypt_seed(seed: &str, unlock_password: &str) -> Result<Seed> {
         let (_, encrypted_seed_bytes) = multibase::decode(seed)?;
         let decrypted_bytes = decrypt(&encrypted_seed_bytes, unlock_password)?;
         Seed::from_bytes(&decrypted_bytes)
@@ -94,11 +94,11 @@ impl Vault {
 }
 
 pub trait PluginPublic<T: VaultPlugin>: Sized {
-    fn create(plugin: &T, vault_dirty: Box<dyn State<bool>>) -> Fallible<Self>;
+    fn create(plugin: &T, vault_dirty: Box<dyn State<bool>>) -> Result<Self>;
 }
 
 pub trait PluginPrivate<T: VaultPlugin>: Sized {
-    fn create(plugin: &T, seed: Seed, vault_dirty: Box<dyn State<bool>>) -> Fallible<Self>;
+    fn create(plugin: &T, seed: Seed, vault_dirty: Box<dyn State<bool>>) -> Result<Self>;
 }
 
 pub struct BoundPlugin<T: VaultPlugin, TPublic: PluginPublic<T>, TPriv: PluginPrivate<T>> {
@@ -115,12 +115,12 @@ impl<T: VaultPlugin, TPublic: PluginPublic<T>, TPriv: PluginPrivate<T>>
         Self { vault, plugin, _pub: Default::default(), _priv: Default::default() }
     }
 
-    pub fn private(&self, unlock_password: impl AsRef<str>) -> Fallible<TPriv> {
+    pub fn private(&self, unlock_password: impl AsRef<str>) -> Result<TPriv> {
         let seed = self.vault.unlock(unlock_password.as_ref())?;
         TPriv::create(&self.plugin, seed, self.vault.to_modifiable())
     }
 
-    pub fn public(&self) -> Fallible<TPublic> {
+    pub fn public(&self) -> Result<TPublic> {
         TPublic::create(&self.plugin, self.vault.to_modifiable())
     }
 }
@@ -160,7 +160,7 @@ mod test {
     }"#;
 
     #[test]
-    fn serialize() -> Fallible<()> {
+    fn serialize() -> Result<()> {
         let unlock_password = "correct horse battery staple";
         let vault: Vault = serde_json::from_str(DEMO_VAULT_DAT)?;
 

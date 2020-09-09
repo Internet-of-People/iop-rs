@@ -68,7 +68,7 @@ impl Asset {
         bytes.and_then(|bytes| bytes.checked_mul(Self::FLAKES_PER_BYTES)).unwrap_or(u64::MAX)
     }
 
-    pub fn to_bytes(&self) -> Fallible<Vec<u8>> {
+    pub fn to_bytes(&self) -> Result<Vec<u8>> {
         let asset_json = serde_json::to_string(self)?;
         string_to_protobuf(&asset_json)
     }
@@ -101,7 +101,7 @@ impl SignableOperation {
 
     // TODO signing should use a dedicated sign_morpheus_transaction() operation,
     //      consider how this connects to that or this can be removed on the long run
-    fn to_signable_bytes(&self) -> Fallible<Vec<u8>> {
+    fn to_signable_bytes(&self) -> Result<Vec<u8>> {
         let asset_val = serde_json::to_value(&self.signables)?;
         let asset_json = canonical_json(&asset_val)?;
         // NOTE this is a weird historical implementation detail with double-escaping,
@@ -110,7 +110,7 @@ impl SignableOperation {
         string_to_protobuf(&asset_str)
     }
 
-    pub fn sign(self, signer: &dyn SyncMorpheusSigner) -> Fallible<SignedOperation> {
+    pub fn sign(self, signer: &dyn SyncMorpheusSigner) -> Result<SignedOperation> {
         let (signed_with_pubkey, signature) = signer.sign(&self.to_signable_bytes()?)?;
         Ok(SignedOperation {
             signables: self.signables,
@@ -162,7 +162,7 @@ pub enum SignableOperationDetails {
     TombstoneDid {},
 }
 
-pub fn string_to_protobuf(value: &str) -> Fallible<Vec<u8>> {
+pub fn string_to_protobuf(value: &str) -> Result<Vec<u8>> {
     let mut res_bytes = Vec::new();
 
     let size_varint_bytes = vec![0u8; 0];

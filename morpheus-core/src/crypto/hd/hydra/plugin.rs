@@ -1,4 +1,5 @@
 use super::*;
+use anyhow::Context;
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -52,7 +53,7 @@ impl Plugin {
 
     pub fn rewind(
         vault: &mut Vault, unlock_password: impl AsRef<str>, parameters: &Parameters,
-    ) -> Fallible<()> {
+    ) -> Result<()> {
         let seed = vault.unlock(unlock_password.as_ref())?;
         let account = Self::create_account(parameters, &seed)?;
         let pk: Bip44PublicAccount<Secp256k1> = account.neuter();
@@ -63,7 +64,7 @@ impl Plugin {
 
     pub fn get(
         vault: &Vault, parameters: &Parameters,
-    ) -> Fallible<BoundPlugin<Plugin, Public, Private>> {
+    ) -> Result<BoundPlugin<Plugin, Public, Private>> {
         let _network = Networks::by_name(&parameters.network)?; // checks if network name is supported
         ensure!(parameters.account >= 0, "Hydra account number cannot be negative");
 
@@ -72,7 +73,7 @@ impl Plugin {
             .iter()
             .by_ref()
             .find(|p| p.inner.borrow().parameters == *parameters)
-            .ok_or_else(|| err_msg("Could not find Hydra plugin with given parameters"))?;
+            .with_context(|| "Could not find Hydra plugin with given parameters")?;
         Ok(BoundPlugin::new(vault.to_owned(), plugin.to_owned()))
     }
 
@@ -86,7 +87,7 @@ impl Plugin {
         imp.parameters.account
     }
 
-    fn create_account(parameters: &Parameters, seed: &Seed) -> Fallible<Bip44Account<Secp256k1>> {
+    fn create_account(parameters: &Parameters, seed: &Seed) -> Result<Bip44Account<Secp256k1>> {
         let network = Networks::by_name(&parameters.network)?;
         Bip44.network(seed, network)?.account(parameters.account)
     }

@@ -8,7 +8,6 @@ edition = "2018"
 [dependencies]
 anyhow = "*"
 chrono = { version = "*", features = ["wasmbind"] }
-failure = "*"
 iop-keyvault = "0.0.4"
 jwt-compact = { version = "*", default-features = false }
 log = "*"

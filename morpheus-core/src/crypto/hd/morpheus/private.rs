@@ -7,7 +7,7 @@ pub struct Private {
 }
 
 impl PluginPrivate<Plugin> for Private {
-    fn create(plugin: &Plugin, seed: Seed, vault_dirty: Box<dyn State<bool>>) -> Fallible<Self> {
+    fn create(plugin: &Plugin, seed: Seed, vault_dirty: Box<dyn State<bool>>) -> Result<Self> {
         let root = Morpheus.root(&seed)?;
         let state = plugin.to_state();
         Ok(Private { state, root, vault_dirty })
@@ -15,7 +15,7 @@ impl PluginPrivate<Plugin> for Private {
 }
 
 impl Private {
-    pub fn personas(&self) -> Fallible<PrivateKind> {
+    pub fn personas(&self) -> Result<PrivateKind> {
         let state = State::map(self.state.as_ref(), |s| &s.personas, |s| &mut s.personas);
         let kind = self.root.personas()?;
         let vault_dirty = self.vault_dirty.clone();
@@ -26,7 +26,7 @@ impl Private {
         Public::new(self.state.clone())
     }
 
-    pub fn key_by_pk(&self, pk: &MPublicKey) -> Fallible<MorpheusPrivateKey> {
+    pub fn key_by_pk(&self, pk: &MPublicKey) -> Result<MorpheusPrivateKey> {
         self.personas()?
             .key_by_pk(pk)
             .or_else(|_| bail!("Could not find {} among Morpheus keys", pk))

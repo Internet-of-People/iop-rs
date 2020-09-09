@@ -19,7 +19,7 @@ mod test {
     use super::*;
 
     #[test]
-    fn api() -> Fallible<()> {
+    fn api() -> Result<()> {
         let unlock_password = "correct horse battery staple";
         let mut vault = Vault::create(None, Seed::DEMO_PHRASE, "", unlock_password)?;
         Plugin::rewind(&mut vault, unlock_password)?;

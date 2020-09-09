@@ -11,8 +11,8 @@ crate-type = ["rlib", "cdylib"]
 
 
 [dependencies]
+anyhow = "*"
 chrono = { version = "*", features = ["wasmbind"] }
-failure = "*"
 iop-keyvault = "0.0.4"
 iop-morpheus-core = "0.0.4"
 log = "*"

@@ -1,9 +1,10 @@
-use failure::{err_msg, Fallible};
+use super::*;
 
 use crate::io::{
     dist::did::{LedgerOperations, LedgerQueries},
     local::didvault::DidVault,
 };
+use anyhow::Context;
 
 pub struct Client<V: DidVault, L: LedgerQueries + LedgerOperations> {
     vault: Option<V>,
@@ -21,29 +22,29 @@ impl<V: DidVault, L: LedgerQueries + LedgerOperations> Client<V, L> {
         Self { vault: Some(vault), ledger: Some(ledger) }
     }
 
-    pub fn vault(&self) -> Fallible<&V> {
-        self.vault.as_ref().ok_or_else(|| err_msg("Vault is still uninitialized in Sdk Client"))
+    pub fn vault(&self) -> Result<&V> {
+        self.vault.as_ref().with_context(|| "Vault is still uninitialized in Sdk Client")
     }
-    pub fn mut_vault(&mut self) -> Fallible<&mut V> {
-        self.vault.as_mut().ok_or_else(|| err_msg("Vault is still uninitialized in Sdk Client"))
+    pub fn mut_vault(&mut self) -> Result<&mut V> {
+        self.vault.as_mut().with_context(|| "Vault is still uninitialized in Sdk Client")
     }
-    pub fn set_vault(&mut self, vault: V) -> Fallible<()> {
+    pub fn set_vault(&mut self, vault: V) -> Result<()> {
         if self.vault.is_some() {
-            return Err(err_msg("Vault has already been initialized in Sdk Client"));
+            return Err(anyhow!("Vault has already been initialized in Sdk Client"));
         }
         self.vault.replace(vault);
         Ok(())
     }
 
-    pub fn ledger(&self) -> Fallible<&L> {
-        self.ledger.as_ref().ok_or_else(|| err_msg("Ledger is still uninitialized in Sdk Client"))
+    pub fn ledger(&self) -> Result<&L> {
+        self.ledger.as_ref().with_context(|| "Ledger is still uninitialized in Sdk Client")
     }
-    pub fn mut_ledger(&mut self) -> Fallible<&mut L> {
-        self.ledger.as_mut().ok_or_else(|| err_msg("Ledger is still uninitialized in Sdk Client"))
+    pub fn mut_ledger(&mut self) -> Result<&mut L> {
+        self.ledger.as_mut().with_context(|| "Ledger is still uninitialized in Sdk Client")
     }
-    pub fn set_ledger(&mut self, ledger: L) -> Fallible<()> {
+    pub fn set_ledger(&mut self, ledger: L) -> Result<()> {
         if self.ledger.is_some() {
-            return Err(err_msg("Ledger has already been initialized in Sdk Client"));
+            return Err(anyhow!("Ledger has already been initialized in Sdk Client"));
         }
         self.ledger.replace(ledger);
         Ok(())

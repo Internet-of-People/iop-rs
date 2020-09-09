@@ -1,9 +1,7 @@
 mod fake;
 mod hydra;
 
-use async_trait::async_trait;
-use failure::Fallible;
-use serde::{Deserialize, Serialize};
+use super::*;
 
 use crate::io::local::signer::MorpheusSigner;
 use iop_morpheus_core::{
@@ -47,26 +45,26 @@ pub enum OperationAttempt {
 
 #[async_trait(?Send)]
 pub trait PooledLedgerTransaction {
-    async fn ledger_status(&self) -> Fallible<Option<AfterProof>>;
-    async fn morpheus_status(&self) -> Fallible<Option<bool>>;
+    async fn ledger_status(&self) -> Result<Option<AfterProof>>;
+    async fn morpheus_status(&self) -> Result<Option<bool>>;
 }
 
 // TODO change this trait to fetch full history as TimeSeries instead of latest snapshot
 #[async_trait(?Send)]
 pub trait LedgerQueries {
-    async fn before_proof(&self, content: &ContentId) -> Fallible<Option<BlockHeight>>;
-    async fn document(&self, did: &Did) -> Fallible<DidDocument>;
+    async fn before_proof(&self, content: &ContentId) -> Result<Option<BlockHeight>>;
+    async fn document(&self, did: &Did) -> Result<DidDocument>;
 }
 
 #[async_trait(?Send)]
 pub trait LedgerOperations {
     async fn send_transaction(
         &self, operations: &[OperationAttempt],
-    ) -> Fallible<Box<dyn PooledLedgerTransaction>>;
+    ) -> Result<Box<dyn PooledLedgerTransaction>>;
 }
 
 pub trait OwnDidDocumentFactory<T: OwnDidDocument, S: MorpheusSigner> {
-    fn from(did: Did, signer: S) -> Fallible<T>;
+    fn from(did: Did, signer: S) -> Result<T>;
 }
 
 #[async_trait(?Send)]
@@ -74,17 +72,17 @@ pub trait OwnDidDocument {
     fn did(&self) -> &Did;
     fn signer(&self) -> &dyn MorpheusSigner;
 
-    async fn document(&self) -> Fallible<DidDocument>;
+    async fn document(&self) -> Result<DidDocument>;
 
     // TODO should these operation be mutable?
     async fn add_key(
         &self, auth: &Authentication, expiry: Option<BlockHeight>,
-    ) -> Fallible<SignableOperationAttempt>;
-    async fn revoke_key(&self, auth: &Authentication) -> Fallible<SignableOperationAttempt>;
+    ) -> Result<SignableOperationAttempt>;
+    async fn revoke_key(&self, auth: &Authentication) -> Result<SignableOperationAttempt>;
     async fn add_right(
         &self, auth: &Authentication, right: Right,
-    ) -> Fallible<SignableOperationAttempt>;
+    ) -> Result<SignableOperationAttempt>;
     async fn revoke_right(
         &self, auth: &Authentication, right: Right,
-    ) -> Fallible<SignableOperationAttempt>;
+    ) -> Result<SignableOperationAttempt>;
 }

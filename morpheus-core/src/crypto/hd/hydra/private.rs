@@ -9,7 +9,7 @@ pub struct Private {
 }
 
 impl PluginPrivate<Plugin> for Private {
-    fn create(plugin: &Plugin, seed: Seed, vault_dirty: Box<dyn State<bool>>) -> Fallible<Self> {
+    fn create(plugin: &Plugin, seed: Seed, vault_dirty: Box<dyn State<bool>>) -> Result<Self> {
         let network = plugin.network();
         let account = plugin.account();
 
@@ -39,14 +39,14 @@ impl Private {
         Public::new(state, account, vault)
     }
 
-    // TODO: pub fn chain(&self, chain: Chain) -> Fallible<HydraPrivateSubAccount>
+    // TODO: pub fn chain(&self, chain: Chain) -> Result<HydraPrivateSubAccount>
 
-    pub fn key(&mut self, idx: i32) -> Fallible<Bip44Key<Secp256k1>> {
+    pub fn key(&mut self, idx: i32) -> Result<Bip44Key<Secp256k1>> {
         touch_receive_idx(self.state.as_mut(), idx, self.vault_dirty.as_mut())?;
         self.account.key(idx)
     }
 
-    pub fn key_by_pk(&self, pk: &SecpPublicKey) -> Fallible<Bip44Key<Secp256k1>> {
+    pub fn key_by_pk(&self, pk: &SecpPublicKey) -> Result<Bip44Key<Secp256k1>> {
         // TODO include change addresses, too
         let state = self.state.try_borrow()?;
         let receive_keys = state.receive_keys;
@@ -63,24 +63,24 @@ impl Private {
         self.account.to_xprv()
     }
 
-    pub fn xpub(&self) -> Fallible<String> {
+    pub fn xpub(&self) -> Result<String> {
         let state = self.state.try_borrow()?;
         Ok(state.xpub.to_owned())
     }
 
-    pub fn receive_keys(&self) -> Fallible<u32> {
+    pub fn receive_keys(&self) -> Result<u32> {
         let state = self.state.try_borrow()?;
         Ok(state.receive_keys)
     }
 
-    pub fn change_keys(&self) -> Fallible<u32> {
+    pub fn change_keys(&self) -> Result<u32> {
         let state = self.state.try_borrow()?;
         Ok(state.change_keys)
     }
 
     pub fn sign_hydra_transaction(
         &self, hyd_addr: &str, tx: &mut HydraTransactionData,
-    ) -> Fallible<()> {
+    ) -> Result<()> {
         let pub_key = self.public().key_by_p2pkh_addr(hyd_addr)?;
         let sk = self.key_by_pk(&pub_key.to_public_key())?;
         sk.to_private_key().sign_hydra_transaction(tx)

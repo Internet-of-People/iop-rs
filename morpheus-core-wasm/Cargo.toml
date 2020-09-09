@@ -10,7 +10,7 @@ crate-type = ["cdylib", "rlib"]
 
 
 [dependencies]
-failure = "*"
+anyhow = "*"
 iop-keyvault = "0.0.4"
 iop-keyvault-wasm = "0.0.4"
 iop-morpheus-core = "0.0.4"

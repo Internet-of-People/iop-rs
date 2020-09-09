@@ -1,9 +1,9 @@
-use failure::err_msg;
 use serde::{Deserialize, Serialize};
 
 use super::hash::ContentId;
 
 use super::*;
+use anyhow::Context;
 
 #[derive(Debug, Default, PartialEq, Serialize, Deserialize)]
 struct JwtClaim {
@@ -26,7 +26,7 @@ impl JwtBuilder {
         Self::create(Some(content_id))
     }
 
-    pub fn sign(&self, sk: &MPrivateKey) -> Fallible<String> {
+    pub fn sign(&self, sk: &MPrivateKey) -> Result<String> {
         let pk = sk.public_key();
         let header = Header { key_id: Some(pk.to_string()), ..Default::default() };
         let claims = Claims {
@@ -53,13 +53,13 @@ impl Default for JwtBuilder {
 pub struct JwtParser(Token<JwtClaim>);
 
 impl JwtParser {
-    pub fn new(token: impl AsRef<str>, current_time: Option<DateTime<Utc>>) -> Fallible<Self> {
+    pub fn new(token: impl AsRef<str>, current_time: Option<DateTime<Utc>>) -> Result<Self> {
         let untrusted = UntrustedToken::try_from(token.as_ref())?;
         let pk_str = untrusted
             .header()
             .key_id
             .as_ref()
-            .ok_or_else(|| err_msg("Publickey is missing from JWT kid header"))?;
+            .with_context(|| "Publickey is missing from JWT kid header")?;
         let pk: MPublicKey = pk_str.parse()?;
         let token = JwtMultiCipher.validate_integrity::<JwtClaim>(&untrusted, &pk)?;
         let options = TimeOptions { current_time, ..Default::default() };
@@ -107,7 +107,7 @@ mod test {
         Utc.timestamp(1596195267, 0)
     }
 
-    fn persona() -> Fallible<MorpheusPrivateKey> {
+    fn persona() -> Result<MorpheusPrivateKey> {
         let unlock_pw = "correct horse battery staple";
         let word25 = "";
         let mut vault = Vault::create(Some("en"), Seed::DEMO_PHRASE, word25, unlock_pw)?;
@@ -119,7 +119,7 @@ mod test {
     }
 
     #[test]
-    fn builder() -> Fallible<()> {
+    fn builder() -> Result<()> {
         let mut builder = JwtBuilder::with_content_id(CONTENT_ID.to_owned());
         builder.created_at = test_now();
         let token = builder.sign(&persona()?.private_key())?;
@@ -130,7 +130,7 @@ mod test {
     }
 
     #[test]
-    fn parser() -> Fallible<()> {
+    fn parser() -> Result<()> {
         let token = JwtParser::new(TOKEN, Some(test_now()))?;
 
         assert_eq!(token.public_key(), persona()?.neuter().public_key());
@@ -142,7 +142,7 @@ mod test {
     }
 
     #[test]
-    fn roundtrip() -> Fallible<()> {
+    fn roundtrip() -> Result<()> {
         let persona = persona()?;
         let builder = JwtBuilder::default();
         let serialized = builder.sign(&persona.private_key())?;

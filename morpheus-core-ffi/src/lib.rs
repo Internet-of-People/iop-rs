@@ -21,7 +21,7 @@ mod vault;
 use std::os::raw;
 use std::str::FromStr;
 
-use failure::Fallible;
+use anyhow::Result;
 
 use iop_keyvault::{
     multicipher::*, secp256k1::*, Bip32Node, Bip32PublicNode, Bip44Key, Bip44PublicKey, Networks,

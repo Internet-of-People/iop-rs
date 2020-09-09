@@ -13,20 +13,6 @@ pub use classic::*;
 pub use state::*;
 pub use vault::*;
 
-// imports from standard library
-
-use std::any::Any;
-use std::cell::{Ref, RefCell, RefMut};
-use std::fmt;
-use std::marker::PhantomData;
-use std::rc::Rc;
-
-// imports from 3rd party crates
-
-use failure::{bail, ensure, err_msg, format_err, Fallible};
-use log::*;
-use serde::{Deserialize, Serialize};
-
 // imports from own crates
 
 use iop_keyvault::{

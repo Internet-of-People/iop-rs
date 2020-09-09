@@ -7,7 +7,7 @@ pub struct Public {
 }
 
 impl PluginPublic<Plugin> for Public {
-    fn create(plugin: &Plugin, vault_dirty: Box<dyn State<bool>>) -> Fallible<Self> {
+    fn create(plugin: &Plugin, vault_dirty: Box<dyn State<bool>>) -> Result<Self> {
         let network = plugin.network();
         let account = plugin.account();
         let state = plugin.to_state();
@@ -34,14 +34,14 @@ impl Public {
         self.account.network()
     }
 
-    // TODO: pub fn chain(&self, chain: Chain) -> Fallible<HydraPublicSubAccount>
+    // TODO: pub fn chain(&self, chain: Chain) -> Result<HydraPublicSubAccount>
 
-    pub fn key(&mut self, idx: i32) -> Fallible<Bip44PublicKey<Secp256k1>> {
+    pub fn key(&mut self, idx: i32) -> Result<Bip44PublicKey<Secp256k1>> {
         touch_receive_idx(self.state.as_mut(), idx, self.vault_dirty.as_mut())?;
         self.account.key(idx)
     }
 
-    pub fn key_by_p2pkh_addr(&self, addr: &str) -> Fallible<Bip44PublicKey<Secp256k1>> {
+    pub fn key_by_p2pkh_addr(&self, addr: &str) -> Result<Bip44PublicKey<Secp256k1>> {
         // TODO include change addresses, too
         let receive_keys = self.receive_keys()?;
         for idx in 0..receive_keys {
@@ -53,17 +53,17 @@ impl Public {
         bail!("Could not find {} among Hydra keys", addr)
     }
 
-    pub fn xpub(&self) -> Fallible<String> {
+    pub fn xpub(&self) -> Result<String> {
         let state = self.state.try_borrow()?;
         Ok(state.xpub.to_owned())
     }
 
-    pub fn receive_keys(&self) -> Fallible<u32> {
+    pub fn receive_keys(&self) -> Result<u32> {
         let state = self.state.try_borrow()?;
         Ok(state.receive_keys)
     }
 
-    pub fn change_keys(&self) -> Fallible<u32> {
+    pub fn change_keys(&self) -> Result<u32> {
         let state = self.state.try_borrow()?;
         Ok(state.change_keys)
     }

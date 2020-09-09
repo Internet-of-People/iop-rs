@@ -22,7 +22,7 @@ pub struct PublicState {
 
 pub(super) fn touch_receive_idx(
     state: &mut dyn State<PublicState>, idx: i32, vault_dirty: &mut dyn State<bool>,
-) -> Fallible<()> {
+) -> Result<()> {
     ensure!(idx >= 0, "Key index cannot be negative");
     let required_keys = (idx as u32) + 1;
     let receive_keys = {

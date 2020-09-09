@@ -1,7 +1,6 @@
-use failure::{bail, ensure, Fallible};
+use super::*;
 
 use crate::util::json_path;
-use std::collections::HashMap;
 use unicode_normalization::UnicodeNormalization;
 
 fn normalize_unicode(s: &str) -> String {
@@ -21,7 +20,7 @@ pub fn hash_str(content: &str) -> String {
     format!("cj{}", hasher(content.as_bytes()))
 }
 
-pub fn canonical_json(data: &serde_json::Value) -> Fallible<String> {
+pub fn canonical_json(data: &serde_json::Value) -> Result<String> {
     match data {
         serde_json::Value::Array(arr) => {
             let mut canonical_json_items = Vec::new();
@@ -59,7 +58,7 @@ pub fn canonical_json(data: &serde_json::Value) -> Fallible<String> {
 
 pub fn collapse_json_subtree(
     data: &serde_json::Value, keep_paths: Vec<&str>,
-) -> Fallible<serde_json::Value> {
+) -> Result<serde_json::Value> {
     match data {
         // NOTE path expressions are not (yet?) supported for arrays
         serde_json::Value::Array(arr) => {
@@ -148,7 +147,7 @@ pub fn collapse_json_subtree(
 
 pub fn selective_digest_json(
     json_value: serde_json::Value, keep_paths_str: &str,
-) -> Fallible<String> {
+) -> Result<String> {
     let keep_paths_vec = json_path::split_alternatives(keep_paths_str);
     let digest_json = match &json_value {
         serde_json::Value::Object(_obj) => collapse_json_subtree(&json_value, keep_paths_vec),
@@ -165,12 +164,12 @@ pub fn selective_digest_json(
 
 pub fn selective_digest_data<T: serde::Serialize>(
     data: &T, keep_paths_str: &str,
-) -> Fallible<String> {
+) -> Result<String> {
     let json_value = serde_json::to_value(&data)?;
     selective_digest_json(json_value, keep_paths_str)
 }
 
-pub fn selective_digest_json_str(json_str: &str, keep_paths_str: &str) -> Fallible<String> {
+pub fn selective_digest_json_str(json_str: &str, keep_paths_str: &str) -> Result<String> {
     ensure!(
         json_str == normalize_unicode(json_str),
         "Json string to be digested must be normalized with Unicode NFKD"
@@ -182,11 +181,11 @@ pub fn selective_digest_json_str(json_str: &str, keep_paths_str: &str) -> Fallib
 
 const KEEP_NOTHING: &str = "";
 
-pub fn digest_data<T: serde::Serialize>(data: &T) -> Fallible<String> {
+pub fn digest_data<T: serde::Serialize>(data: &T) -> Result<String> {
     selective_digest_data(data, KEEP_NOTHING)
 }
 
-pub fn digest_json_str(json_str: &str) -> Fallible<String> {
+pub fn digest_json_str(json_str: &str) -> Result<String> {
     selective_digest_json_str(json_str, KEEP_NOTHING)
 }
 
@@ -194,9 +193,6 @@ pub fn digest_json_str(json_str: &str) -> Fallible<String> {
 mod tests {
     use super::*;
     use hex::FromHex;
-
-    use failure::Fallible;
-    use serde::{Deserialize, Serialize};
 
     #[derive(Clone, Debug, Deserialize, Serialize)]
     struct TestData {
@@ -211,7 +207,7 @@ mod tests {
     }
 
     #[test]
-    fn reject_non_nfkd() -> Fallible<()> {
+    fn reject_non_nfkd() -> Result<()> {
         let key_nfc = String::from_utf8(Vec::from_hex("c3a16c6f6d")?)?;
         let key_nfkd = String::from_utf8(Vec::from_hex("61cc816c6f6d")?)?;
         assert_eq!(key_nfc, "álom");
@@ -240,7 +236,7 @@ mod tests {
     }
 
     #[test]
-    fn test_json_digest() -> Fallible<()> {
+    fn test_json_digest() -> Result<()> {
         let test_obj = TestData { b: 1, a: 2 };
         {
             let digested = digest_data(&test_obj)?;
@@ -280,7 +276,7 @@ mod tests {
     }
 
     #[test]
-    fn test_selective_digesting() -> Fallible<()> {
+    fn test_selective_digesting() -> Result<()> {
         let test_obj = TestData { b: 1, a: 2 };
         let x = &test_obj;
         let composite = CompositeTestData { z: Some(x.clone()), y: Some(x.clone()) };

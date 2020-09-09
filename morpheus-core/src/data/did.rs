@@ -58,11 +58,11 @@ impl From<&multicipher::MKeyId> for Did {
     }
 }
 
-impl std::str::FromStr for Did {
-    type Err = failure::Error;
+impl FromStr for Did {
+    type Err = anyhow::Error;
     fn from_str(src: &str) -> Result<Self, Self::Err> {
         if !src.starts_with(Self::PREFIX) {
-            failure::bail!("{} is not a valid DID: must start with {}", src, Self::PREFIX);
+            bail!("{} is not a valid DID: must start with {}", src, Self::PREFIX);
         }
         let mkeyid = src.replacen(Self::PREFIX, &prefix_multicipher_keyid(), 1);
         Ok(Did::new(mkeyid.parse()?))
@@ -88,9 +88,8 @@ impl From<Did> for String {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use failure::Fallible;
 
-    fn test_did_id(did_str: &str, key_id_str: &str) -> Fallible<()> {
+    fn test_did_id(did_str: &str, key_id_str: &str) -> Result<()> {
         let did = Did::new(key_id_str.parse()?);
         assert_eq!(did.to_string(), did_str);
         assert_eq!(did, did_str.parse()?);
@@ -98,7 +97,7 @@ mod tests {
     }
 
     #[test]
-    fn did_format() -> Fallible<()> {
+    fn did_format() -> Result<()> {
         test_did_id("did:morpheus:ezbeWGSY2dqcUBqT8K7R14xr", "iezbeWGSY2dqcUBqT8K7R14xr")?;
         test_did_id("did:morpheus:ez25N5WZ1Q6TQpgpyYgiu9gTX", "iez25N5WZ1Q6TQpgpyYgiu9gTX")
     }

@@ -22,7 +22,7 @@ pub use vault::*;
 
 // imports from 3rd party crates
 
-use failure::ResultExt;
+use anyhow::{Context, Result};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use wasm_bindgen::prelude::*;

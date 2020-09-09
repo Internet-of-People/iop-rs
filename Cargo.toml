@@ -12,8 +12,8 @@ lto = true
 opt-level = 's'
 
 [patch.crates-io]
-#iop-keyvault = { path="../keyvault-rs/keyvault" }
-#iop-keyvault-wasm = { path="../keyvault-rs/keyvault-wasm" }
+iop-keyvault = { path="../keyvault-rs/keyvault" }
+iop-keyvault-wasm = { path="../keyvault-rs/keyvault-wasm" }
 iop-morpheus-core = { path="./morpheus-core" }
 
 # [patch.crates-io]

@@ -1,9 +1,6 @@
-use std::collections::HashMap;
-
-use async_trait::async_trait;
-use failure::{err_msg, Fallible};
-
 use super::*;
+
+use anyhow::Context;
 use iop_morpheus_core::{
     crypto::hash::ContentId,
     data::{did::Did, diddoc::DidDocument},
@@ -28,12 +25,12 @@ impl FakeDidLedger {
 
 #[async_trait(?Send)]
 impl LedgerQueries for FakeDidLedger {
-    async fn before_proof(&self, _content: &ContentId) -> Fallible<Option<BlockHeight>> {
+    async fn before_proof(&self, _content: &ContentId) -> Result<Option<BlockHeight>> {
         todo!()
     }
 
-    async fn document(&self, did: &Did) -> Fallible<DidDocument> {
-        self.demo_docs.get(did).map(|doc| doc.to_owned()).ok_or_else(|| err_msg("not found"))
+    async fn document(&self, did: &Did) -> Result<DidDocument> {
+        self.demo_docs.get(did).map(|doc| doc.to_owned()).with_context(|| "not found")
     }
 }
 
@@ -41,7 +38,7 @@ impl LedgerQueries for FakeDidLedger {
 impl LedgerOperations for FakeDidLedger {
     async fn send_transaction(
         &self, _operations: &[OperationAttempt],
-    ) -> Fallible<Box<dyn PooledLedgerTransaction>> {
+    ) -> Result<Box<dyn PooledLedgerTransaction>> {
         todo!()
     }
 }

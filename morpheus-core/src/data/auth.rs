@@ -1,8 +1,4 @@
-use std::convert::TryFrom;
-use std::str::FromStr;
-
-use failure::{err_msg, Fallible};
-use serde::{Deserialize, Serialize};
+use super::*;
 
 use iop_keyvault::{multicipher, PublicKey};
 
@@ -34,9 +30,9 @@ impl PartialEq for Authentication {
 struct MAuthentication(String);
 
 impl TryFrom<MAuthentication> for Authentication {
-    type Error = failure::Error;
+    type Error = anyhow::Error;
 
-    fn try_from(value: MAuthentication) -> Fallible<Self> {
+    fn try_from(value: MAuthentication) -> Result<Self> {
         if value.0.starts_with(multicipher::MKeyId::PREFIX) {
             let key_id = value.0.parse()?;
             Ok(Authentication::KeyId(key_id))
@@ -44,7 +40,7 @@ impl TryFrom<MAuthentication> for Authentication {
             let pk = value.0.parse()?;
             Ok(Authentication::PublicKey(pk))
         } else {
-            Err(err_msg(format!("Authentication starts with invalid character: {}", value.0)))
+            Err(anyhow!("Authentication starts with invalid character: {}", value.0))
         }
     }
 }
@@ -69,7 +65,7 @@ impl ToString for Authentication {
 }
 
 impl FromStr for Authentication {
-    type Err = failure::Error;
+    type Err = anyhow::Error;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         Self::try_from(MAuthentication(s.to_owned()))
     }

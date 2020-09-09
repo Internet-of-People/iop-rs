@@ -3,7 +3,22 @@ pub mod data;
 pub mod hydra;
 pub mod util;
 
-use failure::Fallible;
-use serde::Serialize;
+// imports from standard library
+
+use std::any::Any;
+use std::cell::{Ref, RefCell, RefMut};
+use std::collections::HashMap;
+use std::convert::TryFrom;
+use std::fmt;
+use std::fmt::{Display, Formatter};
+use std::marker::PhantomData;
+use std::rc::Rc;
+use std::str::FromStr;
+
+// imports from 3rd party crates
+
+use anyhow::{anyhow, bail, ensure, Result};
+use log::*;
+use serde::{Deserialize, Serialize};
 
 use data::{auth::Authentication, did::Did};

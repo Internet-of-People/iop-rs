@@ -1,9 +1,4 @@
-use std::collections::HashMap;
-use std::fmt::{Display, Formatter};
-use std::str::FromStr;
-
-use failure::{bail, ensure, format_err, Fallible};
-use serde::{Deserialize, Serialize};
+use super::*;
 
 use crate::data::auth::Authentication;
 use crate::data::{
@@ -32,7 +27,7 @@ impl Display for Right {
 }
 
 impl FromStr for Right {
-    type Err = failure::Error;
+    type Err = anyhow::Error;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         Ok(serde_json::from_value(serde_json::Value::String(s.to_owned()))?)
     }
@@ -96,7 +91,7 @@ pub struct KeyRightHistory {
 }
 
 impl KeyRightHistory {
-    fn ensure_valid_history(&self) -> Fallible<()> {
+    fn ensure_valid_history(&self) -> Result<()> {
         let heights: Vec<_> =
             self.history.iter().map(|item| item.height.unwrap_or_default()).collect();
         let mut sorted = heights.clone();
@@ -105,7 +100,7 @@ impl KeyRightHistory {
         Ok(())
     }
 
-    fn is_true_at(&self, height: BlockHeight) -> Fallible<bool> {
+    fn is_true_at(&self, height: BlockHeight) -> Result<bool> {
         // All such checks should be done instead when constructing/parsing the whole DidDocument
         self.ensure_valid_history()?;
 
@@ -162,16 +157,16 @@ impl DidDocument {
         }
     }
 
-    fn key(&self, key_link: &str) -> Fallible<KeyData> {
+    fn key(&self, key_link: &str) -> Result<KeyData> {
         ensure!(key_link.starts_with('#'), "Key links for remote DIDs are not supported yet");
         let idx_str: String = key_link.chars().skip(1).collect();
         let idx: usize = idx_str.parse()?;
         let key =
-            self.keys.get(idx).ok_or_else(|| format_err!("No key found for link {}", key_link))?;
+            self.keys.get(idx).ok_or_else(|| anyhow!("No key found for link {}", key_link))?;
         Ok(key.to_owned())
     }
 
-    fn ensure_known_height(&self, height: BlockHeight) -> Fallible<()> {
+    fn ensure_known_height(&self, height: BlockHeight) -> Result<()> {
         if self.queried_at_height < height {
             bail!("Queried future height {}, present is {}", height, self.queried_at_height);
         }
@@ -180,7 +175,7 @@ impl DidDocument {
 
     pub fn has_right_at(
         &self, auth: &Authentication, right: Right, height: BlockHeight,
-    ) -> Fallible<bool> {
+    ) -> Result<bool> {
         self.ensure_known_height(height)?;
 
         if let Some(tombstoned_at_height) = self.tombstoned_at_height {
@@ -208,7 +203,7 @@ impl DidDocument {
         Ok(false)
     }
 
-    pub fn is_tombstoned_at(&self, height: BlockHeight) -> Fallible<bool> {
+    pub fn is_tombstoned_at(&self, height: BlockHeight) -> Result<bool> {
         self.ensure_known_height(height)?;
 
         if let Some(tombstone_height) = self.tombstoned_at_height {
@@ -221,7 +216,7 @@ impl DidDocument {
     // TODO reconsider and thoroughly check if until should be inclusive or exclusive and if implementation matches
     pub fn validate_right(
         &self, auth: &Authentication, right: Right, from: BlockHeight, until: BlockHeight,
-    ) -> Fallible<ValidationResult> {
+    ) -> Result<ValidationResult> {
         ensure!(1 <= from, "Range must not predate genesis block");
         ensure!(from < until, "Invalid block range {}-{}", from, until);
         self.ensure_known_height(until)?;
@@ -313,7 +308,7 @@ mod test {
     use crate::data::validation::ValidationStatus;
 
     #[test]
-    fn pretty_json() -> Fallible<()> {
+    fn pretty_json() -> Result<()> {
         test_parsed_did_document(
             r##"{
             "did": "did:morpheus:ezbeWGSY2dqcUBqT8K7R14xr",
@@ -386,13 +381,13 @@ mod test {
     }
 
     #[test]
-    fn terse_json() -> Fallible<()> {
+    fn terse_json() -> Result<()> {
         test_parsed_did_document(
             r##"{"did":"did:morpheus:ezbeWGSY2dqcUBqT8K7R14xr","keys":[{"index":0,"auth":"iezbeWGSY2dqcUBqT8K7R14xr","validFromHeight":null,"validUntilHeight":null,"valid":true},{"index":1,"auth":"iez25N5WZ1Q6TQpgpyYgiu9gTX","validFromHeight":120,"validUntilHeight":null,"valid":true}],"rights":{"impersonate":[{"keyLink":"#0","history":[{"height":null,"valid":true}],"valid":true},{"keyLink":"#1","history":[{"height":null,"valid":false},{"height":126,"valid":true}],"valid":true}],"update":[{"keyLink":"#0","history":[{"height":null,"valid":true}],"valid":true},{"keyLink":"#1","history":[{"height":null,"valid":false}],"valid":false}]},"tombstoned":false,"tombstonedAtHeight":null,"queriedAtHeight":126}"##,
         )
     }
 
-    fn test_parsed_did_document(s: &str) -> Fallible<()> {
+    fn test_parsed_did_document(s: &str) -> Result<()> {
         let doc: DidDocument = serde_json::from_str(s)?;
 
         assert_eq!(doc.did, "did:morpheus:ezbeWGSY2dqcUBqT8K7R14xr".parse()?);
@@ -432,7 +427,7 @@ mod test {
 
     #[test]
     #[allow(clippy::cognitive_complexity)]
-    fn has_right_between() -> Fallible<()> {
+    fn has_right_between() -> Result<()> {
         let did_doc_str = r##"{
             "did": "did:morpheus:ezbeWGSY2dqcUBqT8K7R14xr",
             "keys": [

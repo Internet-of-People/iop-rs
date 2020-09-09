@@ -1,5 +1,4 @@
-use failure::Fallible;
-use serde::{Deserialize, Serialize};
+use super::*;
 
 use crate::{
     crypto::hash::{Content, ContentId},
@@ -33,7 +32,7 @@ impl Nonce {
 }
 
 pub trait Signable: Content {
-    fn content_to_sign(&self) -> Fallible<Vec<u8>> {
+    fn content_to_sign(&self) -> Result<Vec<u8>> {
         Ok(self.content_id()?.into_bytes())
     }
 }
@@ -41,13 +40,13 @@ pub trait Signable: Content {
 impl Signable for serde_json::Value {}
 
 impl Signable for Box<[u8]> {
-    fn content_to_sign(&self) -> Fallible<Vec<u8>> {
+    fn content_to_sign(&self) -> Result<Vec<u8>> {
         Ok(self.as_ref().to_owned())
     }
 }
 
 impl Signable for Vec<u8> {
-    fn content_to_sign(&self) -> Fallible<Vec<u8>> {
+    fn content_to_sign(&self) -> Result<Vec<u8>> {
         Ok(self.to_owned())
     }
 }
@@ -116,7 +115,7 @@ where
     pub fn validate_with_did_doc(
         &self, on_behalf_of: &DidDocument, from_inc: Option<BlockHeight>,
         until_exc: Option<BlockHeight>,
-    ) -> Fallible<ValidationResult> {
+    ) -> Result<ValidationResult> {
         let from = from_inc.unwrap_or(1);
         let until = until_exc.unwrap_or(on_behalf_of.queried_at_height);
 
@@ -168,9 +167,9 @@ impl<T: Signable> From<SignatureSerializationFormat<T>> for Signed<T> {
 }
 
 pub trait SyncMorpheusSigner {
-    fn sign(&self, data: &[u8]) -> Fallible<(MPublicKey, MSignature)>;
+    fn sign(&self, data: &[u8]) -> Result<(MPublicKey, MSignature)>;
 
-    fn sign_witness_request(&self, request: WitnessRequest) -> Fallible<Signed<WitnessRequest>> {
+    fn sign_witness_request(&self, request: WitnessRequest) -> Result<Signed<WitnessRequest>> {
         let content_to_sign = request.content_to_sign()?;
         let (public_key, signature) = self.sign(&content_to_sign)?;
         Ok(Signed::new(public_key, request, signature))
@@ -178,7 +177,7 @@ pub trait SyncMorpheusSigner {
 
     fn sign_witness_statement(
         &self, statement: WitnessStatement,
-    ) -> Fallible<Signed<WitnessStatement>> {
+    ) -> Result<Signed<WitnessStatement>> {
         let content_to_sign = statement.content_to_sign()?;
         let (public_key, signature) = self.sign(&content_to_sign)?;
         Ok(Signed::new(public_key, statement, signature))
@@ -186,7 +185,7 @@ pub trait SyncMorpheusSigner {
 
     fn sign_claim_presentation(
         &self, presentation: ClaimPresentation,
-    ) -> Fallible<Signed<ClaimPresentation>> {
+    ) -> Result<Signed<ClaimPresentation>> {
         let content_to_sign = presentation.content_to_sign()?;
         let (public_key, signature) = self.sign(&content_to_sign)?;
         Ok(Signed::new(public_key, presentation, signature))
@@ -194,7 +193,7 @@ pub trait SyncMorpheusSigner {
 }
 
 impl<T: SyncMorpheusSigner + Sized> SyncMorpheusSigner for Box<T> {
-    fn sign(&self, data: &[u8]) -> Fallible<(MPublicKey, MSignature)> {
+    fn sign(&self, data: &[u8]) -> Result<(MPublicKey, MSignature)> {
         self.as_ref().sign(data)
     }
 }
@@ -210,7 +209,7 @@ impl PrivateKeySigner {
 }
 
 impl SyncMorpheusSigner for PrivateKeySigner {
-    fn sign(&self, data: &[u8]) -> Fallible<(MPublicKey, MSignature)> {
+    fn sign(&self, data: &[u8]) -> Result<(MPublicKey, MSignature)> {
         let signature = self.private_key.sign(data);
         Ok((self.private_key.public_key(), signature))
     }

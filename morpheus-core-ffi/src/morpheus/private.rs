@@ -102,18 +102,18 @@ pub extern "C" fn MorpheusPrivate_sign_claim_presentation(
     cresult(fun())
 }
 
-fn create_signer(private: &Private, id: &MKeyId) -> Fallible<PrivateKeySigner> {
+fn create_signer(private: &Private, id: &MKeyId) -> Result<PrivateKeySigner> {
     let sk: MPrivateKey = key_by_id(private, id)?.private_key();
     Ok(PrivateKeySigner::new(sk))
 }
 
-fn key_by_id(private: &Private, id: &MKeyId) -> Fallible<MorpheusPrivateKey> {
+fn key_by_id(private: &Private, id: &MKeyId) -> Result<MorpheusPrivateKey> {
     let pk = private.public().key_by_id(id)?;
     let morpheus_sk = private.key_by_pk(&pk)?;
     Ok(morpheus_sk)
 }
 
-fn into_signed_json<T: Signable>(signed: Signed<T>) -> Fallible<Signed<serde_json::Value>> {
+fn into_signed_json<T: Signable>(signed: Signed<T>) -> Result<Signed<serde_json::Value>> {
     let (public_key, content, signature, nonce) = signed.into_parts();
     let content = serde_json::to_value(content)?;
     let signed_json = Signed::from_parts(public_key, content, signature, nonce);

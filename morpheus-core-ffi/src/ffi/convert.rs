@@ -16,7 +16,7 @@ pub(crate) unsafe fn borrow_mut_in<'a, T>(value: *mut T) -> &'a mut T {
     &mut *value
 }
 
-pub(crate) unsafe fn str_in<'a>(s: *const raw::c_char) -> Fallible<&'a str> {
+pub(crate) unsafe fn str_in<'a>(s: *const raw::c_char) -> Result<&'a str> {
     let c_str = ffi::CStr::from_ptr(s);
     let s = c_str.to_str()?;
     Ok(s)

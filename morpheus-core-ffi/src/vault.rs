@@ -5,13 +5,13 @@ pub struct CVault {
 }
 
 impl CVault {
-    pub fn is_dirty(&self) -> Fallible<bool> {
+    pub fn is_dirty(&self) -> Result<bool> {
         let flag_state = self.inner.to_modifiable();
         let dirty_flag_value = flag_state.try_borrow()?;
         Ok(*dirty_flag_value)
     }
 
-    pub fn set_dirty(&self, value: bool) -> Fallible<()> {
+    pub fn set_dirty(&self, value: bool) -> Result<()> {
         let mut vault_state = self.inner.to_modifiable();
         let mut dirty_flag = vault_state.try_borrow_mut()?;
         *dirty_flag = value;

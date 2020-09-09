@@ -7,7 +7,7 @@ pub struct CHydraPlugin {
     pub(crate) plugin: BoundPlugin<Plugin, Public, Private>,
 }
 
-fn params(network: *const raw::c_char, account: i32) -> Fallible<Parameters> {
+fn params(network: *const raw::c_char, account: i32) -> Result<Parameters> {
     let network = unsafe { convert::str_in(network)? };
     let network = Networks::by_name(network)?;
     Ok(Parameters::new(network, account))

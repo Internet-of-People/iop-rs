@@ -53,7 +53,7 @@ impl TransactionData {
         self.transaction_type = tx_type;
     }
 
-    pub fn get_id(&self) -> Fallible<String> {
+    pub fn get_id(&self) -> Result<String> {
         let bytes = self.to_bytes(false, false, false)?;
         let id = hex::encode(Sha256::digest(&bytes));
         Ok(id)
@@ -61,11 +61,11 @@ impl TransactionData {
 
     pub fn to_bytes(
         &self, skip_signature: bool, skip_second_signature: bool, skip_multisignatures: bool,
-    ) -> Fallible<Vec<u8>> {
+    ) -> Result<Vec<u8>> {
         serializer::to_bytes(self, skip_signature, skip_second_signature, skip_multisignatures)
     }
 
-    // pub fn second_sign(&mut self, passphrase: &str) -> Fallible<&mut Self> {
+    // pub fn second_sign(&mut self, passphrase: &str) -> Result<&mut Self> {
     //     let private_key = PrivateKey::from_passphrase(passphrase)?;
     //     let bytes = self.to_bytes(false, true, false)?;
     //     self.second_signature = Some(private_key.sign_ecdsa(&bytes)?);

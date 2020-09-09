@@ -5,12 +5,11 @@ pub mod txtype;
 
 pub use transaction::{TransactionData, TxBatch};
 
-use std::collections::HashMap;
+use super::*;
+
 use std::io::{prelude::*, Cursor};
 
 use byteorder::{LittleEndian, WriteBytesExt};
-use failure::{bail, ensure, err_msg, Fallible};
-use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use sha2::{Digest, Sha256};
 use varint::VarintWrite;

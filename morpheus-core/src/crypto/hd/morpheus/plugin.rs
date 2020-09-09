@@ -1,4 +1,5 @@
 use super::*;
+use anyhow::Context;
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -43,7 +44,7 @@ impl Plugin {
         Self { inner }
     }
 
-    pub fn rewind(vault: &mut Vault, unlock_password: impl AsRef<str>) -> Fallible<()> {
+    pub fn rewind(vault: &mut Vault, unlock_password: impl AsRef<str>) -> Result<()> {
         let seed = vault.unlock(unlock_password.as_ref())?;
         let persona0 = Morpheus.root(&seed)?.personas()?.key(0)?.neuter();
         let plugin = Self::new(vec![persona0.public_key().to_string()]);
@@ -51,13 +52,13 @@ impl Plugin {
         Ok(())
     }
 
-    pub fn get(vault: &Vault) -> Fallible<BoundPlugin<Plugin, Public, Private>> {
+    pub fn get(vault: &Vault) -> Result<BoundPlugin<Plugin, Public, Private>> {
         let morpheus_plugins = vault.plugins_by_type::<Plugin>();
         let plugin: &Plugin = morpheus_plugins
             .iter()
             .by_ref()
             .next()
-            .ok_or_else(|| err_msg("Could not find Morpheus plugin"))?;
+            .with_context(|| "Could not find Morpheus plugin")?;
         Ok(BoundPlugin::new(vault.to_owned(), plugin.to_owned()))
     }
 
