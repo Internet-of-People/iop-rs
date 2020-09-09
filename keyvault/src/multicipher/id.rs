@@ -1,5 +1,3 @@
-use failure::{ensure, err_msg, Fallible};
-use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use std::cmp::Ordering;
 
 use super::*;
@@ -40,7 +38,7 @@ macro_rules! from_bytes {
     };
 }
 
-fn deser(bytes: Vec<u8>) -> Fallible<MKeyId> {
+fn deser(bytes: Vec<u8>) -> Result<MKeyId> {
     ensure!(!bytes.is_empty(), "No crypto suite suite found");
     let suite = bytes[0] as char;
     let data = &bytes[1..];
@@ -149,8 +147,8 @@ impl std::fmt::Debug for MKeyId {
 }
 
 impl std::str::FromStr for MKeyId {
-    type Err = failure::Error;
-    fn from_str(src: &str) -> Fallible<Self> {
+    type Err = anyhow::Error;
+    fn from_str(src: &str) -> Result<Self> {
         let mut chars = src.chars();
         ensure!(
             chars.next() == Some(Self::PREFIX),
@@ -165,7 +163,7 @@ impl std::str::FromStr for MKeyId {
             );
             Ok(ret)
         } else {
-            Err(err_msg("No crypto suite suite found"))
+            Err(anyhow!("No crypto suite suite found"))
         }
     }
 }
@@ -190,7 +188,7 @@ impl MKeyId {
     }
     /// Even the binary representation of a multicipher keyid is readable with this.
     // TODO Should we really keep it like this?
-    pub fn from_bytes(bytes: &[u8]) -> Fallible<Self> {
+    pub fn from_bytes(bytes: &[u8]) -> Result<Self> {
         let string = String::from_utf8(bytes.to_owned())?;
         string.parse()
     }
@@ -231,7 +229,7 @@ mod test {
         }
 
         #[test]
-        #[should_panic(expected = "Unknown crypto suite suite \\'g\\'")]
+        #[should_panic(expected = "Unknown crypto suite suite 'g'")]
         fn invalid_suite() {
             let _id = "igz21JXEtMzXjbCK6BAYFU9ewX".parse::<MKeyId>().unwrap();
         }
@@ -243,13 +241,13 @@ mod test {
         }
 
         #[test]
-        #[should_panic(expected = "Identifiers must start with \\'i\\'")]
+        #[should_panic(expected = "Identifiers must start with 'i'")]
         fn invalid_type() {
             let _id = "fez21JXEtMzXjbCK6BAYFU9ewX".parse::<MKeyId>().unwrap();
         }
 
         #[test]
-        #[should_panic(expected = "Identifiers must start with \\'i\\'")]
+        #[should_panic(expected = "Identifiers must start with 'i'")]
         fn empty() {
             let _id = "".parse::<MKeyId>().unwrap();
         }

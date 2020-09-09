@@ -30,7 +30,7 @@ impl SecpSignature {
     /// If `bytes` is rejected by `libsecp256k1::Signature::parse`
     ///
     /// [`to_bytes`]: #method.to_bytes
-    pub fn from_bytes(bytes: impl AsRef<[u8]>) -> Fallible<Self> {
+    pub fn from_bytes(bytes: impl AsRef<[u8]>) -> Result<Self> {
         let bytes = bytes.as_ref();
         ensure!(bytes.len() == SIGNATURE_SIZE, "Signature length is not {}", SIGNATURE_SIZE);
         ensure!(
@@ -56,7 +56,7 @@ impl SecpSignature {
     ///
     /// This method parses such signature into a SecpSignature. Very old BTC transactions
     /// also supported a less strict version (lax der), which we do not support.
-    pub fn from_der(bytes: impl AsRef<[u8]>) -> Fallible<Self> {
+    pub fn from_der(bytes: impl AsRef<[u8]>) -> Result<Self> {
         let sig = secp::Signature::parse_der(bytes.as_ref())?;
         Ok(Self(sig))
     }

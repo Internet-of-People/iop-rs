@@ -1,6 +1,6 @@
 use ::bip39::{Mnemonic, Seed as Bip39Seed};
-use failure::{bail, Fallible};
-use serde::{Deserialize, Serialize};
+
+use super::*;
 
 // TODO consider de/serialize attributes here, currently only needed for demo
 /// The seed used for BIP32 derivations. A seed cannot be turned back into a phrase, because there is salted hashing involed
@@ -49,7 +49,7 @@ impl Seed {
     /// let seed_res = Seed::from_bytes(hex::decode(bytes).unwrap().as_slice());
     /// assert!(seed_res.is_ok());
     /// ```
-    pub fn from_bytes(bytes: &[u8]) -> Fallible<Self> {
+    pub fn from_bytes(bytes: &[u8]) -> Result<Self> {
         if bytes.len() * 8 != Self::BITS {
             bail!("Only {}-bit seeds are supported", Self::BITS)
         }

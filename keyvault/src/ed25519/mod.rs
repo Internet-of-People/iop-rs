@@ -9,7 +9,7 @@ mod pk;
 mod sig;
 mod sk;
 
-use hmac::Mac;
+use hmac::{Mac, NewMac};
 
 use super::*;
 
@@ -40,7 +40,7 @@ impl KeyDerivationCrypto for Ed25519 {
 
     fn master(seed: &Seed) -> EdExtPrivateKey {
         EdExtPrivateKey::cook_new(SLIP10_SEED_HASH_SALT, |hasher| {
-            hasher.input(seed.as_bytes());
+            hasher.update(seed.as_bytes());
         })
     }
 }

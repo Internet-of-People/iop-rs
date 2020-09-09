@@ -1,4 +1,4 @@
-use ed25519_dalek as ed;
+use ed25519_dalek::{self as ed, Verifier};
 
 use super::{Ed25519, EdKeyId, EdSignature};
 use crate::*;
@@ -28,7 +28,7 @@ impl EdPublicKey {
     /// If `bytes` is rejected by `ed25519_dalek::PublicKey::from_bytes`
     ///
     /// [`to_bytes`]: #method.to_bytes
-    pub fn from_bytes<D: AsRef<[u8]>>(bytes: D) -> Fallible<Self> {
+    pub fn from_bytes<D: AsRef<[u8]>>(bytes: D) -> Result<Self> {
         let pk = ed::PublicKey::from_bytes(bytes.as_ref())?;
         Ok(Self(pk))
     }
@@ -56,7 +56,7 @@ impl PublicKey<Ed25519> for EdPublicKey {
 }
 
 impl ExtendedPublicKey<Ed25519> for EdPublicKey {
-    fn derive_normal_child(&self, _idx: i32) -> Fallible<EdPublicKey> {
+    fn derive_normal_child(&self, _idx: i32) -> Result<EdPublicKey> {
         bail!("Normal derivation of Ed25519 is invalid based on SLIP-0010.")
     }
     fn public_key(&self) -> EdPublicKey {

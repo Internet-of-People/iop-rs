@@ -1,7 +1,3 @@
-use failure::{ensure, err_msg, Fallible};
-use serde::{Deserialize, Deserializer, Serialize, Serializer};
-use std::fmt;
-
 use super::*;
 
 erased_type! {
@@ -24,7 +20,7 @@ impl MSignature {
 
     /// Even the binary representation of a multicipher signature is readable with this.
     // TODO Should we really keep it like this?
-    pub fn from_bytes(bytes: &[u8]) -> Fallible<Self> {
+    pub fn from_bytes(bytes: &[u8]) -> Result<Self> {
         let string = String::from_utf8(bytes.to_owned())?;
         string.parse()
     }
@@ -54,7 +50,7 @@ macro_rules! from_bytes {
     };
 }
 
-fn deser(erased: ErasedBytes) -> Fallible<MSignature> {
+fn deser(erased: ErasedBytes) -> Result<MSignature> {
     let suite = erased.suite as char;
     let data = &erased.value;
     let value = visit_fac!(
@@ -133,8 +129,8 @@ impl fmt::Debug for MSignature {
 }
 
 impl std::str::FromStr for MSignature {
-    type Err = failure::Error;
-    fn from_str(src: &str) -> Fallible<Self> {
+    type Err = anyhow::Error;
+    fn from_str(src: &str) -> Result<Self> {
         let mut chars = src.chars();
         ensure!(
             chars.next() == Some(Self::PREFIX),
@@ -149,7 +145,7 @@ impl std::str::FromStr for MSignature {
             );
             Ok(ret)
         } else {
-            Err(err_msg("No crypto suite suite found"))
+            Err(anyhow!("No crypto suite suite found"))
         }
     }
 }
@@ -218,7 +214,7 @@ mod test {
         }
 
         #[test]
-        #[should_panic(expected = "Unknown crypto suite suite \\'g\\'")]
+        #[should_panic(expected = "Unknown crypto suite suite 'g'")]
         fn invalid_suite() {
             let _sig =
                 "sgzAhoNep8B9HTRCAYaJFPL1hNgqxfjM72UD4B75s258aF6pPCtDf5trXm7mppZVzT6ynpC3jyH6h3Li7r9Rw4yjeG2".parse::<MSignature>().unwrap();
@@ -231,13 +227,13 @@ mod test {
         }
 
         #[test]
-        #[should_panic(expected = "Signatures must start with \\'s\\'")]
+        #[should_panic(expected = "Signatures must start with 's'")]
         fn invalid_type() {
             let _sig = "FezAhoNep8B9HTRCAYaJFPL1hNgqxfjM72UD4B75s258aF6pPCtDf5trXm7mppZVzT6ynpC3jyH6h3Li7r9Rw4yjeG2".parse::<MSignature>().unwrap();
         }
 
         #[test]
-        #[should_panic(expected = "Signatures must start with \\'s\\'")]
+        #[should_panic(expected = "Signatures must start with 's'")]
         fn empty() {
             let _sig = "".parse::<MSignature>().unwrap();
         }

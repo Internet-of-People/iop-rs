@@ -26,14 +26,13 @@ impl SecpPrivateKey {
     /// If `bytes` is rejected by `libsecp256k1::SecretKey::parse_slice`
     ///
     /// [`to_bytes`]: #method.to_bytes
-    pub fn from_bytes<D: AsRef<[u8]>>(bytes: D) -> Fallible<Self> {
-        let sk = secp::SecretKey::parse_slice(bytes.as_ref()).map_err(SecpError::from)?;
+    pub fn from_bytes<D: AsRef<[u8]>>(bytes: D) -> Result<Self> {
+        let sk = secp::SecretKey::parse_slice(bytes.as_ref())?;
         Ok(Self(sk))
     }
 
     /// Most ARK wallets simply hash a passphrase into a private key.
-    pub fn from_ark_passphrase(phrase: impl AsRef<str>) -> Fallible<Self> {
-        use sha2::Digest;
+    pub fn from_ark_passphrase(phrase: impl AsRef<str>) -> Result<Self> {
         let hash = sha2::Sha256::digest(phrase.as_ref().as_bytes());
         Self::from_bytes(hash)
     }
@@ -49,9 +48,7 @@ impl SecpPrivateKey {
     }
 
     /// Deserializes private key from wallet import format supported by many pre-HD wallets
-    pub fn from_wif(
-        wif: &str, network: &dyn Network<Suite = Secp256k1>,
-    ) -> Fallible<(Self, Bip178)> {
+    pub fn from_wif(wif: &str, network: &dyn Network<Suite = Secp256k1>) -> Result<(Self, Bip178)> {
         let data = from_base58check(wif)?;
         ensure!(data.len() > PRIVATE_KEY_SIZE, "WIF data is too short");
 
@@ -75,11 +72,11 @@ impl SecpPrivateKey {
 }
 
 impl Add<&[u8]> for &SecpPrivateKey {
-    type Output = Fallible<SecpPrivateKey>;
+    type Output = Result<SecpPrivateKey>;
 
     fn add(self, rhs: &[u8]) -> Self::Output {
-        let mut sum = secp::SecretKey::parse_slice(rhs).map_err(SecpError::from)?;
-        sum.tweak_add_assign(&self.0).map_err(SecpError::from)?;
+        let mut sum = secp::SecretKey::parse_slice(rhs)?;
+        sum.tweak_add_assign(&self.0)?;
         Ok(SecpPrivateKey(sum))
     }
 }

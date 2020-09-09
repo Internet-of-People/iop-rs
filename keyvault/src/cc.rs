@@ -25,7 +25,7 @@ impl ChainCode {
     ///
     /// [`to_bytes`]: #method.to_bytes
     /// [`CHAIN_CODE_SIZE`]: ../constant.CHAIN_CODE_SIZE
-    pub fn from_bytes<D: AsRef<[u8]>>(bytes: D) -> Fallible<Self> {
+    pub fn from_bytes<D: AsRef<[u8]>>(bytes: D) -> Result<Self> {
         let bytes = bytes.as_ref();
         ensure! {
             bytes.len() == CHAIN_CODE_SIZE,

@@ -1,5 +1,7 @@
 use super::*;
 
+use hmac::NewMac;
+
 pub const XPRV_DATA_SIZE: usize = 78;
 pub const SK_PREFIX: u8 = 0u8;
 
@@ -21,9 +23,8 @@ impl SecpExtPrivateKey {
         // This unwrap would only panic if the digest algorithm had some inconsistent
         // generic parameters, but the SHA512 we use is consistent with itself
         let mut hasher = HmacSha512::new_varkey(SLIP10_SEED_HASH_SALT).unwrap();
-        hasher.input(seed);
-        let hash_arr = hasher.result().code();
-        let hash_bytes = hash_arr.as_slice();
+        hasher.update(seed);
+        let hash_bytes = hasher.finalize().into_bytes();
 
         let sk_bytes = &hash_bytes[..PRIVATE_KEY_SIZE];
         let cc_bytes = &hash_bytes[PRIVATE_KEY_SIZE..];
@@ -50,8 +51,7 @@ impl SecpExtPrivateKey {
 
         recipe(&mut hasher);
 
-        let hash_arr = hasher.result().code();
-        let hash_bytes = hash_arr.as_slice();
+        let hash_bytes = hasher.finalize().into_bytes();
 
         let sk_bytes = &hash_bytes[..PRIVATE_KEY_SIZE];
         let cc_bytes = &hash_bytes[PRIVATE_KEY_SIZE..];
@@ -87,7 +87,7 @@ impl SecpExtPrivateKey {
     /// Deserializes the extended private key from the format defined in [`BIP32`]
     ///
     /// [`BIP32`]: https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki#serialization-format
-    pub fn from_xprv(xprv: &str, prefix: &[u8; BIP32_VERSION_PREFIX_SIZE]) -> Fallible<Self> {
+    pub fn from_xprv(xprv: &str, prefix: &[u8; BIP32_VERSION_PREFIX_SIZE]) -> Result<Self> {
         let data = from_base58check(xprv)?;
         ensure!(data.len() == XPRV_DATA_SIZE, "Length of data must be {}", XPRV_DATA_SIZE);
 
@@ -121,25 +121,25 @@ impl SecpExtPrivateKey {
 }
 
 impl ExtendedPrivateKey<Secp256k1> for SecpExtPrivateKey {
-    fn derive_normal_child(&self, idx: i32) -> Fallible<SecpExtPrivateKey> {
+    fn derive_normal_child(&self, idx: i32) -> Result<SecpExtPrivateKey> {
         ensure!(idx >= 0, "Derivation index cannot be negative");
         let idx = idx as u32;
 
         let xprv = self.cook_new(idx, |hasher| {
-            hasher.input(&self.sk.public_key().to_bytes());
-            hasher.input(&idx.to_be_bytes());
+            hasher.update(&self.sk.public_key().to_bytes());
+            hasher.update(&idx.to_be_bytes());
         });
 
         Ok(xprv)
     }
-    fn derive_hardened_child(&self, idx: i32) -> Fallible<SecpExtPrivateKey> {
+    fn derive_hardened_child(&self, idx: i32) -> Result<SecpExtPrivateKey> {
         ensure!(idx >= 0, "Derivation index cannot be negative");
         let idx = 0x8000_0000u32 + idx as u32;
 
         let xprv = self.cook_new(idx, |hasher| {
-            hasher.input(&[SK_PREFIX]);
-            hasher.input(&self.sk.to_bytes());
-            hasher.input(&idx.to_be_bytes());
+            hasher.update(&[SK_PREFIX]);
+            hasher.update(&self.sk.to_bytes());
+            hasher.update(&idx.to_be_bytes());
         });
 
         Ok(xprv)

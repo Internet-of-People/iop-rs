@@ -12,7 +12,7 @@ impl Bip44Account<Secp256k1> {
     /// Recreates the private API of a BIP44 account from its parts
     pub fn from_xprv(
         account: i32, xprv: impl AsRef<str>, network: &'static dyn Network<Suite = Secp256k1>,
-    ) -> Fallible<Bip44Account<Secp256k1>> {
+    ) -> Result<Bip44Account<Secp256k1>> {
         let path = Bip44Path::coin(network.slip44()).account(account);
         let node = Bip32Node::from_xprv(path.bip32_path(), xprv, network)?;
         Ok(Bip44Account::new(path, network, node))
@@ -28,7 +28,7 @@ impl Bip44PublicAccount<Secp256k1> {
     /// Recreates the public API of a BIP44 account from its parts
     pub fn from_xpub(
         account: i32, xpub: impl AsRef<str>, network: &'static dyn Network<Suite = Secp256k1>,
-    ) -> Fallible<Bip44PublicAccount<Secp256k1>> {
+    ) -> Result<Bip44PublicAccount<Secp256k1>> {
         let path = Bip44Path::coin(network.slip44()).account(account);
         let node = Bip32PublicNode::from_xpub(path.bip32_path(), xpub, network)?;
         Ok(Bip44PublicAccount::new(path, network, node))
@@ -45,7 +45,7 @@ impl Bip44SubAccount<Secp256k1> {
     pub fn from_xprv(
         account: i32, chain: Chain, xprv: impl AsRef<str>,
         network: &'static dyn Network<Suite = Secp256k1>,
-    ) -> Fallible<Bip44SubAccount<Secp256k1>> {
+    ) -> Result<Bip44SubAccount<Secp256k1>> {
         let path = Bip44Path::coin(network.slip44()).account(account).chain(chain);
         let node = Bip32Node::from_xprv(path.bip32_path(), xprv, network)?;
         Ok(Bip44SubAccount::new(path, network, node))
@@ -62,7 +62,7 @@ impl Bip44PublicSubAccount<Secp256k1> {
     pub fn from_xpub(
         account: i32, chain: Chain, xpub: impl AsRef<str>,
         network: &'static dyn Network<Suite = Secp256k1>,
-    ) -> Fallible<Bip44PublicSubAccount<Secp256k1>> {
+    ) -> Result<Bip44PublicSubAccount<Secp256k1>> {
         let path = Bip44Path::coin(network.slip44()).account(account).chain(chain);
         let node = Bip32PublicNode::from_xpub(path.bip32_path(), xpub, network)?;
         Ok(Bip44PublicSubAccount::new(path, network, node))

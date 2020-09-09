@@ -1,5 +1,5 @@
 use ::bip39::{Mnemonic, MnemonicType};
-use failure::{bail, err_msg, Fallible};
+use failure::ResultExt;
 use getrandom::getrandom;
 
 use super::*;
@@ -15,7 +15,7 @@ impl Bip39 {
     pub const MNEMONIC_WORDS: usize = 24;
 
     /// Creates the right sized entropy using the CSPRNG available on the platform.
-    pub fn generate_entropy() -> Fallible<[u8; 32]> {
+    pub fn generate_entropy() -> Result<[u8; 32]> {
         let mut entropy = [0u8; 256 / 8];
         getrandom(&mut entropy)?;
         Ok(entropy)
@@ -40,9 +40,9 @@ impl Bip39 {
     /// let bip39 = Bip39::language_code("fr").unwrap();
     /// assert!(bip39.check_word("aménager"));
     /// ```
-    pub fn language_code(code: impl AsRef<str>) -> Fallible<Self> {
+    pub fn language_code(code: impl AsRef<str>) -> Result<Self> {
         let lang = Bip39Language::from_language_code(code.as_ref())
-            .ok_or_else(|| err_msg("Invalid BIP39 language code"))?;
+            .ok_or_else(|| anyhow!("Invalid BIP39 language code"))?;
         Ok(Self { lang })
     }
 
@@ -105,15 +105,16 @@ impl Bip39 {
     /// assert!(bip39.validate("type shield target dream feature surface search flee tenant cake taxi shrug").is_ok());
     /// assert!(bip39.validate("abandon abandon about").unwrap_err().to_string().contains("invalid number of words"));
     /// ```
-    pub fn validate(self, phrase: impl AsRef<str>) -> Fallible<()> {
-        Mnemonic::validate(phrase.as_ref(), self.lang)
+    pub fn validate(self, phrase: impl AsRef<str>) -> Result<()> {
+        let val_res = Mnemonic::validate(phrase.as_ref(), self.lang);
+        Ok(val_res.compat()?)
     }
 
     /// Validates a whole BIP39 mnemonic phrase and returns an intermediate object that can be
     /// later converted into a [`Seed`] with an optional password.
     ///
     /// [`Seed`]: struct.Seed.html
-    pub fn phrase(self, phrase: impl AsRef<str>) -> Fallible<Bip39Phrase> {
+    pub fn phrase(self, phrase: impl AsRef<str>) -> Result<Bip39Phrase> {
         if phrase.as_ref().split(' ').count() != Bip39::MNEMONIC_WORDS {
             bail!("Only {}-word mnemonics are supported", Bip39::MNEMONIC_WORDS)
         }
@@ -125,14 +126,14 @@ impl Bip39 {
     ///
     /// [`phrase`]: #method.phrase
     /// [`MNEMONIC_WORDS`]: ../constant.MNEMONIC_WORDS
-    pub fn short_phrase(self, phrase: impl AsRef<str>) -> Fallible<Bip39Phrase> {
-        let mnemonic = Mnemonic::from_phrase(phrase.as_ref(), self.lang)?;
+    pub fn short_phrase(self, phrase: impl AsRef<str>) -> Result<Bip39Phrase> {
+        let mnemonic = Mnemonic::from_phrase(phrase.as_ref(), self.lang).compat()?;
         Ok(Bip39Phrase { mnemonic })
     }
 
     /// Creates a BIP39 phrase based on the 256 bits of entropy provided. This method is needed from WASM
     /// because [`generate`] uses system resources unavailable from WASM.
-    pub fn entropy(self, entropy: impl AsRef<[u8]>) -> Fallible<Bip39Phrase> {
+    pub fn entropy(self, entropy: impl AsRef<[u8]>) -> Result<Bip39Phrase> {
         let size = MnemonicType::for_word_count(Self::MNEMONIC_WORDS).unwrap();
         if entropy.as_ref().len() * 8 != size.entropy_bits() {
             bail!("Only {}-bit entropy is supported", size.entropy_bits())
@@ -142,8 +143,8 @@ impl Bip39 {
 
     /// Use the ['entropy'] method whenever possible. This method allows some legacy use-cases to
     /// provide mnemonics with low entropy.
-    pub fn short_entropy(self, entropy: impl AsRef<[u8]>) -> Fallible<Bip39Phrase> {
-        let mnemonic = Mnemonic::from_entropy(entropy.as_ref(), self.lang)?;
+    pub fn short_entropy(self, entropy: impl AsRef<[u8]>) -> Result<Bip39Phrase> {
+        let mnemonic = Mnemonic::from_entropy(entropy.as_ref(), self.lang).compat()?;
         Ok(Bip39Phrase { mnemonic })
     }
 }

@@ -74,10 +74,10 @@ impl fmt::Debug for TestXprv {
 }
 
 impl ExtendedPrivateKey<TestCrypto> for TestXprv {
-    fn derive_normal_child(&self, idx: i32) -> Fallible<TestXprv> {
+    fn derive_normal_child(&self, idx: i32) -> Result<TestXprv> {
         Ok(TestXprv(TestPrivateKey(format!("{}/{}", (self.0).0, idx))))
     }
-    fn derive_hardened_child(&self, idx: i32) -> Fallible<TestXprv> {
+    fn derive_hardened_child(&self, idx: i32) -> Result<TestXprv> {
         Ok(TestXprv(TestPrivateKey(format!("{}/{}'", (self.0).0, idx))))
     }
     fn neuter(&self) -> TestXpub {
@@ -98,7 +98,7 @@ impl fmt::Debug for TestXpub {
 }
 
 impl ExtendedPublicKey<TestCrypto> for TestXpub {
-    fn derive_normal_child(&self, idx: i32) -> Fallible<TestXpub> {
+    fn derive_normal_child(&self, idx: i32) -> Result<TestXpub> {
         Ok(TestXpub(TestPublicKey(format!("{}/{}", (self.0).0, idx))))
     }
     fn public_key(&self) -> TestPublicKey {

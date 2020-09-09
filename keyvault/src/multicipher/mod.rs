@@ -106,10 +106,7 @@ macro_rules! visit_fac {
         match $suite {
             $left!(e) => visit_fac!(@case e $callback $self_ [ $($args),* ]),
             $left!(f) => visit_fac!(@case f $callback $self_ [ $($args),* ]),
-            _ => return Err(err_msg(format!(
-                "Unknown crypto suite suite '{}'",
-                $suite
-            ))),
+            _ => bail!("Unknown crypto suite suite '{}'", $suite),
         }
     };
     (@case $suite:ident $callback:ident $self_:tt [ ]) => {
@@ -144,11 +141,11 @@ mod pk;
 mod sig;
 mod sk;
 
+use super::*;
+
 use std::any::Any;
 use std::hash::Hash;
 use std::hash::Hasher;
-
-use serde::{Deserialize, Serialize};
 
 use crate::ed25519::{EdKeyId, EdPrivateKey, EdPublicKey, EdSignature};
 use crate::secp256k1::{SecpKeyId, SecpPrivateKey, SecpPublicKey, SecpSignature};

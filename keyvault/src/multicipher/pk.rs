@@ -1,6 +1,3 @@
-use failure::{ensure, err_msg, Fallible};
-use serde::{Deserialize, Deserializer, Serialize, Serializer};
-
 use super::*;
 
 erased_type! {
@@ -35,7 +32,7 @@ impl MPublicKey {
 
     /// Even the binary representation of a multicipher public key is readable with this.
     // TODO Should we really keep it like this?
-    pub fn from_bytes(bytes: &[u8]) -> Fallible<Self> {
+    pub fn from_bytes(bytes: &[u8]) -> Result<Self> {
         let string = String::from_utf8(bytes.to_owned())?;
         string.parse()
     }
@@ -80,7 +77,7 @@ macro_rules! from_bytes {
     };
 }
 
-fn deser(erased: ErasedBytes) -> Fallible<MPublicKey> {
+fn deser(erased: ErasedBytes) -> Result<MPublicKey> {
     let suite = erased.suite as char;
     let data = &erased.value;
     let value = visit_fac!(
@@ -159,8 +156,8 @@ impl std::fmt::Debug for MPublicKey {
 }
 
 impl std::str::FromStr for MPublicKey {
-    type Err = failure::Error;
-    fn from_str(src: &str) -> Fallible<Self> {
+    type Err = anyhow::Error;
+    fn from_str(src: &str) -> Result<Self> {
         let mut chars = src.chars();
         ensure!(
             chars.next() == Some(Self::PREFIX),
@@ -175,7 +172,7 @@ impl std::str::FromStr for MPublicKey {
             );
             Ok(ret)
         } else {
-            Err(err_msg("No crypto suite suite found"))
+            Err(anyhow!("No crypto suite suite found"))
         }
     }
 }
@@ -257,7 +254,7 @@ mod test {
         }
 
         #[test]
-        #[should_panic(expected = "Unknown crypto suite suite \\'g\\'")]
+        #[should_panic(expected = "Unknown crypto suite suite 'g'")]
         fn invalid_suite() {
             let _pk =
                 "pgzAgmjPHe5Qs4VakvXHGnd6NsYjaxt4suMUtf39TayrSfb".parse::<MPublicKey>().unwrap();
@@ -270,13 +267,13 @@ mod test {
         }
 
         #[test]
-        #[should_panic(expected = "Public keys must start with \\'p\\'")]
+        #[should_panic(expected = "Public keys must start with 'p'")]
         fn invalid_type() {
             let _pk = "Fez21JXEtMzXjbCK6BAYFU9ewX".parse::<MPublicKey>().unwrap();
         }
 
         #[test]
-        #[should_panic(expected = "Public keys must start with \\'p\\'")]
+        #[should_panic(expected = "Public keys must start with 'p'")]
         fn empty() {
             let _pk = "".parse::<MPublicKey>().unwrap();
         }

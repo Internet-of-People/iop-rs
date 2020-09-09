@@ -30,7 +30,7 @@ impl SecpKeyId {
     ///
     /// [`to_bytes`]: #method.to_bytes
     /// [`KEY_ID_SIZE`]: ../constant.KEY_ID_SIZE
-    pub fn from_bytes<D: AsRef<[u8]>>(bytes: D) -> Fallible<Self> {
+    pub fn from_bytes<D: AsRef<[u8]>>(bytes: D) -> Result<Self> {
         let bytes = bytes.as_ref();
         ensure!(bytes.len() == KEY_ID_SIZE, "Identifier length is not {}", KEY_ID_SIZE);
         ensure!(
@@ -58,7 +58,7 @@ impl SecpKeyId {
     }
 
     /// Deserializes the key identifier from a `p2pkh` bitcoin address
-    pub fn from_p2pkh_addr(addr: &str, network: &dyn Network<Suite = Secp256k1>) -> Fallible<Self> {
+    pub fn from_p2pkh_addr(addr: &str, network: &dyn Network<Suite = Secp256k1>) -> Result<Self> {
         let expected_prefix = network.p2pkh_addr();
         debug_assert_eq!(expected_prefix.len(), ADDR_PREFIX_SIZE);
         debug_assert_eq!(ADDR_PREFIX_SIZE, 1);
@@ -86,8 +86,8 @@ impl SecpKeyId {
     /// ARK uses a non-standard hashing of the compressed public key.
     pub fn from_ark_pk(pk: &SecpPublicKey) -> Self {
         let mut hasher = Ripemd160::default();
-        hasher.input(&pk.to_bytes());
-        let hash = hasher.fixed_result();
+        hasher.update(&pk.to_bytes());
+        let hash = hasher.finalize_fixed();
 
         Self::from_v1_bytes(&*hash)
     }

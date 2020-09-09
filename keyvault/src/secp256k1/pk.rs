@@ -33,9 +33,9 @@ impl SecpPublicKey {
     /// If `bytes` is rejected by `libsecp256k1::PublicKey::parse_slice`
     ///
     /// [`to_bytes`]: #method.to_bytes
-    pub fn from_bytes<D: AsRef<[u8]>>(bytes: D) -> Fallible<Self> {
+    pub fn from_bytes<D: AsRef<[u8]>>(bytes: D) -> Result<Self> {
         let format = Some(secp::PublicKeyFormat::Compressed);
-        let pk = secp::PublicKey::parse_slice(bytes.as_ref(), format).map_err(SecpError::from)?;
+        let pk = secp::PublicKey::parse_slice(bytes.as_ref(), format)?;
         Ok(Self(pk))
     }
 
@@ -59,12 +59,12 @@ impl SecpPublicKey {
 }
 
 impl Add<&[u8]> for &SecpPublicKey {
-    type Output = Fallible<SecpPublicKey>;
+    type Output = Result<SecpPublicKey>;
 
     fn add(self, rhs: &[u8]) -> Self::Output {
-        let sk = secp::SecretKey::parse_slice(rhs).map_err(SecpError::from)?;
+        let sk = secp::SecretKey::parse_slice(rhs)?;
         let mut sum = self.0.clone();
-        sum.tweak_add_assign(&sk).map_err(SecpError::from)?;
+        sum.tweak_add_assign(&sk)?;
         Ok(SecpPublicKey(sum))
     }
 }
@@ -85,8 +85,8 @@ impl PublicKey<Secp256k1> for SecpPublicKey {
 }
 
 impl FromStr for SecpPublicKey {
-    type Err = failure::Error;
-    fn from_str(src: &str) -> Fallible<Self> {
+    type Err = anyhow::Error;
+    fn from_str(src: &str) -> Result<Self> {
         Self::from_bytes(hex::decode(src)?)
     }
 }
@@ -108,7 +108,7 @@ mod test {
     use super::*;
 
     #[test]
-    fn string_roundtrip() -> Fallible<()> {
+    fn string_roundtrip() -> Result<()> {
         let key = "0279be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798";
         let pk: SecpPublicKey = key.parse()?;
         assert_eq!(pk.to_string(), key);

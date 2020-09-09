@@ -1,4 +1,4 @@
-use ed25519_dalek as ed;
+use ed25519_dalek::{self as ed, ed25519::signature::Signature};
 
 use super::*;
 
@@ -31,7 +31,7 @@ impl EdSignature {
     /// If `bytes` is rejected by `ed25519_dalek::SecretKey::from_bytes`
     ///
     /// [`to_bytes`]: #method.to_bytes
-    pub fn from_bytes<D: AsRef<[u8]>>(bytes: D) -> Fallible<Self> {
+    pub fn from_bytes<D: AsRef<[u8]>>(bytes: D) -> Result<Self> {
         let bytes = bytes.as_ref();
         ensure!(bytes.len() == SIGNATURE_SIZE, "Signature length is not {}", SIGNATURE_SIZE);
         ensure!(

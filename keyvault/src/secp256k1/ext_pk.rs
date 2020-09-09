@@ -1,5 +1,7 @@
 use super::*;
 
+use hmac::NewMac;
+
 pub const XPUB_DATA_SIZE: usize = 78;
 
 /// Implementation of Secp256k1::ExtendedPublicKey
@@ -25,8 +27,7 @@ impl SecpExtPublicKey {
 
         recipe(&mut hasher);
 
-        let hash_arr = hasher.result().code();
-        let hash_bytes = hash_arr.as_slice();
+        let hash_bytes = hasher.finalize().into_bytes();
 
         let sk_bytes = &hash_bytes[..PRIVATE_KEY_SIZE];
         let cc_bytes = &hash_bytes[PRIVATE_KEY_SIZE..];
@@ -61,7 +62,7 @@ impl SecpExtPublicKey {
     /// Deserializes the extended public key from the format defined in [`BIP32`]
     ///
     /// [`BIP32`]: https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki#serialization-format
-    pub fn from_xpub(xprv: &str, prefix: &[u8; BIP32_VERSION_PREFIX_SIZE]) -> Fallible<Self> {
+    pub fn from_xpub(xprv: &str, prefix: &[u8; BIP32_VERSION_PREFIX_SIZE]) -> Result<Self> {
         let data = from_base58check(xprv)?;
         ensure!(data.len() == XPUB_DATA_SIZE, "Length of data must be {}", XPUB_DATA_SIZE);
 
@@ -94,13 +95,13 @@ impl SecpExtPublicKey {
 }
 
 impl ExtendedPublicKey<Secp256k1> for SecpExtPublicKey {
-    fn derive_normal_child(&self, idx: i32) -> Fallible<SecpExtPublicKey> {
+    fn derive_normal_child(&self, idx: i32) -> Result<SecpExtPublicKey> {
         ensure!(idx >= 0, "Derivation index cannot be negative");
         let idx = idx as u32;
 
         let xpub = self.cook_new(idx, |hasher| {
-            hasher.input(&self.pk.to_bytes());
-            hasher.input(&idx.to_be_bytes());
+            hasher.update(&self.pk.to_bytes());
+            hasher.update(&idx.to_be_bytes());
         });
 
         Ok(xpub)

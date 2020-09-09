@@ -24,10 +24,9 @@ mod test_crypto;
 #[cfg(test)]
 mod tests;
 
-use failure::{bail, ensure, Fail, Fallible};
-
 pub use ::bip39::ErrorKind as Bip39ErrorKind;
 pub use ::bip39::Language as Bip39Language;
+pub use anyhow::Result;
 pub use hmac::Mac;
 
 pub use crate::bip39::*;
@@ -38,6 +37,11 @@ pub use bip44path::*;
 pub use network::*;
 pub use networks::Networks;
 pub use seed::*;
+
+use std::fmt;
+
+use anyhow::{anyhow, bail, ensure};
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
 /// A public key (also called shared key or pk in some literature) is that part of an asymmetric keypair
 /// which can be used to verify the authenticity of the sender of a message or to encrypt a message that
@@ -117,10 +121,10 @@ pub type HmacSha512 = hmac::Hmac<sha2::Sha512>;
 pub trait ExtendedPrivateKey<C: KeyDerivationCrypto + ?Sized>: Clone {
     /// Normal derivation allows the neutered extended public key to calculate child extended public keys without
     /// revealing any private keys.
-    fn derive_normal_child(&self, idx: i32) -> Fallible<C::ExtendedPrivateKey>;
+    fn derive_normal_child(&self, idx: i32) -> Result<C::ExtendedPrivateKey>;
     /// Hardened derivation makes it impossible to the neutered extended public key to calculate children. It uses
     /// a different derivation algorithm.
-    fn derive_hardened_child(&self, idx: i32) -> Fallible<C::ExtendedPrivateKey>;
+    fn derive_hardened_child(&self, idx: i32) -> Result<C::ExtendedPrivateKey>;
     /// Neutering an extended private key gives an extended public key that contains the private key neutered, plus
     /// the chain code. It is useless to reveal the chain code when hardened derivation is used.
     fn neuter(&self) -> C::ExtendedPublicKey;
@@ -134,7 +138,7 @@ pub trait ExtendedPrivateKey<C: KeyDerivationCrypto + ?Sized>: Clone {
 pub trait ExtendedPublicKey<C: KeyDerivationCrypto + ?Sized>: Clone {
     /// Derive child extended public keys. Useful for auditing hierarchical deterministic wallets, or generating a new address
     /// for each on-chain transaction knowing the owner of the corresponding extended private key can spend the received coins.
-    fn derive_normal_child(&self, idx: i32) -> Fallible<C::ExtendedPublicKey>;
+    fn derive_normal_child(&self, idx: i32) -> Result<C::ExtendedPublicKey>;
     /// Throws away the chain code and gives back only the public key from the extended public key.
     fn public_key(&self) -> C::PublicKey;
 }

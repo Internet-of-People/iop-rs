@@ -1,4 +1,4 @@
-use ed25519_dalek as ed;
+use ed25519_dalek::{self as ed, Signer};
 
 use super::*;
 
@@ -26,7 +26,7 @@ impl EdPrivateKey {
     /// If `bytes` is rejected by `ed25519_dalek::SecretKey::from_bytes`
     ///
     /// [`to_bytes`]: #method.to_bytes
-    pub fn from_bytes<D: AsRef<[u8]>>(bytes: D) -> Fallible<Self> {
+    pub fn from_bytes<D: AsRef<[u8]>>(bytes: D) -> Result<Self> {
         let secret = ed::SecretKey::from_bytes(bytes.as_ref())?;
         let public = ed::PublicKey::from(&secret);
         let key_pair = ed::Keypair { secret, public };

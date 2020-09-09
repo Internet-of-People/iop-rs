@@ -1,5 +1,3 @@
-use failure::Fallible;
-
 use super::*;
 use crate::multicipher::{MPrivateKey, MPublicKey};
 
@@ -54,7 +52,7 @@ impl Morpheus {
     pub const BIP43_PURPOSE: i32 = 0x1F4A4;
 
     /// Calculate the root node of the Morpheus subtree in the HD wallet.
-    pub fn root(self, seed: &Seed) -> Fallible<MorpheusRoot> {
+    pub fn root(self, seed: &Seed) -> Result<MorpheusRoot> {
         let node = Bip32.master(&seed, &MorpheusSubtree).derive_hardened(Self::BIP43_PURPOSE)?;
         Ok(MorpheusRoot { node })
     }
@@ -89,22 +87,22 @@ impl MorpheusRoot {
     }
 
     /// Alias for kind(Device).
-    pub fn devices(&self) -> Fallible<MorpheusKind> {
+    pub fn devices(&self) -> Result<MorpheusKind> {
         self.kind(DidKind::Device)
     }
 
     /// Alias for kind(Persona).
-    pub fn personas(&self) -> Fallible<MorpheusKind> {
+    pub fn personas(&self) -> Result<MorpheusKind> {
         self.kind(DidKind::Persona)
     }
 
     /// Alias for kind(Group).
-    pub fn groups(&self) -> Fallible<MorpheusKind> {
+    pub fn groups(&self) -> Result<MorpheusKind> {
         self.kind(DidKind::Group)
     }
 
     /// Derive a separate HD wallet subtree of the given kind.
-    pub fn kind(&self, kind: DidKind) -> Fallible<MorpheusKind> {
+    pub fn kind(&self, kind: DidKind) -> Result<MorpheusKind> {
         let node = self.node.derive_hardened(kind as i32)?;
         Ok(MorpheusKind { kind, node })
     }
@@ -172,7 +170,7 @@ impl MorpheusKind {
 
     /// The private key of the child node with given index under this subtree.
     /// E.g. 5th persona, 3rd device, or 0th group, etc.
-    pub fn key(&self, idx: i32) -> Fallible<MorpheusPrivateKey> {
+    pub fn key(&self, idx: i32) -> Result<MorpheusPrivateKey> {
         let path = MorpheusKeyPath { kind: self.kind, idx };
         let node = self.node.derive_hardened(idx)?;
         Ok(MorpheusPrivateKey { path, node })
@@ -264,7 +262,7 @@ mod test {
 
     // TODO Should we rename node() to bip32_node() in this module and Bip44 as well?
     #[test]
-    fn api_usage() -> Fallible<()> {
+    fn api_usage() -> Result<()> {
         let seed = Bip39::new().phrase(Seed::DEMO_PHRASE)?.password(Seed::PASSWORD);
         let morpheus = Morpheus.root(&seed)?;
         assert_eq!(morpheus.path().bip32_path(), "m/128164'".parse()?);

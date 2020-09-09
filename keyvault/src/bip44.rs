@@ -1,5 +1,3 @@
-use failure::{ensure, Fallible};
-
 use super::*;
 
 /// Entry point to generate a hierarchical deterministic wallet using the BIP-0044 standard. It is a more structured
@@ -13,7 +11,7 @@ impl Bip44 {
     /// Creates the entry point to a given coin based on the subtree defined by SLIP-0044 for it.
     pub fn network<C: KeyDerivationCrypto>(
         &self, seed: &Seed, network: &'static dyn Network<Suite = C>,
-    ) -> Fallible<Bip44Coin<C>> {
+    ) -> Result<Bip44Coin<C>> {
         let path = Bip44Path::coin(network.slip44());
         let master = Bip32.master(seed, network.subtree());
         let node = master.derive_hardened(44)?.derive_hardened(network.slip44())?;
@@ -44,7 +42,7 @@ impl<C: KeyDerivationCrypto + 'static> Bip44Coin<C> {
     }
 
     /// Creates an account in the coin with the given index.
-    pub fn account(&self, account: i32) -> Fallible<Bip44Account<C>> {
+    pub fn account(&self, account: i32) -> Result<Bip44Account<C>> {
         ensure!(account >= 0, "Cannot use negative account index");
         Ok(Bip44Account::new(
             self.path.clone().account(account),
@@ -93,7 +91,7 @@ impl<C: KeyDerivationCrypto + 'static> Bip44Account<C> {
 
     /// Creates a sub-account for either external keys (receiving addresses) or
     /// internal keys (change addresses). This distinction might help in accounting.
-    pub fn chain(&self, chain: Chain) -> Fallible<Bip44SubAccount<C>> {
+    pub fn chain(&self, chain: Chain) -> Result<Bip44SubAccount<C>> {
         Ok(Bip44SubAccount::new(
             self.path.clone().chain(chain),
             self.network,
@@ -103,7 +101,7 @@ impl<C: KeyDerivationCrypto + 'static> Bip44Account<C> {
 
     /// Creates a key with a given index used on the chain for storing balance or
     /// authenticating actions. By default these keys are made on the receiving sub-account.
-    pub fn key(&self, key: i32) -> Fallible<Bip44Key<C>> {
+    pub fn key(&self, key: i32) -> Result<Bip44Key<C>> {
         self.chain(Chain::Receiving)?.key(key)
     }
 
@@ -152,7 +150,7 @@ impl<C: KeyDerivationCrypto + 'static> Bip44PublicAccount<C> {
 
     /// Creates a sub-account for either external keys (receiving addresses) or
     /// internal keys (change addresses). This distinction might help in accounting.
-    pub fn chain(&self, chain: Chain) -> Fallible<Bip44PublicSubAccount<C>> {
+    pub fn chain(&self, chain: Chain) -> Result<Bip44PublicSubAccount<C>> {
         Ok(Bip44PublicSubAccount::new(
             self.path.clone().chain(chain),
             self.network,
@@ -162,7 +160,7 @@ impl<C: KeyDerivationCrypto + 'static> Bip44PublicAccount<C> {
 
     /// Creates a key with a given index used on the chain for storing balance or
     /// authenticating actions. By default these keys are made on the receiving sub-account.
-    pub fn key(&self, key: i32) -> Fallible<Bip44PublicKey<C>> {
+    pub fn key(&self, key: i32) -> Result<Bip44PublicKey<C>> {
         self.chain(Chain::Receiving)?.key(key)
     }
 
@@ -234,7 +232,7 @@ impl<C: KeyDerivationCrypto + 'static> Bip44SubAccount<C> {
 
     /// Creates a key with a given index used on the chain for storing balance or
     /// authenticating actions.
-    pub fn key(&self, key: i32) -> Fallible<Bip44Key<C>> {
+    pub fn key(&self, key: i32) -> Result<Bip44Key<C>> {
         Ok(Bip44Key::new(self.path.clone().key(key), self.network, self.node.derive_normal(key)?))
     }
 
@@ -286,7 +284,7 @@ impl<C: KeyDerivationCrypto + 'static> Bip44PublicSubAccount<C> {
 
     /// Creates a key with a given index used on the chain for storing balance or
     /// authenticating actions.
-    pub fn key(&self, key: i32) -> Fallible<Bip44PublicKey<C>> {
+    pub fn key(&self, key: i32) -> Result<Bip44PublicKey<C>> {
         Ok(Bip44PublicKey::new(
             self.path.clone().key(key),
             self.network,
@@ -426,7 +424,7 @@ mod test {
     const PHRASE: &str = "blast cargo razor option vote shoe stock cruel mansion boy spot never album crop reflect kangaroo blouse slam empty shoot cable vital crane manual";
 
     #[test]
-    fn path() -> Fallible<()> {
+    fn path() -> Result<()> {
         let seed = Bip39::new().phrase(PHRASE)?.password("");
 
         let key = Bip44.network(&seed, &ark::Mainnet)?.account(0)?.chain(Chain::Change)?.key(0)?;
@@ -436,7 +434,7 @@ mod test {
     }
 
     #[test]
-    fn derive() -> Fallible<()> {
+    fn derive() -> Result<()> {
         let seed = Bip39::new().phrase(PHRASE)?.password(Seed::PASSWORD);
         let key =
             Bip44.network(&seed, &hyd::Mainnet)?.account(0)?.chain(Chain::Receiving)?.key(0)?;
@@ -446,7 +444,7 @@ mod test {
     }
 
     #[test]
-    fn bip44_fantasy() -> Fallible<()> {
+    fn bip44_fantasy() -> Result<()> {
         let seed = Bip39::new().phrase(PHRASE)?.password(Seed::PASSWORD);
 
         let coin = Bip44.network(&seed, &hyd::Mainnet)?;

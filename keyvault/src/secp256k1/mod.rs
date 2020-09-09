@@ -10,40 +10,19 @@ mod pk;
 mod sig;
 mod sk;
 
-use std::sync::Mutex;
-
-use failure::{ensure, err_msg};
-
 use super::*;
 
-#[derive(Debug, Fail)]
-#[fail(display = "libsecp256k1: {:#?}", e)]
-/// A wrapper type for [`secp::Error`] so it is compatible with the [`failure`] crate.
-///
-/// [`secp::Error`]:
-/// [`failure`]:
-pub struct SecpError {
-    e: Mutex<secp::Error>,
-}
-
-impl From<secp::Error> for SecpError {
-    fn from(e: secp::Error) -> Self {
-        let e = Mutex::new(e);
-        Self { e }
-    }
-}
-
 use digest::generic_array::{typenum::U20, GenericArray};
-use digest::{FixedOutput, Input};
+use digest::FixedOutput;
 use ripemd160::Ripemd160;
-use sha2::Sha256;
+use sha2::{Digest, Sha256};
 
 fn hash160<B: AsRef<[u8]>>(input: B) -> GenericArray<u8, U20> {
     let mut inner_hasher = Sha256::default();
-    inner_hasher.input(input);
+    inner_hasher.update(input);
     let mut outer_hasher = Ripemd160::default();
-    outer_hasher.input(inner_hasher.fixed_result());
-    outer_hasher.fixed_result()
+    outer_hasher.update(inner_hasher.finalize_fixed());
+    outer_hasher.finalize_fixed()
 }
 
 const CHECKSUM_LEN: usize = 4;
@@ -54,10 +33,10 @@ const CHECKSUM_LEN: usize = 4;
 pub fn to_base58check<D: AsRef<[u8]>>(data: D) -> String {
     let data = data.as_ref();
     let mut inner_hasher = Sha256::default();
-    inner_hasher.input(data);
+    inner_hasher.update(data);
     let mut outer_hasher = Sha256::default();
-    outer_hasher.input(inner_hasher.fixed_result());
-    let hash = outer_hasher.fixed_result();
+    outer_hasher.update(inner_hasher.finalize_fixed());
+    let hash = outer_hasher.finalize_fixed();
     let checksum = &hash[..CHECKSUM_LEN];
     let mut bytes = Vec::with_capacity(data.len() + checksum.len());
     bytes.extend_from_slice(data);
@@ -71,7 +50,7 @@ pub fn to_base58check<D: AsRef<[u8]>>(data: D) -> String {
 
 /// Decoding string with BASE58 into binary data and verify if the 4-byte checksum at the end
 /// matches the rest of the data. Only the decoded data without checksum will be returned.
-pub fn from_base58check<S: AsRef<str>>(s: S) -> Fallible<Vec<u8>> {
+pub fn from_base58check<S: AsRef<str>>(s: S) -> Result<Vec<u8>> {
     let mut to_decode = String::new();
     to_decode.push(multibase::Base::Base58Btc.code());
     to_decode += s.as_ref();
@@ -79,10 +58,10 @@ pub fn from_base58check<S: AsRef<str>>(s: S) -> Fallible<Vec<u8>> {
     let (data, actual_checksum) = checked_data.split_at(checked_data.len() - CHECKSUM_LEN);
 
     let mut inner_hasher = Sha256::default();
-    inner_hasher.input(data);
+    inner_hasher.update(data);
     let mut outer_hasher = Sha256::default();
-    outer_hasher.input(inner_hasher.fixed_result());
-    let hash = outer_hasher.fixed_result();
+    outer_hasher.update(inner_hasher.finalize_fixed());
+    let hash = outer_hasher.finalize_fixed();
     let expected_checksum = &hash[..CHECKSUM_LEN];
 
     ensure!(expected_checksum == actual_checksum, "Incorrect checksum");
@@ -98,9 +77,9 @@ pub struct Secp256k1;
 impl Secp256k1 {
     fn hash_message<D: AsRef<[u8]>>(data: D) -> secp::Message {
         let mut hasher = Sha256::default();
-        digest::Input::input(&mut hasher, data.as_ref());
+        hasher.update(data.as_ref());
         let mut hash = [0u8; secp::util::MESSAGE_SIZE];
-        hash.copy_from_slice(hasher.fixed_result().as_slice());
+        hash.copy_from_slice(hasher.finalize_fixed().as_slice());
         secp::Message::parse(&hash)
     }
 }
@@ -179,7 +158,7 @@ impl Bip178 {
     }
 
     /// Parses usage type from WIF suffix bytes
-    pub fn from_wif_suffix(data: &[u8]) -> Fallible<Self> {
+    pub fn from_wif_suffix(data: &[u8]) -> Result<Self> {
         use Bip178::*;
         match data {
             b"" => Ok(Uncompressed),
@@ -187,7 +166,7 @@ impl Bip178 {
             b"\x10" => Ok(P2PKH_Only),
             b"\x11" => Ok(P2WPKH),
             b"\x12" => Ok(P2WPKH_P2SH),
-            _ => Err(err_msg(format!("Unknown wif suffix {}", hex::encode(data)))),
+            _ => Err(anyhow!("Unknown wif suffix {}", hex::encode(data))),
         }
     }
 }
@@ -202,7 +181,7 @@ mod test {
             hex::decode("0000000000000000000000000000000000000000000000000000000000000000")
                 .unwrap();
         let err = SecpPrivateKey::from_bytes(sk_bytes).unwrap_err();
-        assert!(err.to_string().contains("InvalidSecretKey"))
+        assert!(err.to_string().contains("Invalid secret key"))
     }
 
     mod sign_verify {

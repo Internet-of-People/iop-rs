@@ -1,5 +1,5 @@
 use blake2::VarBlake2b;
-use digest::{Input, VariableOutput};
+use digest::{Update, VariableOutput};
 
 use super::*;
 
@@ -35,7 +35,7 @@ impl EdKeyId {
     ///
     /// [`to_bytes`]: #method.to_bytes
     /// [`KEY_ID_SIZE`]: ../constant.KEY_ID_SIZE
-    pub fn from_bytes<D: AsRef<[u8]>>(bytes: D) -> Fallible<Self> {
+    pub fn from_bytes<D: AsRef<[u8]>>(bytes: D) -> Result<Self> {
         let bytes = bytes.as_ref();
         ensure!(bytes.len() == KEY_ID_SIZE, "Identifier length is not {}", KEY_ID_SIZE);
         ensure!(
@@ -50,10 +50,10 @@ impl EdKeyId {
 impl From<&EdPublicKey> for EdKeyId {
     fn from(pk: &EdPublicKey) -> EdKeyId {
         let mut hasher = VarBlake2b::new_keyed(KEY_ID_SALT, KEY_ID_SIZE - VERSION_SIZE);
-        hasher.input(pk.to_bytes());
+        hasher.update(pk.to_bytes());
         let mut hash = Vec::with_capacity(KEY_ID_SIZE);
         hash.push(KEY_ID_VERSION1);
-        hasher.variable_result(|h| hash.extend_from_slice(h));
+        hasher.finalize_variable(|h| hash.extend_from_slice(h));
         EdKeyId(hash)
     }
 }

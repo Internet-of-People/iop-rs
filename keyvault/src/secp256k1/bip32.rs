@@ -1,12 +1,13 @@
 use super::{Bip178, Secp256k1, SecpExtPrivateKey, SecpExtPublicKey};
 use crate::{bip32, Bip32Node, Bip32PublicNode, Network};
-use failure::Fallible;
+
+use super::*;
 
 impl Bip32Node<Secp256k1> {
     /// Recreates the BIP32 node from its parts
     pub fn from_xprv(
         path: bip32::Path, xprv: impl AsRef<str>, network: &'static dyn Network<Suite = Secp256k1>,
-    ) -> Fallible<Bip32Node<Secp256k1>> {
+    ) -> Result<Bip32Node<Secp256k1>> {
         let xsk = SecpExtPrivateKey::from_xprv(xprv.as_ref(), network.bip32_xprv())?;
         Ok(Bip32Node::new(path, xsk, network.subtree()))
     }
@@ -28,7 +29,7 @@ impl Bip32PublicNode<Secp256k1> {
     /// Recreates the BIP32 public node from its parts
     pub fn from_xpub(
         path: bip32::Path, xpub: impl AsRef<str>, network: &'static dyn Network<Suite = Secp256k1>,
-    ) -> Fallible<Bip32PublicNode<Secp256k1>> {
+    ) -> Result<Bip32PublicNode<Secp256k1>> {
         let xpk = SecpExtPublicKey::from_xpub(xpub.as_ref(), network.bip32_xpub())?;
         Ok(Bip32PublicNode::new(path, xpk, network.subtree()))
     }

@@ -3,8 +3,6 @@
 //! [SLIP-0010](https://github.com/satoshilabs/slips/blob/master/slip-0010.md) compatible
 //! child-key derivation for building hierarchical deterministic wallets.
 
-use failure::Fallible;
-use std::fmt;
 use std::str::FromStr;
 
 use super::*;
@@ -77,7 +75,7 @@ impl<C: KeyDerivationCrypto + 'static> Bip32Node<C> {
     }
 
     /// Create a new node with normal (public) derivation with the given index.
-    pub fn derive_normal(&self, idx: i32) -> Fallible<Bip32Node<C>> {
+    pub fn derive_normal(&self, idx: i32) -> Result<Bip32Node<C>> {
         let path = self.path.append(ChildIndex::Normal(idx));
         let xsk = self.xsk.derive_normal_child(idx)?;
         let subtree = self.subtree;
@@ -85,7 +83,7 @@ impl<C: KeyDerivationCrypto + 'static> Bip32Node<C> {
     }
 
     /// Create a new node with hardened (private) derivation with the given index.
-    pub fn derive_hardened(&self, idx: i32) -> Fallible<Bip32Node<C>> {
+    pub fn derive_hardened(&self, idx: i32) -> Result<Bip32Node<C>> {
         let path = self.path.append(ChildIndex::Hardened(idx));
         let xsk = self.xsk.derive_hardened_child(idx)?;
         let subtree = self.subtree;
@@ -133,7 +131,7 @@ impl<C: KeyDerivationCrypto + 'static> Bip32PublicNode<C> {
     }
 
     /// Create a new node with normal (public) derivation with the given index.
-    pub fn derive_normal(&self, idx: i32) -> Fallible<Bip32PublicNode<C>> {
+    pub fn derive_normal(&self, idx: i32) -> Result<Bip32PublicNode<C>> {
         let path = self.path.append(ChildIndex::Normal(idx));
         let xpk = self.xpk.derive_normal_child(idx)?;
         let subtree = self.subtree;
@@ -184,8 +182,8 @@ fn is_hardened_suffix_char(c: char) -> bool {
 }
 
 impl FromStr for ChildIndex {
-    type Err = failure::Error;
-    fn from_str(mut src: &str) -> Fallible<Self> {
+    type Err = anyhow::Error;
+    fn from_str(mut src: &str) -> Result<Self> {
         let hardened = src.ends_with(is_hardened_suffix_char);
         if hardened {
             src = &src[..src.len() - 1];
@@ -227,8 +225,8 @@ impl Path {
 }
 
 impl FromStr for Path {
-    type Err = failure::Error;
-    fn from_str(src: &str) -> Fallible<Self> {
+    type Err = anyhow::Error;
+    fn from_str(src: &str) -> Result<Self> {
         let mut pieces = src.split('/');
 
         let first_opt = pieces.next();
@@ -359,7 +357,7 @@ mod tests {
     // }
 
     #[test]
-    fn derivation() -> Fallible<()> {
+    fn derivation() -> Result<()> {
         let phrase = "blast cargo razor option vote shoe stock cruel mansion boy spot never album crop reflect kangaroo blouse slam empty shoot cable vital crane manual";
         let seed = Bip39::new().phrase(phrase)?.password(Seed::PASSWORD);
         let net = &secp256k1::hyd::Mainnet;
@@ -393,7 +391,7 @@ mod tests {
     }
 
     #[test]
-    fn parsing() -> Fallible<()> {
+    fn parsing() -> Result<()> {
         let account_xprv = "HYDMVzUVgP7S8GNPrKWhvoFPivfS25QnhfKi1iydA7jbWRwVuMJTVZzBQvBV86zpNJg83rrtvj6SWsftT3nNg5PQ9kwEdzTSpEDH5KbZsjbKBbhs";
         let account_xpub = "hydmW129yVihVKVgXGWfvV3ZSePrhri2FgepKuyMEZ3Eg7bf91jrFZrmAo2hsVcS49dTRP5wZM7A8vudxWk5n8J2Ci12CSNvLy76CsnRaMK4A2b5";
         let account_path = "m/44'/4741444'/0'";
