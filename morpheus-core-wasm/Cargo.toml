@@ -10,13 +10,14 @@ crate-type = ["cdylib", "rlib"]
 
 
 [dependencies]
-anyhow = "*"
+anyhow = "1.0.32"
 iop-keyvault = "0.0.4"
 iop-keyvault-wasm = "0.0.4"
 iop-morpheus-core = "0.0.4"
-js-sys = "*"
-log = "*"
-serde = "*"
-serde_json = "*"
-wasm-bindgen = { version = "*", features = ["serde-serialize"] }
-wasm-bindgen-futures = "*"
+js-sys = "0.3.42"
+log = "0.4.11"
+serde = "1.0.115"
+serde_json = "1.0.57"
+# TODO latest 0.2.66/67 does not work with recent wasm-opt
+wasm-bindgen = { version = "=0.2.65", features = ["serde-serialize"] }
+# wasm-bindgen-futures = "*"
