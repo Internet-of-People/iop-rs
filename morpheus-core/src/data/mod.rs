@@ -5,7 +5,6 @@ pub mod diddoc;
 pub mod present;
 pub mod process;
 pub mod schema;
-pub mod serde_string;
 pub mod validation;
 
 use serde::{Deserialize, Deserializer, Serialize, Serializer};

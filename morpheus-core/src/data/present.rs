@@ -5,12 +5,12 @@ use crate::{
         hash::Content,
         sign::{Nonce, Signable, Signed},
     },
-    data::{did::Did, serde_string},
+    data::did::Did,
 };
 
 #[derive(Clone, Debug, Deserialize, Eq, Hash, PartialEq, PartialOrd, Serialize)]
 pub struct License {
-    #[serde(rename = "issuedTo", with = "serde_string")]
+    #[serde(rename = "issuedTo", with = "serde_strz")]
     issued_to: Did,
     purpose: String, // TODO should be more strictly typed, probably an enum
     #[serde(rename = "validFrom")]

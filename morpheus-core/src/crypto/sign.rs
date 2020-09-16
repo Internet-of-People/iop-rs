@@ -7,7 +7,6 @@ use crate::{
         claim::{WitnessRequest, WitnessStatement},
         diddoc::{BlockHeight, DidDocument, Right},
         present::ClaimPresentation,
-        serde_string,
         validation::{ValidationIssueSeverity, ValidationResult},
     },
 };
@@ -131,9 +130,9 @@ where
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
 struct SignatureTuple {
-    #[serde(with = "serde_string", rename = "publicKey")]
+    #[serde(with = "serde_strz", rename = "publicKey")]
     public_key: MPublicKey,
-    #[serde(with = "serde_string")]
+    #[serde(with = "serde_strz")]
     bytes: MSignature,
 }
 

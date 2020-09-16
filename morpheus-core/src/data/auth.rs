@@ -2,11 +2,12 @@ use super::*;
 
 use iop_keyvault::{multicipher, PublicKey};
 
-// TODO this would probably also work with simply serde(untagged)
 #[derive(Clone, Debug, Deserialize, Eq, Serialize)]
-#[serde(try_from = "MAuthentication", into = "MAuthentication")]
+#[serde(untagged)]
 pub enum Authentication {
+    #[serde(with = "serde_strz")]
     KeyId(multicipher::MKeyId),
+    #[serde(with = "serde_strz")]
     PublicKey(multicipher::MPublicKey),
 }
 
@@ -25,48 +26,19 @@ impl PartialEq for Authentication {
     }
 }
 
-#[derive(Deserialize, Serialize)]
-#[serde(transparent)]
-struct MAuthentication(String);
-
-impl TryFrom<MAuthentication> for Authentication {
-    type Error = anyhow::Error;
-
-    fn try_from(value: MAuthentication) -> Result<Self> {
-        if value.0.starts_with(multicipher::MKeyId::PREFIX) {
-            let key_id = value.0.parse()?;
-            Ok(Authentication::KeyId(key_id))
-        } else if value.0.starts_with(multicipher::MPublicKey::PREFIX) {
-            let pk = value.0.parse()?;
-            Ok(Authentication::PublicKey(pk))
-        } else {
-            Err(anyhow!("Authentication starts with invalid character: {}", value.0))
-        }
-    }
-}
-
-impl Into<MAuthentication> for Authentication {
-    fn into(self) -> MAuthentication {
-        let string = match self {
-            Authentication::KeyId(key_id) => key_id.to_string(),
-            Authentication::PublicKey(pk) => pk.to_string(),
-        };
-        MAuthentication(string)
-    }
-}
-
-impl ToString for Authentication {
-    fn to_string(&self) -> String {
-        match self {
-            Self::KeyId(id) => id.to_string(),
-            Self::PublicKey(key) => key.to_string(),
-        }
-    }
-}
-
 impl FromStr for Authentication {
     type Err = anyhow::Error;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        Self::try_from(MAuthentication(s.to_owned()))
+        let auth = serde_json::from_value(serde_json::Value::String(s.to_owned()))?;
+        Ok(auth)
+    }
+}
+
+impl fmt::Display for Authentication {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            Self::KeyId(id) => id.fmt(f),
+            Self::PublicKey(key) => key.fmt(f),
+        }
     }
 }

@@ -3,7 +3,6 @@ use super::*;
 use crate::data::auth::Authentication;
 use crate::data::{
     did::Did,
-    serde_string,
     validation::{ValidationIssueSeverity as Severity, ValidationResult},
 };
 
@@ -129,7 +128,7 @@ pub struct Service {
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
 pub struct DidDocument {
-    #[serde(with = "serde_string")]
+    #[serde(with = "serde_strz")]
     pub(crate) did: Did,
     pub(crate) keys: Vec<KeyData>,
     #[serde(skip_serializing_if = "HashMap::is_empty", default)]

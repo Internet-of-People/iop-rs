@@ -16,6 +16,7 @@ rand = "0.7.3"
 serde = { version = "1.0.115", features = ["rc"] }
 serde_json = { version = "1.0.57", features = ["preserve_order"] }
 serde_repr = "0.1.6"
+serde-strz = "1.1.0"
 tiny-keccak = "1"
 typetag = "0.1.5"
 unicode-normalization = "0.1.13"

@@ -4,13 +4,13 @@ use crate::crypto::{
     hash::{Content, ContentId},
     sign::{Nonce, Signable},
 };
-use crate::data::{did::Did, process::ProcessId, schema::MorpheusValue, serde_string};
+use crate::data::{did::Did, process::ProcessId, schema::MorpheusValue};
 
 pub type ClaimId = ContentId;
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct Claim {
-    #[serde(with = "serde_string")]
+    #[serde(with = "serde_strz")]
     subject: Did,
     content: MorpheusValue,
 }
@@ -21,7 +21,7 @@ impl Signable for Claim {}
 // TODO Eq, PartialEq and maybe PartialOrd for WitnessRequest
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct WitnessRequest {
-    #[serde(with = "serde_string", rename = "processId")]
+    #[serde(with = "serde_strz", rename = "processId")]
     process_id: ProcessId,
     claimant: String, // TODO should be an AuthenticationLink on the long term
     claim: Claim,
@@ -36,7 +36,7 @@ impl Signable for WitnessRequest {}
 // TODO Eq, PartialEq and maybe PartialOrd for WitnessStatement
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct WitnessStatement {
-    #[serde(with = "serde_string", rename = "processId")]
+    #[serde(with = "serde_strz", rename = "processId")]
     process_id: ProcessId,
     claim: Claim,
     constraints: Constraints,
@@ -49,7 +49,7 @@ pub struct Constraints {
     after: Option<String>,
     before: Option<String>,
     witness: String, // TODO should be an AuthenticationLink on the long term
-    #[serde(with = "serde_string")]
+    #[serde(with = "serde_strz")]
     authority: Did,
     content: MorpheusValue,
 }
