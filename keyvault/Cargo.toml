@@ -23,7 +23,6 @@ hmac = "0.9.0"
 # Unfortunately the crate name of the libsecp256k1 collides with the perfect module name
 # for the cipher, so we rename the dependency here:
 secp = { version = "0.3.5", package = "libsecp256k1" }
-log = "0.4.6"
 multibase = "0.8.0"
 orion = "0.15.2"
 ripemd160 = "0.9.1"
