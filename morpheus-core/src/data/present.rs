@@ -1,9 +1,9 @@
-use serde::{Deserialize, Serialize};
+use super::*;
 
 use crate::{
     crypto::{
         hash::Content,
-        sign::{Nonce, Signable, Signed},
+        sign::{Signable, Signed},
     },
     data::did::Did,
 };

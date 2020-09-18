@@ -1,7 +1,5 @@
 use super::*;
 
-use iop_morpheus_core::crypto::sign::Nonce;
-
 #[no_mangle]
 pub extern "C" fn selective_digest_json(
     raw_json: *const raw::c_char, raw_keep_paths: *const raw::c_char,

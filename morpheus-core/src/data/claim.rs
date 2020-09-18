@@ -1,8 +1,8 @@
-use serde::{Deserialize, Serialize};
+use super::*;
 
 use crate::crypto::{
     hash::{Content, ContentId},
-    sign::{Nonce, Signable},
+    sign::Signable,
 };
 use crate::data::{did::Did, process::ProcessId, schema::MorpheusValue};
 
