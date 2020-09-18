@@ -14,12 +14,10 @@ crate-type = ["rlib","cdylib"]
 [dependencies]
 anyhow = "1.0.32"
 async-trait = "0.1.40"
-futures = "0.3.5"
 hyper = "0.13.7"
 iop-keyvault = "0.0.4"
 iop-morpheus-core = "0.0.4"
 log = "0.4.11"
-multihash = "0.11.4"
 rand = "0.7.3"
 serde = "1.0.115"
 serde_bytes = "0.11.5"
