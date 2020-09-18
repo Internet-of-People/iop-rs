@@ -2,10 +2,16 @@ use super::*;
 
 use unicode_normalization::UnicodeNormalization;
 
-fn normalize_unicode(s: &str) -> String {
+/// Returns an [NFKD normalized] unicode representation of the input
+///
+/// [NFKD normalized]: https://en.wikipedia.org/wiki/Unicode_equivalence#Normal_forms
+pub fn normalize_unicode(s: &str) -> String {
     s.nfkd().collect()
 }
 
+/// Multibase-encoded hash of the provided bytes used in many places around this crate.
+///
+/// We use SHA3_256 with Base-64 URL encoding.
 pub fn default_hasher(content: &[u8]) -> String {
     // TODO we might want to use sha3 crate instead of tiny_keccak
     let mut hasher = tiny_keccak::Keccak::new_sha3_256();
@@ -15,10 +21,28 @@ pub fn default_hasher(content: &[u8]) -> String {
     multibase::encode(multibase::Base::Base64Url, &hash_output)
 }
 
-pub fn hash_str(content: &str) -> String {
+/// Multibase-encoded hash of the utf8 representation of the provided string,
+/// prefixed with "cj". Character 'j' marks that a JSON value was hashed and
+/// 'c' stands for content hash.
+fn hash_str(content: &str) -> String {
     format!("cj{}", default_hasher(content.as_bytes()))
 }
 
+/// Constructs the deterministic string representation of the provided JSON value.
+///
+/// The same JSON document can be represented in multiple ways depending on
+/// property ordering and string encoding. This canonical JSON format lists
+/// property names in ascending order by their utf8-encoded byte arrays and
+/// uses the [NFKD normalized] unicode representation of all strings
+/// (both property names and string values).
+///
+/// The function will return error if a provided JSON object has properties
+/// with the same name in different unicode normalizations.
+/// Note that creating `Value` arguments, `serde_json` accepts objects
+/// having properties with exactly the same name and keeps only the last value,
+/// ignoring all previous ones.
+///
+/// [NFKD normalized]: https://en.wikipedia.org/wiki/Unicode_equivalence#Normal_forms
 pub fn canonical_json(data: &serde_json::Value) -> Result<String> {
     match data {
         serde_json::Value::Array(arr) => {
@@ -44,7 +68,7 @@ pub fn canonical_json(data: &serde_json::Value) -> Result<String> {
                 let entry = format!("{}:{}", canonical_key, canonical_json(value)?);
                 canonical_json_entries.push(entry);
             }
-            // NOTE: braces are escaped as double brace in Rust
+            // NOTE: braces are escaped as double braces in Rust
             Ok(format!("{{{}}}", canonical_json_entries.join(",")))
         }
 
@@ -55,15 +79,21 @@ pub fn canonical_json(data: &serde_json::Value) -> Result<String> {
     }
 }
 
-pub fn collapse_json_subtree(
-    data: &serde_json::Value, keep_paths: Vec<&str>,
+/// Replace JSON (sub)tree(s) with their multibase-encoded [Merkle-root hash] strings.
+///
+/// Argument `keep_paths` can be created using function [`split_alternatives`] as needed.
+///
+/// [`split_alternatives`]: ../json_path/fn.split_alternatives.html
+/// [Merkle-root hash]: https://en.wikipedia.org/wiki/Merkle_tree
+pub fn mask_json_subtree<'a, 'b>(
+    data: &'a serde_json::Value, keep_paths: impl AsRef<[&'b str]>,
 ) -> Result<serde_json::Value> {
     match data {
         // NOTE path expressions are not (yet?) supported for arrays
         serde_json::Value::Array(arr) => {
             let mut canonical_json_items = Vec::new();
             for item in arr {
-                let digested_item = collapse_json_subtree(item, vec![])?;
+                let digested_item = mask_json_subtree(item, vec![])?;
                 canonical_json_items.push(serde_json::to_string(&digested_item)?);
             }
             let flattened_array = format!("[{}]", canonical_json_items.join(","));
@@ -75,7 +105,7 @@ pub fn collapse_json_subtree(
         serde_json::Value::Object(obj) => {
             // Build { head => vec![tails] } map
             let mut keep_head_tails = HashMap::new();
-            for path in keep_paths {
+            for path in keep_paths.as_ref() {
                 let (head, tail_opt) = json_path::split_head_tail(path)?;
                 let tails = keep_head_tails.entry(head.to_owned()).or_insert_with(Vec::new);
                 if let Some(tail) = tail_opt {
@@ -83,7 +113,7 @@ pub fn collapse_json_subtree(
                 }
             }
 
-            let mut collapse_root = true;
+            let mut mask_root = true;
             let mut canonical_json_entries = Vec::new();
             let mut keys: Vec<_> = obj.keys().collect();
             keys.sort();
@@ -95,29 +125,29 @@ pub fn collapse_json_subtree(
 
                 let value = obj.get(key).expect("serde_json keys() impl error");
                 if let Some(tails) = keep_head_tails.get(key) {
-                    // Found object key present in keep_paths option, skip collapsing current branch of tree
-                    collapse_root = false;
+                    // Found object key present in keep_paths option, skip masking current branch of tree
+                    mask_root = false;
                     if tails.is_empty() {
-                        // This is the exact Json path to keep open, do not collapse anything
+                        // This is the exact Json path to keep open, do not mask anything
                         canonical_json_entries.push((key, value.to_owned()));
                     } else {
-                        // This is a partial match for a Json path to keep open, recurse to collapse it partially
-                        let partial_value = collapse_json_subtree(value, tails.to_owned())?;
+                        // This is a partial match for a Json path to keep open, recurse to mask it partially
+                        let partial_value = mask_json_subtree(value, tails.to_owned())?;
                         canonical_json_entries.push((key, partial_value));
                     }
                 } else {
-                    // This path does not match any paths, fully collapse
-                    let fully_digested_value = collapse_json_subtree(value, vec![])?;
-                    canonical_json_entries.push((key, fully_digested_value));
+                    // This path does not match any paths, mask it fully
+                    let fully_masked_value = mask_json_subtree(value, vec![])?;
+                    canonical_json_entries.push((key, fully_masked_value));
                 };
             }
 
-            if collapse_root {
+            if mask_root {
                 let canonical_entry_strs = canonical_json_entries
                     .iter()
-                    // unwrap() also could be .expect("serde_json can't transform its own type into string")
                     .filter_map(|(key, val)| {
-                        let canonical_key = canonical_json(&serde_json::Value::String((*key).to_string())).ok()?;
+                        let canonical_key =
+                            canonical_json(&serde_json::Value::String((*key).to_string())).ok()?;
                         Some(format!("{}:{}", canonical_key, serde_json::to_string(val).ok()?))
                     })
                     .collect::<Vec<_>>();
@@ -144,23 +174,33 @@ pub fn collapse_json_subtree(
     }
 }
 
+/// Convenience function to transform a JSON value into a (partially) masked JSON value.
+/// Only subtrees matching the provided JSON path pattern will be kept,
+/// all other subtrees will be masked.
+///
+/// Nearly equivalent to `mask_json_subtree(&json_value, split_alternatives(keep_paths_str))`,
+/// but always returns a string, not a `serde_json::Value`.
 pub fn selective_digest_json(
     json_value: serde_json::Value, keep_paths_str: &str,
 ) -> Result<String> {
     let keep_paths_vec = json_path::split_alternatives(keep_paths_str);
     let digest_json = match &json_value {
-        serde_json::Value::Object(_obj) => collapse_json_subtree(&json_value, keep_paths_vec),
-        serde_json::Value::Array(_arr) => collapse_json_subtree(&json_value, keep_paths_vec),
+        serde_json::Value::Object(_obj) => mask_json_subtree(&json_value, keep_paths_vec),
+        serde_json::Value::Array(_arr) => mask_json_subtree(&json_value, keep_paths_vec),
         serde_json::Value::String(_s) => Ok(json_value),
         _ => bail!("Json digest is currently implemented only for composite types"),
     }?;
     match digest_json {
         serde_json::Value::String(digest) => Ok(digest),
+        // TODO probably a serde_json::to_string() would be enough and faster
         serde_json::Value::Object(_) => canonical_json(&digest_json),
         _ => bail!("Implementation error: digest should always return a string or object"),
     }
 }
 
+/// Convenience function calling [`selective_digest_json`] with arbitrary serializable types.
+///
+/// [`selective_digest_json`]: ./fn.selective_digest_json.html
 pub fn selective_digest_data<T: serde::Serialize>(
     data: &T, keep_paths_str: &str,
 ) -> Result<String> {
@@ -168,6 +208,9 @@ pub fn selective_digest_data<T: serde::Serialize>(
     selective_digest_json(json_value, keep_paths_str)
 }
 
+/// Convenience function calling [`selective_digest_json`] with a JSON string.
+///
+/// [`selective_digest_json`]: ./fn.selective_digest_json.html
 pub fn selective_digest_json_str(json_str: &str, keep_paths_str: &str) -> Result<String> {
     ensure!(
         json_str == normalize_unicode(json_str),
@@ -180,10 +223,12 @@ pub fn selective_digest_json_str(json_str: &str, keep_paths_str: &str) -> Result
 
 const KEEP_NOTHING: &str = "";
 
+/// Convenience function for serializable types to mask the whole JSON tree into a digest, keep nothing.
 pub fn digest_data<T: serde::Serialize>(data: &T) -> Result<String> {
     selective_digest_data(data, KEEP_NOTHING)
 }
 
+/// Convenience function for JSON strings to mask the whole JSON tree into a digest, keep nothing.
 pub fn digest_json_str(json_str: &str) -> Result<String> {
     selective_digest_json_str(json_str, KEEP_NOTHING)
 }

@@ -6,6 +6,9 @@ use super::*;
 pub struct Nonce(pub String);
 
 impl Nonce {
+    /// Generates a new Nonce. Uses the getrandom crate to find the best source of entropy on the platform.
+    /// In JavaScript tests you might need to refer to https://github.com/jsdom/jsdom/issues/1612 for
+    /// how to fix phantom browsers to comply with HTML5 specs.
     pub fn generate() -> Self {
         use rand::{thread_rng, RngCore};
         let mut arr = [0u8; 33];

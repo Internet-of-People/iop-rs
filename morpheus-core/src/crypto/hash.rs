@@ -1,7 +1,9 @@
 use super::*;
 
+/// Multibase-encoded hash of the provided binary content, prefixed with "cb".
+/// Character 'b' marks that binary content was hashed and 'c' stands for content hash.
 pub fn hash_bytes(content: &[u8]) -> String {
-    format!("ck{}", default_hasher(content))
+    format!("cb{}", default_hasher(content))
 }
 
 pub type ContentId = String;

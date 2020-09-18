@@ -1,6 +1,9 @@
+//! Utility functions to specify subtrees in a JSON document. Path pattern syntax is based on
+//! JQ patterns, see https://stedolan.github.io/jq/manual/#Basicfilters
+
 use super::*;
 
-// Path pattern syntax is based on JQ patterns, see https://stedolan.github.io/jq/manual/#Basicfilters
+/// Checks if any of the paths exist in the provided value.
 pub fn matches(tree: &serde_json::Value, paths_pattern: &str) -> Result<bool> {
     for single_alternative in split_alternatives(paths_pattern) {
         if match_single(tree, single_alternative)? {
@@ -10,7 +13,8 @@ pub fn matches(tree: &serde_json::Value, paths_pattern: &str) -> Result<bool> {
     Ok(false)
 }
 
-// Assumes no whitespaces and no alternate paths in parameter
+/// Checks if a single path exists in the provided value. Assumes no whitespaces and no alternate
+/// paths in parameter.
 pub fn match_single(tree: &serde_json::Value, path: &str) -> Result<bool> {
     match tree {
         serde_json::Value::Object(map) => {
@@ -32,6 +36,8 @@ pub fn match_single(tree: &serde_json::Value, path: &str) -> Result<bool> {
     }
 }
 
+/// Splits a pattern into multiple paths
+///
 /// ```
 /// use json_digest::json_path::split_alternatives;
 /// assert_eq!( split_alternatives(".a , .b.c , .d"), vec![".a", ".b.c", ".d"]);
@@ -44,6 +50,8 @@ pub fn split_alternatives(paths_pattern: &str) -> Vec<&str> {
         .collect()
 }
 
+/// Splits the first key from the rest of the keys in a path
+///
 /// ```
 /// use json_digest::json_path::split_head_tail;
 /// assert_eq!(split_head_tail(".a").unwrap(), ("a", None));
