@@ -1,8 +1,14 @@
 [package]
 name = "json-digest"
-version = "0.0.4"
+version = "0.0.5"
 authors = ["IoP Ventures LLC <info@iop-ventures.com>", "Rache Bartmoss <bartmoss@tutanota.com>", "wigy <wigy_opensource_developer@yahoo.com>"]
 edition = "2018"
+description = "Allow selective masking of JSON subdocuments for privacy, preserving the digest of the whole document."
+license = "LGPL-3.0-or-later"
+repository = "https://github.com/Internet-of-People/morpheus-rust"
+homepage = "https://developer.iop.global/#/glossary?id=json-masking"
+keywords = ["crypto", "iop", "privacy", "json", "digest"]
+categories = ["cryptography", "algorithms"]
 
 
 [dependencies]
