@@ -1,0 +1,18 @@
+[package]
+name = "json-digest"
+version = "0.0.4"
+authors = ["IoP Ventures LLC <info@iop-ventures.com>", "Rache Bartmoss <bartmoss@tutanota.com>", "wigy <wigy_opensource_developer@yahoo.com>"]
+edition = "2018"
+
+
+[dependencies]
+anyhow = "1.0.32"
+multibase = "0.8.0"
+serde = { version = "1.0.115", features = ["rc"] }
+serde_json = { version = "1.0.57", features = ["preserve_order"] }
+tiny-keccak = "1"
+unicode-normalization = "0.1.13"
+
+
+[dev-dependencies]
+hex = "*"

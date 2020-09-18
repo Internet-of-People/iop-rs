@@ -36,6 +36,7 @@ use iop_morpheus_core::{
     data::{claim::*, did::*, diddoc::*, present::*, validation::*},
     hydra::{sign::HydraSigner, transaction::TransactionData},
 };
+use json_digest::*;
 
 use crate::ffi::{convert, *};
 

@@ -1,9 +1,7 @@
 use super::*;
 
-use crate::crypto::json_digest::{digest_data, hasher};
-
 pub fn hash_bytes(content: &[u8]) -> String {
-    format!("ck{}", hasher(content))
+    format!("ck{}", default_hasher(content))
 }
 
 pub type ContentId = String;

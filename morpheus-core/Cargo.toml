@@ -9,6 +9,7 @@ edition = "2018"
 anyhow = "1.0.32"
 chrono = { version = "0.4.15", features = ["wasmbind"] }
 iop-keyvault = "0.0.4"
+json-digest = "0.0.4"
 jwt-compact = { version = "0.2.0", default-features = false }
 log = "0.4.11"
 multibase = "0.8.0"
@@ -17,9 +18,7 @@ serde = { version = "1.0.115", features = ["rc"] }
 serde_json = { version = "1.0.57", features = ["preserve_order"] }
 serde_repr = "0.1.6"
 serde-strz = "1.1.0"
-tiny-keccak = "1"
 typetag = "0.1.5"
-unicode-normalization = "0.1.13"
 
 # --- Hydra dependencies
 byteorder = "1.3.4"
@@ -27,9 +26,6 @@ hex = "0.4.2"
 sha2 = "0.9.1"
 varint = "0.9.0"
 
-
-[dev-dependencies]
-hex = "*"
 
 [target.'cfg(target_os="android")'.dependencies]
 jni = { version = "0.17", default-features = false }

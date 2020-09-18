@@ -1,4 +1,4 @@
-use crate::crypto::{json_digest::canonical_json, sign::SyncMorpheusSigner};
+use crate::crypto::sign::SyncMorpheusSigner;
 use crate::data::auth::Authentication;
 
 use super::*;

@@ -34,7 +34,6 @@ use iop_keyvault_wasm::*;
 use iop_morpheus_core::{
     crypto::{
         hd::{hydra as hd_hydra, morpheus as hd_morpheus, BoundPlugin, Vault, VaultPlugin},
-        json_digest::{canonical_json, selective_digest_json},
         jwt::{JwtBuilder, JwtParser},
         sign::{PrivateKeySigner, Signable, Signed, SyncMorpheusSigner},
     },
@@ -47,3 +46,4 @@ use iop_morpheus_core::{
     },
     hydra::TransactionData as HydraTransactionData,
 };
+use json_digest::*;

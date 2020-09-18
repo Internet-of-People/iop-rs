@@ -1,13 +1,12 @@
 use super::*;
 
-use crate::util::json_path;
 use unicode_normalization::UnicodeNormalization;
 
 fn normalize_unicode(s: &str) -> String {
     s.nfkd().collect()
 }
 
-pub(crate) fn hasher(content: &[u8]) -> String {
+pub fn default_hasher(content: &[u8]) -> String {
     // TODO we might want to use sha3 crate instead of tiny_keccak
     let mut hasher = tiny_keccak::Keccak::new_sha3_256();
     let mut hash_output = [0u8; 32];
@@ -17,7 +16,7 @@ pub(crate) fn hasher(content: &[u8]) -> String {
 }
 
 pub fn hash_str(content: &str) -> String {
-    format!("cj{}", hasher(content.as_bytes()))
+    format!("cj{}", default_hasher(content.as_bytes()))
 }
 
 pub fn canonical_json(data: &serde_json::Value) -> Result<String> {
@@ -193,6 +192,7 @@ pub fn digest_json_str(json_str: &str) -> Result<String> {
 mod tests {
     use super::*;
     use hex::FromHex;
+    use serde::{Deserialize, Serialize};
 
     #[derive(Clone, Debug, Deserialize, Serialize)]
     struct TestData {

@@ -1,7 +1,6 @@
 pub mod crypto;
 pub mod data;
 pub mod hydra;
-pub mod util;
 
 // imports from standard library
 
@@ -18,5 +17,7 @@ use std::str::FromStr;
 use anyhow::{anyhow, bail, ensure, Result};
 use log::*;
 use serde::{Deserialize, Serialize};
+
+use json_digest::*;
 
 use data::{auth::Authentication, did::Did};
