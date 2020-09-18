@@ -166,7 +166,7 @@ impl From<SecpSignature> for MSignature {
 mod test {
     mod parse_signature {
         use crate::ed25519::EdSignature;
-        use crate::multicipher::MSignature;
+        use crate::multicipher::{CipherSuite, MSignature};
 
         #[allow(dead_code)]
         fn case(input: &str, sig_hex: &str) {
@@ -207,10 +207,15 @@ mod test {
         }
 
         #[test]
-        fn suite_matters() {
-            let sig1 = "sezAhoNep8B9HTRCAYaJFPL1hNgqxfjM72UD4B75s258aF6pPCtDf5trXm7mppZVzT6ynpC3jyH6h3Li7r9Rw4yjeG2".parse::<MSignature>().unwrap();
-            let sig2 = "sfzAhoNep8B9HTRCAYaJFPL1hNgqxfjM72UD4B75s258aF6pPCtDf5trXm7mppZVzT6ynpC3jyH6h3Li7r9Rw4yjeG2".parse::<MSignature>().unwrap();
-            assert_ne!(sig1, sig2);
+        fn ed_suite() {
+            let sig = "sezAhoNep8B9HTRCAYaJFPL1hNgqxfjM72UD4B75s258aF6pPCtDf5trXm7mppZVzT6ynpC3jyH6h3Li7r9Rw4yjeG2".parse::<MSignature>().unwrap();
+            assert_eq!(sig.suite(), CipherSuite::Ed25519);
+        }
+
+        #[test]
+        fn secp_suite() {
+            let sig = "ssz8XFYUjuSro2dzq4mkMMCMJkPH2SEEc6CVJ9VCG9AUXVvRP9QHKY78BnSvpb9zyz5yZf8Pzcq82DzZwLC7xSeGNgq".parse::<MSignature>().unwrap();
+            assert_eq!(sig.suite(), CipherSuite::Secp256k1);
         }
 
         #[test]

@@ -198,7 +198,7 @@ impl MKeyId {
 mod test {
     mod parse_key_id {
         use crate::ed25519::EdKeyId;
-        use crate::multicipher::MKeyId;
+        use crate::multicipher::{CipherSuite, MKeyId};
 
         #[allow(dead_code)]
         fn case(input: &str, key_id_hex: &str) {
@@ -222,10 +222,15 @@ mod test {
         }
 
         #[test]
-        fn suite_matters() {
-            let id1 = "iez21JXEtMzXjbCK6BAYFU9ewX".parse::<MKeyId>().unwrap();
-            let id2 = "ifz21JXEtMzXjbCK6BAYFU9ewX".parse::<MKeyId>().unwrap();
-            assert_ne!(id1, id2);
+        fn ed_suite() {
+            let id = "iez21JXEtMzXjbCK6BAYFU9ewX".parse::<MKeyId>().unwrap();
+            assert_eq!(id.suite(), CipherSuite::Ed25519);
+        }
+
+        #[test]
+        fn secp_suite() {
+            let id = "isz7un9h2Ddua9rfHefJMKiPLxSy2pX".parse::<MKeyId>().unwrap();
+            assert_eq!(id.suite(), CipherSuite::Secp256k1);
         }
 
         #[test]

@@ -37,24 +37,6 @@ macro_rules! e {
     };
 }
 
-macro_rules! f {
-    (variant) => {
-        CipherSuite::TotallyNotEd25519
-    };
-    (id) => {
-        EdKeyId
-    };
-    (pk) => {
-        EdPublicKey
-    };
-    (sk) => {
-        EdPrivateKey
-    };
-    (sig) => {
-        EdSignature
-    };
-}
-
 macro_rules! s {
     (variant) => {
         CipherSuite::Secp256k1
@@ -82,6 +64,13 @@ macro_rules! erased_type {
             #[allow(dead_code)]
             pub(super) erased: Box<dyn Any + Send + Sync>,
         }
+
+        impl $type {
+            /// Returns the cipher suite of the multicipher object
+            pub fn suite(&self) -> CipherSuite {
+                self.suite
+            }
+        }
     };
 }
 
@@ -105,7 +94,7 @@ macro_rules! visit_fac {
     ($left:ident($suite:expr) => $callback:ident($self_:tt, $($args:tt)*)) => {
         match $suite {
             $left!(e) => visit_fac!(@case e $callback $self_ [ $($args),* ]),
-            $left!(f) => visit_fac!(@case f $callback $self_ [ $($args),* ]),
+            $left!(s) => visit_fac!(@case s $callback $self_ [ $($args),* ]),
             _ => bail!("Unknown crypto suite suite '{}'", $suite),
         }
     };
@@ -124,7 +113,6 @@ macro_rules! visit {
     ($callback:ident($self_:tt, $($args:tt)*) ) => {
         match $self_.suite {
             e!(variant) => visit!(@case e $callback $self_ [ $($args),* ]),
-            f!(variant) => visit!(@case f $callback $self_ [ $($args),* ]),
             s!(variant) => visit!(@case s $callback $self_ [ $($args),* ]),
         }
     };
@@ -159,17 +147,12 @@ pub use sk::MPrivateKey;
 /// A suite type that is used to keep the type-safety of the erased types in [`multicipher`]
 ///
 /// [`multicipher`]: index.html
-#[derive(Clone, Debug, Hash, Eq, PartialEq, PartialOrd)]
+#[derive(Clone, Copy, Debug, Hash, Eq, PartialEq, PartialOrd)]
 pub enum CipherSuite {
     /// The object tagged with this variant belongs to the [`ed25519`] module
     ///
     /// [`ed25519`]: ../ed25519/index.html
     Ed25519,
-    /// Well, we only have a single suite implemented yet, so this is a distinct suite that
-    /// uses the same code as the [`Ed25519`] variant does
-    ///
-    /// [`Ed25519`]: #variant.Ed25519
-    TotallyNotEd25519,
     /// The object tagged with this variant belongs to the [`secp256k1`] module
     ///
     /// [`secp256k1`]: ../secp256k1/index.html

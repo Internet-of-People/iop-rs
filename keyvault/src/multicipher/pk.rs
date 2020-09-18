@@ -191,9 +191,9 @@ impl From<SecpPublicKey> for MPublicKey {
 
 #[cfg(test)]
 mod test {
-    mod parse_key_id {
+    mod parse_public_key {
         use crate::ed25519::EdPublicKey;
-        use crate::multicipher::MPublicKey;
+        use crate::multicipher::{CipherSuite, MPublicKey};
 
         #[allow(dead_code)]
         fn case(input: &str, pk_hex: &str) {
@@ -247,10 +247,16 @@ mod test {
         }
 
         #[test]
-        fn suite_matters() {
-            let pk1 = "pez11111111111111111111111111111111".parse::<MPublicKey>().unwrap();
-            let pk2 = "pfz11111111111111111111111111111111".parse::<MPublicKey>().unwrap();
-            assert_ne!(pk1, pk2);
+        fn ed_suite() {
+            let pk = "pez11111111111111111111111111111111".parse::<MPublicKey>().unwrap();
+            assert_eq!(pk.suite(), CipherSuite::Ed25519);
+        }
+
+        #[test]
+        fn secp_suite() {
+            let pk =
+                "psz291QGsvwafGPkKMu6MUsXThWRcBRzRf6pcVPM1Pst6WgW".parse::<MPublicKey>().unwrap();
+            assert_eq!(pk.suite(), CipherSuite::Secp256k1);
         }
 
         #[test]
