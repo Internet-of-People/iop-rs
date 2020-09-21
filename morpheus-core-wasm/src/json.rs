@@ -4,7 +4,7 @@ use super::*;
 pub fn selective_digest(data: &JsValue, keep_properties_list: &str) -> Result<String, JsValue> {
     let serde_data: serde_json::Value = data.into_serde().map_err_to_js()?;
     let digested_data_str =
-        selective_digest_json(serde_data, keep_properties_list).map_err_to_js()?;
+        selective_digest_json(&serde_data, keep_properties_list).map_err_to_js()?;
     Ok(digested_data_str)
 }
 

@@ -181,13 +181,13 @@ pub fn mask_json_subtree<'a, 'b>(
 /// Nearly equivalent to `mask_json_subtree(&json_value, split_alternatives(keep_paths_str))`,
 /// but always returns a string, not a `serde_json::Value`.
 pub fn selective_digest_json(
-    json_value: serde_json::Value, keep_paths_str: &str,
+    json_value: &serde_json::Value, keep_paths_str: &str,
 ) -> Result<String> {
     let keep_paths_vec = json_path::split_alternatives(keep_paths_str);
     let digest_json = match &json_value {
         serde_json::Value::Object(_obj) => mask_json_subtree(&json_value, keep_paths_vec),
         serde_json::Value::Array(_arr) => mask_json_subtree(&json_value, keep_paths_vec),
-        serde_json::Value::String(_s) => Ok(json_value),
+        serde_json::Value::String(_s) => Ok(json_value.to_owned()),
         _ => bail!("Json digest is currently implemented only for composite types"),
     }?;
     match digest_json {
@@ -205,7 +205,7 @@ pub fn selective_digest_data<T: serde::Serialize>(
     data: &T, keep_paths_str: &str,
 ) -> Result<String> {
     let json_value = serde_json::to_value(&data)?;
-    selective_digest_json(json_value, keep_paths_str)
+    selective_digest_json(&json_value, keep_paths_str)
 }
 
 /// Convenience function calling [`selective_digest_json`] with a JSON string.
@@ -218,7 +218,7 @@ pub fn selective_digest_json_str(json_str: &str, keep_paths_str: &str) -> Result
     );
 
     let json_value: serde_json::Value = serde_json::from_str(json_str)?;
-    selective_digest_json(json_value, keep_paths_str)
+    selective_digest_json(&json_value, keep_paths_str)
 }
 
 const KEEP_NOTHING: &str = "";
@@ -266,10 +266,10 @@ mod tests {
         let json_value_nfc: serde_json::Value = serde_json::from_str(&str_nfc)?;
         let json_value_nfkd: serde_json::Value = serde_json::from_str(&str_nfkd)?;
         assert_eq!(
-            selective_digest_json(json_value_nfkd, "")?,
+            selective_digest_json(&json_value_nfkd, "")?,
             "cjuRab8yOeLzxmFY_fEMC79cW5z9XyihRhaGnTSvMabrA8"
         );
-        assert!(selective_digest_json(json_value_nfc, "").is_err());
+        assert!(selective_digest_json(&json_value_nfc, "").is_err());
         Ok(())
     }
 
