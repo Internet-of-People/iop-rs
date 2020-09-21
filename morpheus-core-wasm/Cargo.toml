@@ -1,6 +1,6 @@
 [package]
 name = "iop-morpheus-core-wasm"
-version = "0.0.4"
+version = "0.0.5"
 authors = ["IoP Ventures LLC <info@iop-ventures.com>", "Rache Bartmoss <bartmoss@tutanota.com>", "wigy <wigy_opensource_developer@yahoo.com>"]
 edition = "2018"
 
@@ -11,9 +11,9 @@ crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 anyhow = "1.0.32"
-iop-keyvault = "0.0.4"
-iop-keyvault-wasm = "0.0.4"
-iop-morpheus-core = "0.0.4"
+iop-keyvault = "0.0.5"
+iop-keyvault-wasm = "0.0.5"
+iop-morpheus-core = "0.0.5"
 json-digest = "0.0.5"
 log = "0.4.11"
 serde = "1.0.115"

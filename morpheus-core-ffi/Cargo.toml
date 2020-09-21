@@ -1,6 +1,6 @@
 [package]
 name = "iop-morpheus-core-ffi"
-version = "0.0.4"
+version = "0.0.5"
 authors = ["IoP Ventures LLC <info@iop-ventures.com>", "Rache Bartmoss <bartmoss@tutanota.com>", "wigy <wigy_opensource_developer@yahoo.com>"]
 edition = "2018"
 
@@ -13,8 +13,8 @@ crate-type = ["rlib", "cdylib"]
 [dependencies]
 anyhow = "1.0.32"
 chrono = { version = "0.4.15", features = ["wasmbind"] }
-iop-keyvault = "0.0.4"
-iop-morpheus-core = "0.0.4"
+iop-keyvault = "0.0.5"
+iop-morpheus-core = "0.0.5"
 json-digest = "0.0.5"
 log = "0.4.11"
 serde_json = { version = "1.0.57", features = ["preserve_order"] }

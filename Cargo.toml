@@ -19,5 +19,5 @@ iop-morpheus-core = { path="./morpheus-core" }
 json-digest = { path="./json-digest" }
 
 # [patch.crates-io]
-iop-keyvault = { git="https://github.com/Internet-of-People/keyvault-rust", branch="develop" }
-iop-keyvault-wasm = { git="https://github.com/Internet-of-People/keyvault-rust", branch="develop" }
+#iop-keyvault = { git="https://github.com/Internet-of-People/keyvault-rust", branch="develop" }
+#iop-keyvault-wasm = { git="https://github.com/Internet-of-People/keyvault-rust", branch="develop" }

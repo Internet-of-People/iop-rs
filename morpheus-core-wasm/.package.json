@@ -6,7 +6,7 @@
     "wigy <wigy_opensource_developer@yahoo.com>",
     "mudlee <contact@mudlee.hu>"
   ],
-  "version": "0.0.4",
+  "version": "0.0.5",
   "files": [
     "browser/iop_morpheus_core_wasm_bg.wasm",
     "browser/iop_morpheus_core_wasm_bg.js",
