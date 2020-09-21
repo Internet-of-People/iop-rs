@@ -22,4 +22,4 @@ unicode-normalization = "0.1.13"
 
 
 [dev-dependencies]
-hex = "*"
+hex = "0.4.2"
