@@ -147,7 +147,7 @@ pub use sk::MPrivateKey;
 /// A suite type that is used to keep the type-safety of the erased types in [`multicipher`]
 ///
 /// [`multicipher`]: index.html
-#[derive(Clone, Copy, Debug, Hash, Eq, PartialEq, PartialOrd)]
+#[derive(Clone, Copy, Debug, Hash, Eq, PartialEq, Ord, PartialOrd)]
 pub enum CipherSuite {
     /// The object tagged with this variant belongs to the [`ed25519`] module
     ///

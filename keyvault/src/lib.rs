@@ -38,7 +38,9 @@ pub use network::*;
 pub use networks::Networks;
 pub use seed::*;
 
+use std::cmp::Ordering;
 use std::fmt;
+use std::hash::{Hash, Hasher};
 
 use anyhow::{anyhow, bail, ensure};
 use serde::{Deserialize, Deserializer, Serialize, Serializer};

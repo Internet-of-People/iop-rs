@@ -1,5 +1,3 @@
-use std::cmp::Ordering;
-
 use super::*;
 
 erased_type! {
@@ -89,17 +87,23 @@ impl PartialEq<MKeyId> for MKeyId {
 
 impl Eq for MKeyId {}
 
-macro_rules! partial_cmp {
+macro_rules! cmp {
     ($suite:ident, $self_:tt, $other:expr) => {
-        reify!($suite, id, $self_).partial_cmp(reify!($suite, id, $other))
+        reify!($suite, id, $self_).cmp(reify!($suite, id, $other))
     };
 }
 
-impl PartialOrd<MKeyId> for MKeyId {
-    fn partial_cmp(&self, other: &MKeyId) -> Option<Ordering> {
-        let suite_order = self.suite.partial_cmp(&other.suite);
+impl PartialOrd<Self> for MKeyId {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl Ord for MKeyId {
+    fn cmp(&self, other: &Self) -> Ordering {
+        let suite_order = self.suite.cmp(&other.suite);
         match suite_order {
-            Some(Ordering::Equal) => visit!(partial_cmp(self, other)),
+            Ordering::Equal => visit!(cmp(self, other)),
             _ => suite_order,
         }
     }

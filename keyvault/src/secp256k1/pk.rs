@@ -84,6 +84,25 @@ impl PublicKey<Secp256k1> for SecpPublicKey {
     }
 }
 
+#[allow(clippy::derive_hash_xor_eq)] // If the 2 pks are equal. their hashes will be equal, too
+impl Hash for SecpPublicKey {
+    fn hash<H: Hasher>(&self, hasher: &mut H) {
+        self.to_bytes().hash(hasher);
+    }
+}
+
+impl PartialOrd<Self> for SecpPublicKey {
+    fn partial_cmp(&self, rhs: &Self) -> Option<Ordering> {
+        Some(self.cmp(rhs))
+    }
+}
+
+impl Ord for SecpPublicKey {
+    fn cmp(&self, rhs: &Self) -> Ordering {
+        self.to_bytes().cmp(&rhs.to_bytes())
+    }
+}
+
 impl FromStr for SecpPublicKey {
     type Err = anyhow::Error;
     fn from_str(src: &str) -> Result<Self> {

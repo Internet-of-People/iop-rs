@@ -9,7 +9,7 @@ use crate::*;
 pub const PUBLIC_KEY_SIZE: usize = ed::PUBLIC_KEY_LENGTH;
 
 /// Implementation of Ed25519::PublicKey
-#[derive(Copy, Clone, Eq, PartialEq)]
+#[derive(Clone, Eq, PartialEq)]
 pub struct EdPublicKey(ed::PublicKey);
 
 impl EdPublicKey {
@@ -55,11 +55,30 @@ impl PublicKey<Ed25519> for EdPublicKey {
     }
 }
 
+#[allow(clippy::derive_hash_xor_eq)] // If the 2 pks are equal. their hashes will be equal, too
+impl Hash for EdPublicKey {
+    fn hash<H: Hasher>(&self, hasher: &mut H) {
+        self.to_bytes().hash(hasher);
+    }
+}
+
+impl PartialOrd<Self> for EdPublicKey {
+    fn partial_cmp(&self, rhs: &Self) -> Option<Ordering> {
+        Some(self.cmp(rhs))
+    }
+}
+
+impl Ord for EdPublicKey {
+    fn cmp(&self, rhs: &Self) -> Ordering {
+        self.to_bytes().cmp(&rhs.to_bytes())
+    }
+}
+
 impl ExtendedPublicKey<Ed25519> for EdPublicKey {
     fn derive_normal_child(&self, _idx: i32) -> Result<EdPublicKey> {
         bail!("Normal derivation of Ed25519 is invalid based on SLIP-0010.")
     }
     fn public_key(&self) -> EdPublicKey {
-        *self
+        self.clone()
     }
 }

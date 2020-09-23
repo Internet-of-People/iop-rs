@@ -36,7 +36,8 @@ impl AsymmetricCrypto for Ed25519 {
 
 impl KeyDerivationCrypto for Ed25519 {
     type ExtendedPrivateKey = EdExtPrivateKey;
-    type ExtendedPublicKey = EdPublicKey; // No need for extension, because there is no derivation
+    /// No need for chain code, because there is no public derivation
+    type ExtendedPublicKey = EdPublicKey;
 
     fn master(seed: &Seed) -> EdExtPrivateKey {
         EdExtPrivateKey::cook_new(SLIP10_SEED_HASH_SALT, |hasher| {

@@ -127,6 +127,41 @@ impl PartialEq<MPublicKey> for MPublicKey {
 
 impl Eq for MPublicKey {}
 
+macro_rules! cmp {
+    ($suite:ident, $self_:tt, $other:expr) => {
+        reify!($suite, pk, $self_).cmp(reify!($suite, pk, $other))
+    };
+}
+
+impl PartialOrd<Self> for MPublicKey {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl Ord for MPublicKey {
+    fn cmp(&self, other: &Self) -> Ordering {
+        let suite_order = self.suite.cmp(&other.suite);
+        match suite_order {
+            Ordering::Equal => visit!(cmp(self, other)),
+            _ => suite_order,
+        }
+    }
+}
+
+macro_rules! hash {
+    ($suite:ident, $self_:tt, $state:expr) => {
+        reify!($suite, pk, $self_).hash($state)
+    };
+}
+
+impl Hash for MPublicKey {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.suite.hash(state);
+        visit!(hash(self, state));
+    }
+}
+
 impl From<&MPublicKey> for String {
     fn from(src: &MPublicKey) -> Self {
         let (suite, bytes) = visit!(to_bytes_tuple(src));
