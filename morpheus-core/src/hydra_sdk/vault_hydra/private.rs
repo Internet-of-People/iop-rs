@@ -1,7 +1,5 @@
 use super::*;
 
-use crate::hydra::sign::HydraSigner;
-
 pub struct Private {
     state: Box<dyn State<PublicState>>,
     account: Bip44Account<Secp256k1>,
@@ -78,9 +76,7 @@ impl Private {
         Ok(state.change_keys)
     }
 
-    pub fn sign_hydra_transaction(
-        &self, hyd_addr: &str, tx: &mut HydraTransactionData,
-    ) -> Result<()> {
+    pub fn sign_hydra_transaction(&self, hyd_addr: &str, tx: &mut TransactionData) -> Result<()> {
         let pub_key = self.public().key_by_p2pkh_addr(hyd_addr)?;
         let sk = self.key_by_pk(&pub_key.to_public_key())?;
         sk.to_private_key().sign_hydra_transaction(tx)

@@ -1,6 +1,6 @@
 [package]
 name = "iop-coeus-core-wasm"
-version = "0.0.4"
+version = "0.0.6"
 authors = ["IoP Ventures LLC <info@iop-ventures.com>", "Rache Bartmoss <bartmoss@tutanota.com>", "wigy <wigy_opensource_developer@yahoo.com>"]
 edition = "2018"
 license = "LGPL-3.0-or-later"
@@ -12,8 +12,8 @@ crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 anyhow = "*"
-iop-coeus-core = "0.0.5"
-iop-keyvault-wasm = "0.0.5"
+iop-coeus-core = "0.0.6"
+iop-keyvault-wasm = "0.0.6"
 serde = "1.0.116"
 # Force "wasm-bindgen" feature in uuid dependency needed by valico in coeus-core
 uuid = { version = "0.8", features = ["v4", "wasm-bindgen"] }

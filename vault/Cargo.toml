@@ -1,5 +1,5 @@
 [package]
-name = "iop-morpheus-core"
+name = "iop-vault"
 version = "0.0.6"
 authors = ["IoP Ventures LLC <info@iop-ventures.com>", "Rache Bartmoss <bartmoss@tutanota.com>", "wigy <wigy_opensource_developer@yahoo.com>"]
 edition = "2018"
@@ -7,15 +7,10 @@ edition = "2018"
 
 [dependencies]
 anyhow = "1.0.32"
-chrono = { version = "0.4.15", features = ["wasmbind"] }
 iop-keyvault = "0.0.6"
-iop-vault = "0.0.6"
-json-digest = "0.0.6"
-jwt-compact = { version = "0.2.0", default-features = false }
 log = "0.4.11"
 multibase = "0.8.0"
-rand = "0.7.3"
-serde = { version = "1.0.115", features = ["derive", "rc"] }
+serde = { version = "1.0.115", features = ["rc"] }
 serde_json = { version = "1.0.57", features = ["preserve_order"] }
 serde_repr = "0.1.6"
 serde-strz = "1.1.0"

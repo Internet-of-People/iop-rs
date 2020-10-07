@@ -8,6 +8,7 @@ members = [
     "morpheus-core-wasm",
     "morpheus-core-ffi",
     "morpheus-sdk",
+    "vault"
 ]
 
 # Experiment for optimizing WASM and FFI binary sizes
@@ -17,9 +18,10 @@ opt-level = 's'
 
 [patch.crates-io]
 iop-coeus-core = { path="./coeus-core" }
-#iop-keyvault = { path="../keyvault-rs/keyvault" }
-#iop-keyvault-wasm = { path="../keyvault-rs/keyvault-wasm" }
+# iop-keyvault = { path="../keyvault-rs/keyvault" }
+# iop-keyvault-wasm = { path="../keyvault-rs/keyvault-wasm" }
 iop-morpheus-core = { path="./morpheus-core" }
+iop-vault = { path="./vault" }
 json-digest = { path="./json-digest" }
 
 # [patch.crates-io]

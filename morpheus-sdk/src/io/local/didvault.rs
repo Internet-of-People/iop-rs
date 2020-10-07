@@ -5,10 +5,7 @@ use std::path::{Path, PathBuf};
 
 use crate::io::local::signer::{MorpheusSigner, SyncAdapter};
 use iop_keyvault::multicipher::MKeyId;
-use iop_morpheus_core::{
-    crypto::hd::{did::*, HdRecord, Label},
-    data::{auth::Authentication, did::*},
-};
+use iop_morpheus_core::data::{auth::Authentication, did::*};
 
 #[async_trait(?Send)]
 pub trait DidVault {

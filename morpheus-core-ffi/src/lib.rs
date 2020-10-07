@@ -7,7 +7,6 @@ mod crypto;
 mod did;
 mod ffi;
 mod hydra;
-mod hydra_signer;
 mod jwt;
 mod morpheus;
 mod multicipher;
@@ -24,18 +23,18 @@ use std::str::FromStr;
 use anyhow::Result;
 
 use iop_keyvault::{
-    multicipher::*, secp256k1::*, Bip32Node, Bip32PublicNode, Bip44Key, Bip44PublicKey, Networks,
-    PrivateKey as _, PublicKey as _,
+    ed25519::{MorpheusPrivateKey, MorpheusPublicKey},
+    multicipher::*,
+    secp256k1::*,
+    Bip32Node, Bip32PublicNode, Bip44Key, Bip44PublicKey, Networks, PrivateKey as _,
+    PublicKey as _,
 };
 use iop_morpheus_core::{
-    crypto::{
-        hd::{BoundPlugin, Vault},
-        jwt::*,
-        sign::*,
-    },
+    crypto::{jwt::*, sign::*},
     data::{claim::*, did::*, diddoc::*, present::*, validation::*},
-    hydra::{sign::HydraSigner, transaction::TransactionData},
+    morpheus_sdk::vault_morpheus::{Plugin, Private, PrivateKind, Public, PublicKind},
 };
+use iop_vault::{BoundPlugin, Vault};
 use json_digest::*;
 
 use crate::ffi::{convert, *};

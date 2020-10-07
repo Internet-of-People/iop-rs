@@ -1,8 +1,8 @@
 use super::*;
 
+use crate::classic::{HdRecord, Label};
 use crate::io::local::signer::MorpheusSigner;
 use iop_keyvault::multicipher::MKeyId;
-use iop_morpheus_core::crypto::hd::{HdRecord, Label};
 
 pub struct HydraRecord {}
 

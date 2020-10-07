@@ -1,5 +1,4 @@
 use super::*;
-use anyhow::Context;
 
 pub trait SyncDidVault {
     fn key_ids(&self) -> Result<Vec<MKeyId>>;

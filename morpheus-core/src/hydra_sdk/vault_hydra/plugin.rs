@@ -1,5 +1,6 @@
 use super::*;
-use anyhow::Context;
+
+use iop_vault::{Vault, VaultPlugin};
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]

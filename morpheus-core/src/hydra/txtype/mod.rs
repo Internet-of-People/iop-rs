@@ -94,19 +94,20 @@ impl CommonTransactionFields {
 mod test {
     use super::*;
 
-    use crate::crypto::{
-        hd::{hydra, morpheus as hd_morpheus, Vault},
-        sign::PrivateKeySigner,
-    };
+    use crate::crypto::sign::PrivateKeySigner;
     use crate::data::{auth::Authentication, did::Did, diddoc::Right};
     use crate::hydra::txtype::morpheus::OperationAttempt;
     use crate::hydra::{
-        sign::HydraSigner,
         transaction::{TransactionData, TxBatch},
         txtype::{hyd_core, morpheus, Aip29Transaction, CommonTransactionFields},
     };
+    use crate::{
+        hydra_sdk::vault_hydra::{self as hydra, HydraSigner},
+        morpheus_sdk::vault_morpheus as hd_morpheus,
+    };
     use iop_keyvault::secp256k1::{SecpKeyId, SecpPublicKey};
     use iop_keyvault::{multicipher::MKeyId, secp256k1::hyd, PublicKey, Seed};
+    use iop_vault::Vault;
 
     #[test]
     fn hydra_tx_builder() -> Result<()> {

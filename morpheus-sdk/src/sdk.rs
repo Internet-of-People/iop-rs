@@ -2,12 +2,13 @@ use super::*;
 
 use crate::{
     client::Client,
+    did::InMemoryDidVault,
     io::dist::did::{HydraDidLedger, /*FakeDidLedger, */ LedgerOperations, LedgerQueries},
     io::local::didvault::{DidVault, FilePersister, PersistentDidVault},
 };
 use iop_keyvault::{Bip39, Seed};
 use iop_morpheus_core::{
-    crypto::{hd::did::InMemoryDidVault, sign::Signed},
+    crypto::sign::Signed,
     data::{
         auth::Authentication,
         claim::{WitnessRequest, WitnessStatement},

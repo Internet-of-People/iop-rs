@@ -33,7 +33,6 @@ use iop_keyvault::{multicipher::*, Networks, PublicKey as _};
 use iop_keyvault_wasm::*;
 use iop_morpheus_core::{
     crypto::{
-        hd::{hydra as hd_hydra, morpheus as hd_morpheus, BoundPlugin, Vault, VaultPlugin},
         jwt::{JwtBuilder, JwtParser},
         sign::{PrivateKeySigner, Signable, Signed, SyncMorpheusSigner},
     },
@@ -45,5 +44,8 @@ use iop_morpheus_core::{
         validation::{ValidationIssue, ValidationResult},
     },
     hydra::TransactionData as HydraTransactionData,
+    hydra_sdk::vault_hydra as hd_hydra,
+    morpheus_sdk::vault_morpheus as hd_morpheus,
 };
+use iop_vault::{BoundPlugin, Vault, VaultPlugin};
 use json_digest::*;

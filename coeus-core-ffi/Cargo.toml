@@ -1,6 +1,6 @@
 [package]
 name = "iop-coeus-core-ffi"
-version = "0.0.4"
+version = "0.0.6"
 authors = ["IoP Ventures LLC <info@iop-ventures.com>", "Rache Bartmoss <bartmoss@tutanota.com>", "wigy <wigy_opensource_developer@yahoo.com>"]
 edition = "2018"
 license = "LGPL-3.0-or-later"
@@ -13,7 +13,7 @@ crate-type = ["rlib", "cdylib"]
 
 [dependencies]
 anyhow = "*"
-iop-coeus-core = "0.0.5"
+iop-coeus-core = "0.0.6"
 
 
 [target.'cfg(target_os="android")'.dependencies]

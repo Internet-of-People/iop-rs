@@ -1,8 +1,5 @@
 use super::*;
 
-use iop_keyvault::Networks;
-use iop_morpheus_core::crypto::hd::{hydra::Parameters, BoundPlugin, Vault};
-
 pub struct CHydraPlugin {
     pub(crate) plugin: BoundPlugin<Plugin, Public, Private>,
 }

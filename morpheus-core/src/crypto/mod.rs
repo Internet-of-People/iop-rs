@@ -1,5 +1,4 @@
 pub mod hash;
-pub mod hd;
 pub mod jwt;
 pub mod sign;
 
