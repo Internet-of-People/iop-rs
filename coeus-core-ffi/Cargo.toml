@@ -1,0 +1,21 @@
+[package]
+name = "iop-coeus-core-ffi"
+version = "0.0.4"
+authors = ["IoP Ventures LLC <info@iop-ventures.com>", "Rache Bartmoss <bartmoss@tutanota.com>", "wigy <wigy_opensource_developer@yahoo.com>"]
+edition = "2018"
+license = "LGPL-3.0-or-later"
+
+
+[lib]
+name = "coeus_core"
+crate-type = ["rlib", "cdylib"]
+
+
+[dependencies]
+anyhow = "*"
+iop-coeus-core = "0.0.5"
+
+
+[target.'cfg(target_os="android")'.dependencies]
+jni = { version = "0.17", default-features = false }
+android_logger = "0.9"

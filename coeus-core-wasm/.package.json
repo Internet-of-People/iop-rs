@@ -1,0 +1,22 @@
+{
+  "name": "@internet-of-people/coeus-core-wasm",
+  "collaborators": [
+    "IoP Ventures LLC <info@iop-ventures.com>",
+    "Rache Bartmoss <bartmoss@tutanota.com>",
+    "wigy <wigy_opensource_developer@yahoo.com>",
+  ],
+  "version": "0.0.5",
+  "files": [
+    "browser/iop_coeus_core_wasm_bg.wasm",
+    "browser/iop_coeus_core_wasm_bg.js",
+    "browser/iop_coeus_core_wasm.js",
+    "node/iop_coeus_core_wasm_bg.wasm",
+    "node/iop_coeus_core_wasm.js",
+    "iop_coeus_core_wasm_bg.d.ts",
+    "iop_coeus_core_wasm.d.ts"
+  ],
+  "main": "node/iop_coeus_core_wasm.js",
+  "module": "browser/iop_coeus_core_wasm.js",
+  "types": "iop_coeus_core_wasm.d.ts",
+  "sideEffects": "false"
+}

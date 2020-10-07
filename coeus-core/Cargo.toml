@@ -1,0 +1,22 @@
+[package]
+name = "iop-coeus-core"
+version = "0.0.5"
+authors = ["IoP Ventures LLC <info@iop-ventures.com>", "Rache Bartmoss <bartmoss@tutanota.com>", "wigy <wigy_opensource_developer@yahoo.com>"]
+edition = "2018"
+license = "LGPL-3.0-or-later"
+
+
+[dependencies]
+anyhow = "*"
+iop-keyvault = "0.0.5"
+json-digest = "0.0.5"
+iop-morpheus-core = { version = "0.0.5", optional = true }
+serde = { version="*", features=["derive"] }
+serde_json = { version="*", features=["preserve_order"] }
+serde-strz = "1.1.0"
+valico = "3.4.0"
+
+
+[features]
+#default = ["did"]
+did = ["iop-morpheus-core"]
