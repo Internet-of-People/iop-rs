@@ -15,4 +15,5 @@ pub use state::*;
 use wasm_bindgen::prelude::*;
 
 use iop_coeus_core::*;
+use iop_hydra_proto::txtype::coeus::CoeusAsset;
 use iop_keyvault_wasm::*;
