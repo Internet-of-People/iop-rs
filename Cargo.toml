@@ -7,7 +7,7 @@ members = [
     "morpheus-core",
     "morpheus-core-wasm",
     "morpheus-core-ffi",
-    "morpheus-sdk",
+    "morpheus-sdk-legacy",
     "vault"
 ]
 
