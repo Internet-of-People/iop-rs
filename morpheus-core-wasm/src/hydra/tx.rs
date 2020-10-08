@@ -1,8 +1,8 @@
 use super::*;
 
+use iop_hydra_proto::txtype::{hyd_core, Aip29Transaction, CommonTransactionFields};
 use iop_keyvault::secp256k1::SecpPublicKey;
 use iop_keyvault::{secp256k1::Secp256k1, Network};
-use iop_morpheus_core::hydra::txtype::{hyd_core, Aip29Transaction, CommonTransactionFields};
 
 #[wasm_bindgen(js_name = HydraTxBuilder)]
 pub struct JsHydraTxBuilder {

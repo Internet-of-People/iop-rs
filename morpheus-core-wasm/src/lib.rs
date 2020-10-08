@@ -29,6 +29,7 @@ use wasm_bindgen::prelude::*;
 
 // imports from own crates
 
+use iop_hydra_proto::TransactionData as HydraTransactionData;
 use iop_hydra_sdk::vault as hd_hydra;
 use iop_keyvault::{multicipher::*, Networks, PublicKey as _};
 use iop_keyvault_wasm::*;
@@ -44,7 +45,6 @@ use iop_morpheus_core::{
         present::ClaimPresentation,
         validation::{ValidationIssue, ValidationResult},
     },
-    hydra::TransactionData as HydraTransactionData,
 };
 use iop_morpheus_sdk::vault as hd_morpheus;
 use iop_vault::{BoundPlugin, Vault, VaultPlugin};

@@ -5,7 +5,7 @@ mod sign;
 
 use super::*;
 
+use iop_hydra_proto::TransactionData;
 use iop_hydra_sdk::vault::{HydraSigner, Parameters, Plugin, Private, Public};
 use iop_keyvault::Networks;
-use iop_morpheus_core::hydra::TransactionData;
 use iop_vault::{BoundPlugin, Vault};

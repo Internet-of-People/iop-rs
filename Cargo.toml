@@ -3,6 +3,7 @@ members = [
     "coeus-core",
     "coeus-core-ffi",
     "coeus-core-wasm",
+    "hydra-proto",
     "hydra-sdk",
     "iop-sdk",
     "json-digest",
@@ -21,6 +22,7 @@ opt-level = 's'
 
 [patch.crates-io]
 iop-coeus-core = { path="./coeus-core" }
+iop-hydra-proto = { path="./hydra-proto" }
 iop-hydra-sdk = { path="./hydra-sdk" }
 # iop-keyvault = { path="../keyvault-rs/keyvault" }
 # iop-keyvault-wasm = { path="../keyvault-rs/keyvault-wasm" }

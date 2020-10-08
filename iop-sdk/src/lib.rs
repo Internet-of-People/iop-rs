@@ -4,19 +4,19 @@ mod test {
 
     use anyhow::Result;
 
+    use iop_hydra_proto::{
+        transaction::{TransactionData, TxBatch},
+        txtype::{
+            hyd_core, morpheus, morpheus::OperationAttempt, Aip29Transaction,
+            CommonTransactionFields,
+        },
+    };
     use iop_hydra_sdk::vault::{self as hydra, HydraSigner};
     use iop_keyvault::secp256k1::{SecpKeyId, SecpPublicKey};
     use iop_keyvault::{multicipher::MKeyId, secp256k1::hyd, PublicKey, Seed};
     use iop_morpheus_core::{
         crypto::sign::PrivateKeySigner,
         data::{auth::Authentication, did::Did, diddoc::Right},
-        hydra::{
-            transaction::{TransactionData, TxBatch},
-            txtype::{
-                hyd_core, morpheus, morpheus::OperationAttempt, Aip29Transaction,
-                CommonTransactionFields,
-            },
-        },
     };
     use iop_morpheus_sdk::vault::Plugin as MorpheusPlugin;
     use iop_vault::Vault;

@@ -1,29 +1,30 @@
 [package]
-name = "iop-morpheus-core-ffi"
+name = "iop-hydra-proto"
 version = "0.0.6"
 authors = ["IoP Ventures LLC <info@iop-ventures.com>", "Rache Bartmoss <bartmoss@tutanota.com>", "wigy <wigy_opensource_developer@yahoo.com>"]
+license = "LGPL-3.0-or-later"
 edition = "2018"
-
-
-[lib]
-name = "morpheus_core"
-crate-type = ["rlib", "cdylib"]
 
 
 [dependencies]
 anyhow = "1.0.32"
-chrono = { version = "0.4.15", features = ["wasmbind"] }
-iop-hydra-proto = "0.0.6"
-iop-hydra-sdk = "0.0.6"
+byteorder = "1.3.4"
+hex = "0.4.2"
 iop-keyvault = "0.0.6"
 iop-morpheus-core = "0.0.6"
-iop-morpheus-sdk = "0.0.6"
 iop-vault = "0.0.6"
 json-digest = "0.0.6"
 log = "0.4.11"
-serde = { version = "1.0.115", features = ["derive", "rc"] }
-serde_json = { version = "1.0.57", features = ["preserve_order"] }
+rand = "0.7.3"
+serde = "1.0.115"
+serde_bytes = "0.11.5"
+serde_json = "1.0.57"
 serde_repr = "0.1.6"
+serde-strz = "1.1.0"
+sha2 = "0.9.1"
+tiny-bip39 = { version = "0.7.3", default-features = false }
+typetag = "0.1.5"
+varint = "0.9.0"
 
 
 [target.'cfg(target_os="android")'.dependencies]

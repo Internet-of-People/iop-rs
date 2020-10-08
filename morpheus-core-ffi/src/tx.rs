@@ -1,9 +1,7 @@
 use super::*;
 
+use iop_hydra_proto::txtype::{hyd_core, morpheus, Aip29Transaction, CommonTransactionFields};
 use iop_keyvault::Networks;
-use iop_morpheus_core::hydra::txtype::{
-    hyd_core, morpheus, Aip29Transaction, CommonTransactionFields,
-};
 
 #[no_mangle]
 pub extern "C" fn HydraTxBuilder_transfer(

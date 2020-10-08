@@ -6,15 +6,15 @@ use super::*;
 #[derive(Clone, Copy, Debug, Deserialize, Eq, Hash, PartialEq, Serialize)]
 #[serde(untagged)]
 pub enum TransactionType {
-    Core(hyd_core::TransactionType),
-    Morpheus(morpheus::TransactionType),
+    Core(hyd_core::HydraTransactionType),
+    Morpheus(morpheus::MorpheusTransactionType),
 }
 
 impl TransactionType {
     pub fn type_group(self) -> u32 {
         match self {
-            Self::Core(_) => hyd_core::TransactionType::TYPE_GROUP,
-            Self::Morpheus(_) => morpheus::TransactionType::TYPE_GROUP,
+            Self::Core(_) => hyd_core::HydraTransactionType::TYPE_GROUP,
+            Self::Morpheus(_) => morpheus::MorpheusTransactionType::TYPE_GROUP,
         }
     }
 
@@ -29,15 +29,15 @@ impl TransactionType {
 // TODO consider using a better programming construction than this Default here
 impl Default for TransactionType {
     fn default() -> Self {
-        Self::Core(hyd_core::TransactionType::Transfer)
+        Self::Core(hyd_core::HydraTransactionType::Transfer)
     }
 }
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
 #[serde(untagged)]
 pub enum Asset {
-    Core(hyd_core::Asset),
-    Morpheus(morpheus::Asset),
+    Core(hyd_core::HydraAsset),
+    Morpheus(morpheus::MorpheusAsset),
 }
 
 pub trait Aip29Transaction {

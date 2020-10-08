@@ -1,6 +1,5 @@
 use super::*;
-use crate::hydra::txtype::hyd_core::{Asset as CoreAsset, TransactionType as CoreTxType};
-use anyhow::Context;
+use crate::txtype::hyd_core::{HydraAsset as CoreAsset, HydraTransactionType as CoreTxType};
 
 pub fn to_bytes(
     tx: &TransactionData, skip_signature: bool, skip_second_signature: bool,
@@ -11,7 +10,7 @@ pub fn to_bytes(
 
     match tx.type_group {
         Some(CoreTxType::TYPE_GROUP) => serialize_core_type(tx, &mut bytes)?,
-        Some(morpheus::TransactionType::TYPE_GROUP) => {
+        Some(morpheus::MorpheusTransactionType::TYPE_GROUP) => {
             let asset = match tx.asset {
                 Some(Asset::Morpheus(ref morpheus_asset)) => morpheus_asset,
                 _ => bail!("Implementation error: handling wrong asset type"),

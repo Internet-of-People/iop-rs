@@ -1,6 +1,5 @@
 pub mod crypto;
 pub mod data;
-pub mod hydra;
 
 // imports from standard library
 
