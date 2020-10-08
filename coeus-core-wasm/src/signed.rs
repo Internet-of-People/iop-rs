@@ -18,7 +18,8 @@ impl JsNoncedOperations {
     }
 
     pub fn price(&self, state: &JsState) -> JsPrice {
-        self.inner.get_price(state.inner()).into()
+        let _state = state.inner();
+        self.inner.get_price().into()
     }
 
     pub fn sign(self, sk: &JsMPrivateKey) -> Result<JsSignedOperations, JsValue> {
@@ -51,7 +52,8 @@ pub struct JsSignedOperations {
 #[wasm_bindgen(js_class = SignedOperations)]
 impl JsSignedOperations {
     pub fn price(&self, state: &JsState) -> JsPrice {
-        self.inner.get_price(state.inner()).into()
+        let _state = state.inner();
+        self.inner.get_price().into()
     }
     pub fn verify(&self) -> bool {
         self.inner.verify()

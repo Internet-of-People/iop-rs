@@ -23,7 +23,7 @@ pub(crate) trait AuthorizedCommand: Command {
 }
 
 pub trait Priced {
-    fn get_price(&self, state: &State) -> Price;
+    fn get_price(&self) -> Price;
 }
 
 pub(crate) trait UndoCommand {
@@ -85,9 +85,10 @@ impl Command for UserOperation {
     }
 }
 
-// TODO registration policies and operation properties (especially last_edge length) will influence prices
+// TODO work out ecosystem for pricing model: naming system state (e.g. subdomain registration policies)
+//      and operation properties (especially last_edge length) might influence prices
 impl Priced for UserOperation {
-    fn get_price(&self, state: &State) -> Price {
+    fn get_price(&self) -> Price {
         match self {
             Self::Register(_op) => Price::fee(100_000_000),
             Self::Update(_op) => Price::fee(10_000_000),

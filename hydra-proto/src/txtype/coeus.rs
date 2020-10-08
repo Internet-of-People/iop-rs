@@ -40,18 +40,20 @@ pub struct CoeusAsset {
     pub signed_operations: Vec<SignedOperations>,
 }
 
+// TODO work out ecosystem for pricing model
 impl CoeusAsset {
-    const FEE_BYTES_OFFSET: u64 = 15;
-    const FLAKES_PER_BYTES: u64 = 3000;
+    const FEE_BYTES_OFFSET: u64 = 0;
+    //const FLAKES_PER_BYTES: u64 = 3000;
 
     pub fn fee(&self) -> u64 {
-        // TODO calculate price based on Coeus prices/fees
-        // self.signed_operations.iter().fold(Price::zero(), |price, op| price += op.get_price())
-
-        let op_attempts_json = serde_json::to_string(&self.signed_operations)
-            .expect("Implementation error: serializing operation attempts must not fail");
-        let bytes = (op_attempts_json.len() as u64).checked_add(Self::FEE_BYTES_OFFSET);
-        bytes.and_then(|bytes| bytes.checked_mul(Self::FLAKES_PER_BYTES)).unwrap_or(u64::MAX)
+        let price = self.signed_operations.iter().fold(
+            Price::fee(Self::FEE_BYTES_OFFSET),
+            |mut price, op| {
+                price += op.get_price();
+                price
+            },
+        );
+        price.fee
     }
 
     pub fn to_bytes(&self) -> Result<Vec<u8>> {

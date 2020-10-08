@@ -25,10 +25,10 @@ impl NoncedOperations {
 }
 
 impl Priced for NoncedOperations {
-    fn get_price(&self, state: &State) -> Price {
+    fn get_price(&self) -> Price {
         let mut price = Price::zero();
         for op in &self.operations {
-            price += op.get_price(state);
+            price += op.get_price();
         }
         price
     }
@@ -54,8 +54,8 @@ impl SignedOperations {
 }
 
 impl Priced for SignedOperations {
-    fn get_price(&self, state: &State) -> Price {
-        self.operations.get_price(state)
+    fn get_price(&self) -> Price {
+        self.operations.get_price()
     }
 }
 
