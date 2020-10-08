@@ -1,3 +1,4 @@
+pub mod coeus;
 pub mod hyd_core;
 pub mod morpheus;
 
@@ -7,6 +8,7 @@ use super::*;
 #[serde(untagged)]
 pub enum TransactionType {
     Core(hyd_core::HydraTransactionType),
+    Coeus(coeus::CoeusTransactionType),
     Morpheus(morpheus::MorpheusTransactionType),
 }
 
@@ -14,6 +16,7 @@ impl TransactionType {
     pub fn type_group(self) -> u32 {
         match self {
             Self::Core(_) => hyd_core::HydraTransactionType::TYPE_GROUP,
+            Self::Coeus(_) => coeus::CoeusTransactionType::TYPE_GROUP,
             Self::Morpheus(_) => morpheus::MorpheusTransactionType::TYPE_GROUP,
         }
     }
@@ -21,6 +24,7 @@ impl TransactionType {
     pub fn into_u16(self) -> u16 {
         match self {
             Self::Core(core_type) => core_type as u16,
+            Self::Coeus(coeus_type) => coeus_type as u16,
             Self::Morpheus(morpheus_type) => morpheus_type as u16,
         }
     }
@@ -37,6 +41,7 @@ impl Default for TransactionType {
 #[serde(untagged)]
 pub enum Asset {
     Core(hyd_core::HydraAsset),
+    Coeus(coeus::CoeusAsset),
     Morpheus(morpheus::MorpheusAsset),
 }
 
@@ -88,4 +93,17 @@ impl CommonTransactionFields {
 
         tx_data
     }
+}
+
+pub fn string_to_protobuf(value: &str) -> Result<Vec<u8>> {
+    let mut res_bytes = Vec::new();
+
+    let size_varint_bytes = vec![0u8; 0];
+    let mut cur = Cursor::new(size_varint_bytes);
+    cur.write_unsigned_varint_32(value.len() as u32)?; // NOTE: string length is size in bytes
+    let size_varint_bytes = cur.into_inner();
+
+    res_bytes.write_all(&size_varint_bytes)?;
+    res_bytes.write_all(value.as_bytes())?;
+    Ok(res_bytes)
 }

@@ -160,16 +160,3 @@ pub enum SignableOperationDetails {
     },
     TombstoneDid {},
 }
-
-pub fn string_to_protobuf(value: &str) -> Result<Vec<u8>> {
-    let mut res_bytes = Vec::new();
-
-    let size_varint_bytes = vec![0u8; 0];
-    let mut cur = Cursor::new(size_varint_bytes);
-    cur.write_unsigned_varint_32(value.len() as u32)?; // NOTE: string length is size in bytes
-    let size_varint_bytes = cur.into_inner();
-
-    res_bytes.write_all(&size_varint_bytes)?;
-    res_bytes.write_all(value.as_bytes())?;
-    Ok(res_bytes)
-}

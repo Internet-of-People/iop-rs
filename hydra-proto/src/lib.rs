@@ -8,13 +8,11 @@ use txtype::*;
 // imports from standard library
 
 use std::collections::HashMap;
-use std::fmt::{self, Display, Formatter};
 use std::io::{prelude::*, Cursor};
-use std::str::FromStr;
 
 // imports from 3rd party crates
 
-use anyhow::{anyhow, bail, ensure, Context, Result};
+use anyhow::{bail, Context, Result};
 use byteorder::{LittleEndian, WriteBytesExt};
 //use log::*;
 use serde::{Deserialize, Serialize};
