@@ -1,4 +1,4 @@
-pub mod vault_hydra;
+pub mod vault;
 
 // imports from standard library
 

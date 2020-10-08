@@ -24,9 +24,9 @@ mod test {
         let unlock_password = "correct horse battery staple";
         let mut vault = Vault::create(None, Seed::DEMO_PHRASE, "", unlock_password)?;
         let parameters = Parameters::new(&hyd::Testnet, 0);
-        vault_hydra::Plugin::rewind(&mut vault, unlock_password, &parameters)?;
+        vault::Plugin::rewind(&mut vault, unlock_password, &parameters)?;
 
-        let hyd = vault_hydra::Plugin::get(&vault, &parameters)?;
+        let hyd = vault::Plugin::get(&vault, &parameters)?;
         let mut hyd_priv = hyd.private(unlock_password)?;
         let priv_key_0 = hyd_priv.key(0)?;
         let pub_key_0 = priv_key_0.neuter();
@@ -75,8 +75,7 @@ mod test {
         let unlock_password = "correct horse battery staple";
         let vault: Vault = serde_json::from_str(DEMO_VAULT_DAT)?;
 
-        let hyd =
-            vault_hydra::Plugin::get(&vault, &vault_hydra::Parameters::new(&hyd::Testnet, 0))?;
+        let hyd = vault::Plugin::get(&vault, &vault::Parameters::new(&hyd::Testnet, 0))?;
 
         let hyd_private = hyd.private(unlock_password)?;
         let hyd_pk: SecpPublicKey =

@@ -1,6 +1,6 @@
 use super::*;
 
-use iop_hydra_sdk::vault_hydra::HydraSigner;
+use iop_hydra_sdk::vault::HydraSigner;
 use iop_keyvault::secp256k1::SecpPrivateKey;
 
 #[wasm_bindgen(js_name = HydraSigner)]

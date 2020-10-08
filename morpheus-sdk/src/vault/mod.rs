@@ -74,7 +74,7 @@ mod test {
         let unlock_password = "correct horse battery staple";
         let vault: Vault = serde_json::from_str(DEMO_VAULT_DAT)?;
 
-        let m = vault_morpheus::Plugin::get(&vault)?;
+        let m = vault::Plugin::get(&vault)?;
 
         let m_private = m.private(unlock_password)?;
         let m_pk: MPublicKey = "pez2CLkBUjHB8w8G87D3YkREjpRuiqPu6BrRsgHMQy2Pzt6".parse()?;

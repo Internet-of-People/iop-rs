@@ -1,4 +1,4 @@
-pub mod vault_morpheus;
+pub mod vault;
 
 // imports from standard library
 
@@ -27,7 +27,7 @@ mod test {
 
     use chrono::{DateTime, Duration, TimeZone as _, Timelike as _, Utc};
 
-    use crate::vault_morpheus::Plugin as MorpheusPlugin;
+    use crate::vault::Plugin as MorpheusPlugin;
     use iop_keyvault::{ed25519::MorpheusPrivateKey, Seed};
     use iop_morpheus_core::crypto::jwt::*;
     use iop_vault::Vault;

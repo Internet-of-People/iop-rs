@@ -33,7 +33,7 @@ use iop_morpheus_core::{
     crypto::{jwt::*, sign::*},
     data::{claim::*, did::*, diddoc::*, present::*, validation::*},
 };
-use iop_morpheus_sdk::vault_morpheus::{Plugin, Private, PrivateKind, Public, PublicKind};
+use iop_morpheus_sdk::vault::{Plugin, Private, PrivateKind, Public, PublicKind};
 use iop_vault::{BoundPlugin, Vault};
 use json_digest::*;
 
