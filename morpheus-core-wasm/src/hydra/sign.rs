@@ -1,7 +1,7 @@
 use super::*;
 
+use iop_hydra_sdk::vault_hydra::HydraSigner;
 use iop_keyvault::secp256k1::SecpPrivateKey;
-use iop_morpheus_core::hydra_sdk::vault_hydra::HydraSigner;
 
 #[wasm_bindgen(js_name = HydraSigner)]
 pub struct JsHydraSigner {

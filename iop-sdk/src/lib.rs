@@ -4,6 +4,7 @@ mod test {
 
     use anyhow::Result;
 
+    use iop_hydra_sdk::vault_hydra::{self as hydra, HydraSigner};
     use iop_keyvault::secp256k1::{SecpKeyId, SecpPublicKey};
     use iop_keyvault::{multicipher::MKeyId, secp256k1::hyd, PublicKey, Seed};
     use iop_morpheus_core::{
@@ -16,7 +17,6 @@ mod test {
                 CommonTransactionFields,
             },
         },
-        hydra_sdk::vault_hydra::{self as hydra, HydraSigner},
     };
     use iop_morpheus_sdk::vault_morpheus::Plugin as MorpheusPlugin;
     use iop_vault::Vault;
