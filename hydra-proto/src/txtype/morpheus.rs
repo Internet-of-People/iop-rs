@@ -2,22 +2,6 @@ use iop_morpheus_core::{crypto::sign::SyncMorpheusSigner, data::auth::Authentica
 
 use super::*;
 
-#[derive(Clone, Copy, Debug, Deserialize_repr, Eq, Hash, PartialEq, Serialize_repr)]
-#[repr(u16)]
-pub enum MorpheusTransactionType {
-    Normal = 1,
-}
-
-impl Default for MorpheusTransactionType {
-    fn default() -> Self {
-        Self::Normal
-    }
-}
-
-impl MorpheusTransactionType {
-    pub const TYPE_GROUP: u32 = 4242;
-}
-
 #[derive(Clone, Debug)]
 pub struct Transaction {
     common_fields: CommonTransactionFields,
@@ -43,7 +27,7 @@ impl Aip29Transaction for Transaction {
 
     fn to_data(&self) -> TransactionData {
         let mut tx_data: TransactionData = self.common_fields.to_data();
-        tx_data.set_type(TransactionType::Morpheus(MorpheusTransactionType::Normal));
+        tx_data.set_type(TransactionType::IoP(IopTransactionType::Morpheus));
         tx_data.asset = Some(Asset::Morpheus(self.asset.to_owned()));
         tx_data.fee = self.common_fields.calculate_fee(self).to_string();
         tx_data
@@ -69,7 +53,7 @@ impl MorpheusAsset {
 
     pub fn to_bytes(&self) -> Result<Vec<u8>> {
         let asset_json = serde_json::to_string(self)?;
-        string_to_protobuf(&asset_json)
+        IopTransactionType::string_to_protobuf(&asset_json)
     }
 }
 
@@ -106,7 +90,7 @@ impl SignableOperation {
         // NOTE this is a weird historical implementation detail with double-escaping,
         //      ideally should not be here, but fixing would require a hardfork
         let asset_str = serde_json::to_string(&asset_json)?;
-        string_to_protobuf(&asset_str)
+        IopTransactionType::string_to_protobuf(&asset_str)
     }
 
     pub fn sign(self, signer: &dyn SyncMorpheusSigner) -> Result<SignedOperation> {

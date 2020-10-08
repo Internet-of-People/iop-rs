@@ -12,7 +12,7 @@ use std::io::{prelude::*, Cursor};
 
 // imports from 3rd party crates
 
-use anyhow::{bail, Context, Result};
+use anyhow::{bail, ensure, Context, Result};
 use byteorder::{LittleEndian, WriteBytesExt};
 //use log::*;
 use serde::{Deserialize, Serialize};

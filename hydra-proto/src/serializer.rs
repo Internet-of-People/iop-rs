@@ -10,12 +10,14 @@ pub fn to_bytes(
 
     match tx.type_group {
         Some(CoreTxType::TYPE_GROUP) => serialize_core_type(tx, &mut bytes)?,
-        Some(morpheus::MorpheusTransactionType::TYPE_GROUP) => {
-            let asset = match tx.asset {
-                Some(Asset::Morpheus(ref morpheus_asset)) => morpheus_asset,
-                _ => bail!("Implementation error: handling wrong asset type"),
-            };
-            bytes.write_all(&asset.to_bytes()?)?;
+        Some(IopTransactionType::TYPE_GROUP) => {
+            if let TransactionType::IoP(iop_tx) = tx.transaction_type {
+                let asset =
+                    tx.asset.as_ref().with_context(|| "No asset found in IoP transaction")?;
+                bytes.write_all(&iop_tx.to_bytes(&asset)?)?
+            } else {
+                bail!("Implementation error: expected IoP transaction type");
+            }
         }
         _ => bail!("Unknown transaction type group: {:?}", tx.type_group),
     }

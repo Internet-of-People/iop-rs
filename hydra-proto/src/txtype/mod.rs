@@ -8,24 +8,21 @@ use super::*;
 #[serde(untagged)]
 pub enum TransactionType {
     Core(hyd_core::HydraTransactionType),
-    Coeus(coeus::CoeusTransactionType),
-    Morpheus(morpheus::MorpheusTransactionType),
+    IoP(IopTransactionType),
 }
 
 impl TransactionType {
     pub fn type_group(self) -> u32 {
         match self {
             Self::Core(_) => hyd_core::HydraTransactionType::TYPE_GROUP,
-            Self::Coeus(_) => coeus::CoeusTransactionType::TYPE_GROUP,
-            Self::Morpheus(_) => morpheus::MorpheusTransactionType::TYPE_GROUP,
+            Self::IoP(_) => IopTransactionType::TYPE_GROUP,
         }
     }
 
     pub fn into_u16(self) -> u16 {
         match self {
             Self::Core(core_type) => core_type as u16,
-            Self::Coeus(coeus_type) => coeus_type as u16,
-            Self::Morpheus(morpheus_type) => morpheus_type as u16,
+            Self::IoP(iop_type) => iop_type as u16,
         }
     }
 }
@@ -34,6 +31,53 @@ impl TransactionType {
 impl Default for TransactionType {
     fn default() -> Self {
         Self::Core(hyd_core::HydraTransactionType::Transfer)
+    }
+}
+
+#[derive(Clone, Copy, Debug, Deserialize_repr, Eq, Hash, PartialEq, Serialize_repr)]
+#[repr(u16)]
+pub enum IopTransactionType {
+    Morpheus = 1,
+    Coeus = 2,
+}
+
+// impl Default for IoPTransactionType {
+//     fn default() -> Self {
+//         Self::Morpheus
+//     }
+// }
+
+impl IopTransactionType {
+    pub const TYPE_GROUP: u32 = 4242;
+
+    pub fn to_bytes(&self, asset: &Asset) -> Result<Vec<u8>> {
+        match asset {
+            Asset::Coeus(coeus_asset) => {
+                ensure!(*self == IopTransactionType::Coeus, "Expected Coeus transaction type");
+                coeus_asset.to_bytes()
+            }
+            Asset::Morpheus(morpheus_asset) => {
+                ensure!(
+                    *self == IopTransactionType::Morpheus,
+                    "Expected Morpheus transaction type"
+                );
+                morpheus_asset.to_bytes()
+            }
+            Asset::Core(_) => bail!("Expected IoP transaction type"),
+        }
+    }
+
+    pub fn string_to_protobuf(value: &str) -> Result<Vec<u8>> {
+        let mut res_bytes = Vec::new();
+
+        let size_varint_bytes = vec![0u8; 0];
+        let mut cur = Cursor::new(size_varint_bytes);
+        cur.write_unsigned_varint_32(value.len() as u32)?; // NOTE: string length is size in bytes
+        let size_varint_bytes = cur.into_inner();
+
+        res_bytes.write_all(&size_varint_bytes)?;
+        res_bytes.write_all(value.as_bytes())?;
+        Ok(res_bytes)
     }
 }
 
@@ -93,17 +137,4 @@ impl CommonTransactionFields {
 
         tx_data
     }
-}
-
-pub fn string_to_protobuf(value: &str) -> Result<Vec<u8>> {
-    let mut res_bytes = Vec::new();
-
-    let size_varint_bytes = vec![0u8; 0];
-    let mut cur = Cursor::new(size_varint_bytes);
-    cur.write_unsigned_varint_32(value.len() as u32)?; // NOTE: string length is size in bytes
-    let size_varint_bytes = cur.into_inner();
-
-    res_bytes.write_all(&size_varint_bytes)?;
-    res_bytes.write_all(value.as_bytes())?;
-    Ok(res_bytes)
 }
