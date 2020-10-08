@@ -2,7 +2,6 @@ pub mod crypto;
 pub mod data;
 pub mod hydra;
 pub mod hydra_sdk;
-pub mod morpheus_sdk;
 
 // imports from standard library
 
@@ -18,5 +17,7 @@ use std::str::FromStr;
 use anyhow::{anyhow, bail, ensure, Context, Result};
 //use log::*;
 use serde::{Deserialize, Serialize};
+
+// imports from own crates
 
 use json_digest::*;

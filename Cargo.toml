@@ -3,10 +3,12 @@ members = [
     "coeus-core",
     "coeus-core-ffi",
     "coeus-core-wasm",
+    "iop-sdk",
     "json-digest",
     "morpheus-core",
     "morpheus-core-wasm",
     "morpheus-core-ffi",
+    "morpheus-sdk",
     "morpheus-sdk-legacy",
     "vault"
 ]
@@ -21,6 +23,7 @@ iop-coeus-core = { path="./coeus-core" }
 # iop-keyvault = { path="../keyvault-rs/keyvault" }
 # iop-keyvault-wasm = { path="../keyvault-rs/keyvault-wasm" }
 iop-morpheus-core = { path="./morpheus-core" }
+iop-morpheus-sdk = { path="./morpheus-sdk" }
 iop-vault = { path="./vault" }
 json-digest = { path="./json-digest" }
 

@@ -7,7 +7,7 @@ edition = "2018"
 
 
 [lib]
-name = "morpheus_sdk"
+name = "morpheus_sdk_legacy"
 crate-type = ["rlib","cdylib"]
 
 
