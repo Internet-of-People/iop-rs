@@ -79,6 +79,19 @@ impl IopTransactionType {
         res_bytes.write_all(value.as_bytes())?;
         Ok(res_bytes)
     }
+
+    pub fn protobuf_to_string(bytes: &[u8]) -> Result<String> {
+        // TODO normally we should not clone the byte slice, the cursor should just read it
+        //      without ownership, but reading varints is implemented only for Cursor<Vec<u8>>
+        let mut cur = Cursor::new(bytes.to_owned());
+        let str_length = cur.read_unsigned_varint_32()?;
+
+        let mut str_bytes = Vec::new();
+        str_bytes.resize(str_length as usize, 0u8);
+        cur.read_exact(str_bytes.as_mut_slice())?;
+
+        Ok(String::from_utf8(str_bytes)?)
+    }
 }
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]

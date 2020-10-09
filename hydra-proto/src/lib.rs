@@ -18,7 +18,7 @@ use byteorder::{LittleEndian, WriteBytesExt};
 use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use sha2::{Digest, Sha256};
-use varint::VarintWrite;
+use varint::{VarintRead, VarintWrite};
 
 // imports from own crates
 

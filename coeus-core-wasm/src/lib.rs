@@ -1,3 +1,4 @@
+mod asset;
 mod domain_name;
 mod operations;
 mod price;
@@ -15,5 +16,5 @@ pub use state::*;
 use wasm_bindgen::prelude::*;
 
 use iop_coeus_core::*;
-use iop_hydra_proto::txtype::coeus::CoeusAsset;
+use iop_hydra_proto::txtype::{coeus::CoeusAsset, IopTransactionType};
 use iop_keyvault_wasm::*;
