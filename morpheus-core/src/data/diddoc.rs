@@ -128,7 +128,7 @@ pub struct Service {
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
 pub struct DidDocument {
-    #[serde(with = "serde_strz")]
+    #[serde(with = "serde_str")]
     pub(crate) did: Did,
     pub(crate) keys: Vec<KeyData>,
     #[serde(skip_serializing_if = "HashMap::is_empty", default)]

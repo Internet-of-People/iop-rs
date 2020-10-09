@@ -11,7 +11,7 @@ crate-type = ["cdylib", "rlib"]
 
 
 [dependencies]
-anyhow = "*"
+anyhow = "1.0.32"
 iop-coeus-core = "0.0.6"
 iop-hydra-proto = "0.0.6"
 iop-keyvault-wasm = "0.0.6"

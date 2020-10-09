@@ -115,9 +115,9 @@ where
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
 struct SignatureTuple {
-    #[serde(with = "serde_strz", rename = "publicKey")]
+    #[serde(with = "serde_str", rename = "publicKey")]
     public_key: MPublicKey,
-    #[serde(with = "serde_strz")]
+    #[serde(with = "serde_str")]
     bytes: MSignature,
 }
 

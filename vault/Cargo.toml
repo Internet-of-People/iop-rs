@@ -8,19 +8,14 @@ edition = "2018"
 [dependencies]
 anyhow = "1.0.32"
 iop-keyvault = "0.0.6"
-log = "0.4.11"
 multibase = "0.8.0"
 serde = { version = "1.0.115", features = ["rc"] }
-serde_json = { version = "1.0.57", features = ["preserve_order"] }
-serde_repr = "0.1.6"
-serde-strz = "1.1.0"
 typetag = "0.1.5"
 
 # --- Hydra dependencies
 byteorder = "1.3.4"
 hex = "0.4.2"
 sha2 = "0.9.1"
-varint = "0.9.0"
 
 
 [target.'cfg(target_os="android")'.dependencies]

@@ -7,13 +7,13 @@ license = "LGPL-3.0-or-later"
 
 
 [dependencies]
-anyhow = "*"
+anyhow = "1.0.32"
 iop-keyvault = "0.0.6"
 json-digest = "0.0.6"
 iop-morpheus-core = { version = "0.0.6", optional = true }
 serde = { version="*", features=["derive"] }
 serde_json = { version="*", features=["preserve_order"] }
-serde-strz = "1.1.0"
+serde_str = "0.1.0"
 valico = "3.4.0"
 
 

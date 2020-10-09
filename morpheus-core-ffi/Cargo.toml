@@ -20,7 +20,6 @@ iop-morpheus-core = "0.0.6"
 iop-morpheus-sdk = "0.0.6"
 iop-vault = "0.0.6"
 json-digest = "0.0.6"
-log = "0.4.11"
 serde = { version = "1.0.115", features = ["derive", "rc"] }
 serde_json = { version = "1.0.57", features = ["preserve_order"] }
 serde_repr = "0.1.6"

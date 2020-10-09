@@ -40,9 +40,9 @@ impl Priced for NoncedOperations {
 pub struct SignedOperations {
     #[serde(flatten)]
     pub(crate) operations: NoncedOperations,
-    #[serde(with = "serde_strz")]
+    #[serde(with = "serde_str")]
     pub(crate) public_key: MPublicKey,
-    #[serde(with = "serde_strz")]
+    #[serde(with = "serde_str")]
     pub(crate) signature: MSignature,
 }
 

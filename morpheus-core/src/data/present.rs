@@ -10,7 +10,7 @@ use crate::{
 
 #[derive(Clone, Debug, Deserialize, Eq, Hash, PartialEq, PartialOrd, Serialize)]
 pub struct License {
-    #[serde(rename = "issuedTo", with = "serde_strz")]
+    #[serde(rename = "issuedTo", with = "serde_str")]
     issued_to: Did,
     purpose: String, // TODO should be more strictly typed, probably an enum
     #[serde(rename = "validFrom")]

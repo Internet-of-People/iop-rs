@@ -5,9 +5,9 @@ use iop_keyvault::{multicipher, PublicKey};
 #[derive(Clone, Debug, Deserialize, Eq, Serialize)]
 #[serde(untagged)]
 pub enum Authentication {
-    #[serde(with = "serde_strz")]
+    #[serde(with = "serde_str")]
     KeyId(multicipher::MKeyId),
-    #[serde(with = "serde_strz")]
+    #[serde(with = "serde_str")]
     PublicKey(multicipher::MPublicKey),
 }
 

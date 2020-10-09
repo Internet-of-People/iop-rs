@@ -3,12 +3,12 @@ use super::*;
 #[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum Principal {
-    #[serde(with = "serde_strz")]
+    #[serde(with = "serde_str")]
     System(SystemPrincipal),
-    #[serde(with = "serde_strz")]
+    #[serde(with = "serde_str")]
     PublicKey(MPublicKey),
     #[cfg(feature = "did")]
-    #[serde(with = "serde_strz")]
+    #[serde(with = "serde_str")]
     Did(Did),
 }
 
