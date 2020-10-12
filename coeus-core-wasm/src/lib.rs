@@ -6,6 +6,7 @@ mod price;
 mod principal;
 mod signed;
 mod state;
+mod tx;
 
 pub use asset::*;
 pub use domain_name::*;
@@ -15,6 +16,7 @@ pub use price::*;
 pub use principal::*;
 pub use signed::*;
 pub use state::*;
+pub use tx::*;
 
 use wasm_bindgen::prelude::*;
 

@@ -17,7 +17,7 @@ impl JsHydraTxBuilder {
         Ok(Self { network })
     }
 
-    // TDOO consider recipient SecpKeyId vs String
+    // TODO consider recipient SecpKeyId vs String
     pub fn transfer(
         &self, recipient_id: &JsSecpKeyId, sender_pubkey: &JsSecpPublicKey, amount_flake: u64,
         nonce: u64,

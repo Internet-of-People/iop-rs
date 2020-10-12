@@ -1,11 +1,11 @@
 use super::*;
 
-#[wasm_bindgen(js_name = Path)]
+#[wasm_bindgen(js_name = DomainName)]
 pub struct JsDomainName {
     inner: DomainName,
 }
 
-#[wasm_bindgen(js_class = Path)]
+#[wasm_bindgen(js_class = DomainName)]
 impl JsDomainName {
     #[wasm_bindgen(constructor)]
     pub fn new(domain_name: &str) -> Result<JsDomainName, JsValue> {

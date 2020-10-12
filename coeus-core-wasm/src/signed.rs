@@ -12,6 +12,8 @@ impl JsNoncedOperationsBuilder {
         Self { operations: Default::default() }
     }
 
+    // TODO Alternative design would be to just have a build() that takes a JS array of
+    // JsOperations, and we make sure each item is of correct type and convert it to a Rust Vec
     pub fn add(mut self, operation: &JsOperation) -> Result<JsNoncedOperationsBuilder, JsValue> {
         if let Operation::User(user_op) = operation.inner() {
             self.operations.push(user_op.to_owned());

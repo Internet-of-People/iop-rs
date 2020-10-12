@@ -1,0 +1,22 @@
+{
+  "name": "@internet-of-people/iop-sdk-wasm",
+  "collaborators": [
+    "IoP Ventures LLC <info@iop-ventures.com>",
+    "Rache Bartmoss <bartmoss@tutanota.com>",
+    "wigy <wigy_opensource_developer@yahoo.com>"
+  ],
+  "version": "0.0.6",
+  "files": [
+    "browser/iop_sdk_wasm_bg.wasm",
+    "browser/iop_sdk_wasm_bg.js",
+    "browser/iop_sdk_wasm.js",
+    "node/iop_sdk_wasm_bg.wasm",
+    "node/iop_sdk_wasm.js",
+    "iop_sdk_wasm_bg.d.ts",
+    "iop_sdk_wasm.d.ts"
+  ],
+  "main": "node/iop_sdk_wasm.js",
+  "module": "browser/iop_sdk_wasm.js",
+  "types": "iop_sdk_wasm.d.ts",
+  "sideEffects": "false"
+}
