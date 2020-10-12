@@ -13,8 +13,8 @@ impl JsMorpheusPublicKind {
     }
 
     #[wasm_bindgen(getter)]
-    pub fn count(&self) -> Result<usize, JsValue> {
-        self.inner.len().map_err_to_js()
+    pub fn count(&self) -> Result<u32, JsValue> {
+        self.inner.len().map_err_to_js().map(|c| c as u32)
     }
 
     pub fn key(&self, idx: i32) -> Result<JsMPublicKey, JsValue> {

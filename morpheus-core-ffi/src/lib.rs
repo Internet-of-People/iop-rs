@@ -37,6 +37,7 @@ use iop_morpheus_sdk::vault::{Plugin, Private, PrivateKind, Public, PublicKind};
 use iop_vault::{BoundPlugin, Vault};
 use json_digest::*;
 
+// TODO consider killing usize type all around FFI
 use crate::ffi::{convert, *};
 
 fn delete<T>(t: *mut T) {

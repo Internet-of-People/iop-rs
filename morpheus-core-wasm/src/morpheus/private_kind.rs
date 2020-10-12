@@ -15,7 +15,7 @@ impl JsMorpheusPrivateKind {
     }
 
     #[wasm_bindgen(getter)]
-    pub fn count(&self) -> Result<usize, JsValue> {
+    pub fn count(&self) -> Result<u32, JsValue> {
         self.inner.len().map_err_to_js()
     }
 

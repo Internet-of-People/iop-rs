@@ -32,7 +32,8 @@ impl FromStr for Right {
     }
 }
 
-pub type BlockHeight = usize;
+// TODO move all blockchain-related types to hydra-proto after adding typetags to Asset and TransactionType.
+pub type BlockHeight = u32;
 
 pub fn is_in_opt_range(
     height: BlockHeight, from_inc: Option<BlockHeight>, until_exc: Option<BlockHeight>,
@@ -77,7 +78,7 @@ impl KeyData {
 
 #[derive(Clone, Debug, Deserialize, Eq, Hash, PartialEq, PartialOrd, Serialize)]
 pub struct KeyRightHistoryItem {
-    pub(crate) height: Option<usize>,
+    pub(crate) height: Option<BlockHeight>,
     pub(crate) valid: bool,
 }
 
@@ -136,10 +137,10 @@ pub struct DidDocument {
     #[serde(skip_serializing_if = "Vec::is_empty", default)]
     pub(crate) services: Vec<Service>,
     #[serde(rename = "tombstonedAtHeight")]
-    pub(crate) tombstoned_at_height: Option<usize>,
+    pub(crate) tombstoned_at_height: Option<BlockHeight>,
     pub(crate) tombstoned: bool,
     #[serde(rename = "queriedAtHeight")]
-    pub(crate) queried_at_height: usize,
+    pub(crate) queried_at_height: BlockHeight,
 }
 
 impl DidDocument {

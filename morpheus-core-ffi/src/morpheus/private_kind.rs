@@ -19,7 +19,7 @@ pub extern "C" fn MorpheusPrivateKind_len_get(kind: *mut PrivateKind) -> CPtrRes
     let kind = unsafe { convert::borrow_in(kind) };
     let fun = || {
         let len = kind.len()?;
-        Ok(convert::move_out(len))
+        Ok(convert::move_out(len as usize))
     };
     cresult(fun())
 }

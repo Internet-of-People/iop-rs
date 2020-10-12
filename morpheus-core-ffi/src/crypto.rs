@@ -37,7 +37,7 @@ pub extern "C" fn stringify_json(raw_json: *const raw::c_char) -> CPtrResult<raw
 #[no_mangle]
 pub extern "C" fn nonce264() -> CPtrResult<raw::c_char> {
     let fun = || {
-        let nonce = Nonce::generate();
+        let nonce = Nonce264::generate();
         Ok(convert::string_out(nonce.0))
     };
     cresult(fun())

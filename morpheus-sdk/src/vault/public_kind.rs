@@ -14,9 +14,9 @@ impl PublicKind {
         self.kind
     }
 
-    pub fn len(&self) -> Result<usize> {
+    pub fn len(&self) -> Result<u32> {
         let state = self.state.try_borrow()?;
-        Ok(state.len())
+        Ok(state.len() as u32)
     }
 
     pub fn is_empty(&self) -> Result<bool> {

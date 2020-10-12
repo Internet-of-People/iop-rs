@@ -38,7 +38,7 @@ pub struct ClaimPresentation {
     proven_claims: Vec<ProvenClaim>,
     licenses: Vec<License>,
     #[serde(skip_serializing_if = "Option::is_none", default)]
-    nonce: Option<Nonce>,
+    nonce: Option<Nonce264>,
     // if subjects are different (from each other or the creator of this presentation)
     // then the creator an optional license is needed to prove proper rights to further delegate claims
     // consider how to do it without potentially infinite data size?

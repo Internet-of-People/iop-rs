@@ -27,7 +27,7 @@ pub struct WitnessRequest {
     claim: Claim,
     evidence: MorpheusValue,
     #[serde(skip_serializing_if = "Option::is_none", default)]
-    nonce: Option<Nonce>,
+    nonce: Option<Nonce264>,
 }
 
 impl Content for WitnessRequest {}
@@ -41,7 +41,7 @@ pub struct WitnessStatement {
     claim: Claim,
     constraints: Constraints,
     #[serde(skip_serializing_if = "Option::is_none", default)]
-    nonce: Option<Nonce>,
+    nonce: Option<Nonce264>,
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]

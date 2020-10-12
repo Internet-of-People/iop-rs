@@ -21,9 +21,9 @@ impl PrivateKind {
         &self.kind.node()
     }
 
-    pub fn len(&self) -> Result<usize> {
+    pub fn len(&self) -> Result<u32> {
         let state = self.state.try_borrow()?;
-        Ok(state.len())
+        Ok(state.len() as u32)
     }
 
     pub fn is_empty(&self) -> Result<bool> {
@@ -37,12 +37,12 @@ impl PrivateKind {
 
     pub fn key(&mut self, idx: i32) -> Result<MorpheusPrivateKey> {
         ensure!(idx >= 0, "Key index cannot be negative");
-        let count = self.state.try_borrow()?.len();
-        let required = idx as usize + 1;
+        let count = self.state.try_borrow()?.len() as i32;
+        let required = idx + 1;
         if count < required {
             let mut state = self.state.try_borrow_mut()?;
             for i in count..required {
-                let pk = self.kind.key(i as i32)?.neuter().public_key().to_string();
+                let pk = self.kind.key(i)?.neuter().public_key().to_string();
                 state.push(pk)
             }
             let mut dirty = self.vault_dirty.try_borrow_mut()?;

@@ -45,7 +45,7 @@ where
     content: T,
     public_key: MPublicKey,
     signature: MSignature,
-    nonce: Option<Nonce>,
+    nonce: Option<Nonce264>,
     // TODO ClaimPresentation might be needed to prove proper right of delegated signing.
     // on_behalf_of: Did,
 }
@@ -59,12 +59,12 @@ where
     }
 
     pub fn from_parts(
-        public_key: MPublicKey, content: T, signature: MSignature, nonce: Option<Nonce>,
+        public_key: MPublicKey, content: T, signature: MSignature, nonce: Option<Nonce264>,
     ) -> Self {
         Self { public_key, content, signature, nonce }
     }
 
-    pub fn into_parts(self) -> (MPublicKey, T, MSignature, Option<Nonce>) {
+    pub fn into_parts(self) -> (MPublicKey, T, MSignature, Option<Nonce264>) {
         (self.public_key, self.content, self.signature, self.nonce)
     }
 
@@ -126,7 +126,7 @@ pub struct SignatureSerializationFormat<T> {
     signature: SignatureTuple,
     content: T,
     #[serde(skip_serializing_if = "Option::is_none", default)]
-    nonce: Option<Nonce>,
+    nonce: Option<Nonce264>,
 }
 
 impl<T: Signable> From<Signed<T>> for SignatureSerializationFormat<T> {
