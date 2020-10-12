@@ -12,15 +12,17 @@ impl JsOperation {
     }
 
     pub fn register(
-        name: &JsDomainName, owner: &JsPrincipal, data: &JsValue, expires_at_height: BlockHeight,
+        name: &JsDomainName, owner: &JsPrincipal, subtree_policies: &JsSubtreePolicies,
+        data: &JsValue, expires_at_height: BlockHeight,
     ) -> Result<JsOperation, JsValue> {
-        let name = name.inner().to_owned();
-        let owner = owner.inner().to_owned();
-        let data = data.into_serde().map_err_to_js()?;
-        let tree_policy = SubtreePolicies::default();
-        let reg_policy = RegistrationPolicy::default();
-        let reg_op =
-            UserOperation::register(name, owner, tree_policy, reg_policy, data, expires_at_height);
+        let reg_op = UserOperation::register(
+            name.inner().to_owned(),
+            owner.inner().to_owned(),
+            subtree_policies.inner().to_owned(),
+            RegistrationPolicy::default(),
+            data.into_serde().map_err_to_js()?,
+            expires_at_height,
+        );
         Ok(Operation::from(reg_op).into())
     }
 

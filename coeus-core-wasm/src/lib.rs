@@ -1,13 +1,16 @@
 mod asset;
 mod domain_name;
 mod operations;
+mod policy;
 mod price;
 mod principal;
 mod signed;
 mod state;
 
+pub use asset::*;
 pub use domain_name::*;
 pub use operations::*;
+pub use policy::*;
 pub use price::*;
 pub use principal::*;
 pub use signed::*;

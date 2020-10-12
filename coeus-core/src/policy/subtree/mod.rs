@@ -29,7 +29,7 @@ impl SubtreePolicies {
         self.schema = Some(schema.into());
         self
     }
-    pub fn with_expiration(mut self, max_expiry: u64) -> Self {
+    pub fn with_expiration(mut self, max_expiry: BlockCount) -> Self {
         self.expiration = Some(max_expiry.into());
         self
     }
