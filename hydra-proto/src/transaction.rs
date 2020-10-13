@@ -12,11 +12,6 @@ pub struct TransactionData {
     pub version: Option<u8>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub network: Option<u8>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub type_group: Option<u32>,
-    #[serde(rename = "type")]
-    pub transaction_type: TransactionType,
-    //pub transaction_type: u32,
     // pub timestamp: u32, // present in the v2 schema only for v1 compatibility
     #[serde(skip_serializing_if = "Option::is_none")]
     pub nonce: Option<String>,
@@ -27,8 +22,8 @@ pub struct TransactionData {
     pub expiration: Option<u32>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub recipient_id: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub asset: Option<Asset>,
+    #[serde(flatten)]
+    pub typed_asset: txtype::TypedAsset,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub vendor_field: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -48,11 +43,6 @@ pub struct TransactionData {
 }
 
 impl TransactionData {
-    pub fn set_type(&mut self, tx_type: TransactionType) {
-        self.type_group = Some(tx_type.type_group());
-        self.transaction_type = tx_type;
-    }
-
     pub fn get_id(&self) -> Result<String> {
         let bytes = self.to_bytes(false, false, false)?;
         let id = hex::encode(Sha256::digest(&bytes));

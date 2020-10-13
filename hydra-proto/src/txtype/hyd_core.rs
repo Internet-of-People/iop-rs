@@ -1,8 +1,10 @@
 use super::*;
 
-#[derive(Clone, Copy, Debug, Deserialize_repr, Eq, Hash, PartialEq, Serialize_repr)]
+#[derive(
+    Clone, Copy, Debug, Deserialize_repr, Eq, FromPrimitive, Hash, PartialEq, Serialize_repr,
+)]
 #[repr(u16)]
-pub enum HydraTransactionType {
+pub enum CoreTransactionType {
     Transfer = 0,
     SecondSignatureRegistration = 1,
     DelegateRegistration = 2,
@@ -14,13 +16,13 @@ pub enum HydraTransactionType {
     DelegateResignation = 8,
 }
 
-impl Default for HydraTransactionType {
+impl Default for CoreTransactionType {
     fn default() -> Self {
         Self::Transfer
     }
 }
 
-impl HydraTransactionType {
+impl CoreTransactionType {
     pub const TYPE_GROUP: u32 = 1;
 
     pub fn fee(self) -> u64 {
@@ -40,7 +42,7 @@ impl HydraTransactionType {
 
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
-pub enum HydraAsset {
+pub enum CoreAsset {
     None,
     Signature {
         #[serde(rename = "publicKey")]
@@ -125,26 +127,26 @@ pub struct PaymentsItem {
     pub recipient_id: String,
 }
 
-impl HydraAsset {
+impl CoreAsset {
     pub fn is_none(&self) -> bool {
         match *self {
-            HydraAsset::None => true,
+            CoreAsset::None => true,
             _ => false,
         }
     }
 }
 
-impl Default for HydraAsset {
+impl Default for CoreAsset {
     fn default() -> Self {
-        HydraAsset::None
+        CoreAsset::None
     }
 }
 
 #[derive(Clone, Debug)]
 pub struct Transaction {
     common_fields: CommonTransactionFields,
-    tx_type: HydraTransactionType,
-    asset: HydraAsset,
+    tx_type: CoreTransactionType,
+    asset: CoreAsset,
     recipient_id: Option<SecpKeyId>,
 }
 
@@ -152,18 +154,18 @@ impl Transaction {
     pub fn transfer(common_fields: CommonTransactionFields, recipient_id: &SecpKeyId) -> Self {
         Self {
             common_fields,
-            tx_type: HydraTransactionType::Transfer,
+            tx_type: CoreTransactionType::Transfer,
             recipient_id: Some(recipient_id.to_owned()),
-            asset: HydraAsset::None,
+            asset: CoreAsset::None,
         }
     }
 
     pub fn register_delegate(common_fields: CommonTransactionFields, delegate_name: &str) -> Self {
         Self {
             common_fields,
-            tx_type: HydraTransactionType::DelegateRegistration,
+            tx_type: CoreTransactionType::DelegateRegistration,
             recipient_id: None,
-            asset: HydraAsset::Delegate { username: delegate_name.to_owned() },
+            asset: CoreAsset::Delegate { username: delegate_name.to_owned() },
         }
     }
 
@@ -178,9 +180,9 @@ impl Transaction {
     fn create_vote(common_fields: CommonTransactionFields, vote: String) -> Self {
         Self {
             common_fields,
-            tx_type: HydraTransactionType::Vote,
+            tx_type: CoreTransactionType::Vote,
             recipient_id: None,
-            asset: HydraAsset::Votes(vec![vote]),
+            asset: CoreAsset::Votes(vec![vote]),
         }
     }
 }
@@ -194,9 +196,8 @@ impl Aip29Transaction for Transaction {
         let prefix = self.common_fields.network.p2pkh_addr();
 
         let mut tx_data: TransactionData = self.common_fields.to_data();
-        tx_data.set_type(TransactionType::Core(self.tx_type));
-        tx_data.asset =
-            if self.asset.is_none() { None } else { Some(Asset::Core(self.asset.to_owned())) };
+        let core_typedasset = (self.tx_type, self.asset.to_owned());
+        tx_data.typed_asset = core_typedasset.into();
         tx_data.recipient_id = self.recipient_id.as_ref().map(|addr| addr.to_p2pkh_addr(prefix));
         tx_data.fee = self.common_fields.calculate_fee(self).to_string();
         tx_data

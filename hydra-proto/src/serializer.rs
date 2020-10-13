@@ -1,5 +1,9 @@
 use super::*;
-use crate::txtype::hyd_core::{HydraAsset as CoreAsset, HydraTransactionType as CoreTxType};
+use crate::txtype::hyd_core::CoreTransactionType;
+use crate::txtype::{
+    hyd_core::{CoreAsset, CoreTransactionType as CoreTxType},
+    TxTypeGroup, *,
+};
 
 pub fn to_bytes(
     tx: &TransactionData, skip_signature: bool, skip_second_signature: bool,
@@ -8,18 +12,15 @@ pub fn to_bytes(
     let mut bytes = serialize_common(tx)?;
     serialize_vendor_field(tx, &mut bytes)?;
 
-    match tx.type_group {
-        Some(CoreTxType::TYPE_GROUP) => serialize_core_type(tx, &mut bytes)?,
-        Some(IopTransactionType::TYPE_GROUP) => {
-            if let TransactionType::IoP(iop_tx) = tx.transaction_type {
-                let asset =
-                    tx.asset.as_ref().with_context(|| "No asset found in IoP transaction")?;
-                bytes.write_all(&iop_tx.to_bytes(&asset)?)?
+    match tx.typed_asset.type_group {
+        TxTypeGroup::Core => serialize_core_type(tx, &mut bytes)?,
+        TxTypeGroup::Iop => {
+            if let txtype::Asset::Iop(ref iop_asset) = tx.typed_asset.asset {
+                bytes.write_all(&iop_asset.to_bytes()?)?
             } else {
                 bail!("Implementation error: expected IoP transaction type");
             }
         }
-        _ => bail!("Unknown transaction type group: {:?}", tx.type_group),
     }
 
     serialize_signatures(
@@ -39,8 +40,8 @@ pub fn serialize_common(transaction: &TransactionData) -> Result<Vec<u8>> {
     bytes.write_u8(transaction.version.unwrap_or(0x02))?;
     bytes.write_u8(transaction.network.with_context(|| "Network is missing")?)?;
 
-    bytes.write_u32::<LittleEndian>(transaction.type_group.unwrap_or(CoreTxType::TYPE_GROUP))?;
-    bytes.write_u16::<LittleEndian>(transaction.transaction_type.into_u16())?;
+    bytes.write_u32::<LittleEndian>(transaction.typed_asset.type_group as u32)?;
+    bytes.write_u16::<LittleEndian>(transaction.typed_asset.transaction_type as u16)?;
     let nonce: u64 = transaction.nonce.as_ref().with_context(|| "Nonce is missing")?.parse()?;
     bytes.write_u64::<LittleEndian>(nonce)?;
 
@@ -62,11 +63,15 @@ pub fn serialize_vendor_field(transaction: &TransactionData, bytes: &mut Vec<u8>
 }
 
 pub fn serialize_core_type(tx: &TransactionData, mut bytes: &mut Vec<u8>) -> Result<()> {
-    let core_type = match tx.transaction_type {
-        TransactionType::Core(core_type) => core_type,
-        _ => bail!("Implementation error: handling wrong TX type"),
-    };
-    match core_type {
+    ensure!(
+        matches!(tx.typed_asset.type_group, TxTypeGroup::Core),
+        "Implementation error: expecting Core transaction typeGroup"
+    );
+    let core_txtype =
+        CoreTransactionType::from_u16(tx.typed_asset.transaction_type).with_context(|| {
+            format!("Invalid core transaction type: {}", tx.typed_asset.transaction_type)
+        })?;
+    match core_txtype {
         CoreTxType::Transfer => serialize_transfer(tx, &mut bytes)?,
         CoreTxType::Vote => serialize_vote(tx, &mut bytes)?,
         CoreTxType::DelegateRegistration => serialize_delegate_registration(tx, &mut bytes)?,
@@ -99,7 +104,7 @@ fn serialize_transfer(transaction: &TransactionData, bytes: &mut Vec<u8>) -> Res
 }
 
 fn serialize_vote(transaction: &TransactionData, bytes: &mut Vec<u8>) -> Result<()> {
-    if let Some(Asset::Core(CoreAsset::Votes(votes))) = &transaction.asset {
+    if let Asset::Core(CoreAsset::Votes(votes)) = &transaction.typed_asset.asset {
         let votes_hex: Vec<_> = votes
             .iter()
             .filter_map(|vote| {
@@ -115,7 +120,7 @@ fn serialize_vote(transaction: &TransactionData, bytes: &mut Vec<u8>) -> Result<
 }
 
 fn serialize_delegate_registration(tx: &TransactionData, bytes: &mut Vec<u8>) -> Result<()> {
-    if let Some(Asset::Core(CoreAsset::Delegate { username })) = &tx.asset {
+    if let Asset::Core(CoreAsset::Delegate { username }) = &tx.typed_asset.asset {
         bytes.write_u8(username.len() as u8)?;
         bytes.write_all(&username.as_bytes())?;
     }

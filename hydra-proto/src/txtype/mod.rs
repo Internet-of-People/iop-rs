@@ -3,34 +3,169 @@ pub mod hyd_core;
 pub mod morpheus;
 
 use super::*;
+use crate::txtype::coeus::CoeusAsset;
+use crate::txtype::hyd_core::{CoreAsset, CoreTransactionType};
+use crate::txtype::morpheus::MorpheusAsset;
 
-#[derive(Clone, Copy, Debug, Deserialize, Eq, Hash, PartialEq, Serialize)]
-#[serde(untagged)]
-pub enum TransactionType {
-    Core(hyd_core::HydraTransactionType),
-    IoP(IopTransactionType),
+// #[derive(Clone, Copy, Debug, Deserialize, Eq, Hash, PartialEq, Serialize)]
+// pub enum TypedAsset {
+//     Core(CoreTypedAsset),
+//     Iop(IopTypedAsset),
+// }
+
+#[derive(Clone, Copy, Debug, Deserialize_repr, Eq, Hash, PartialEq, Serialize_repr)]
+#[repr(u32)]
+pub enum TxTypeGroup {
+    Core = 1,
+    Iop = 4242,
 }
 
-impl TransactionType {
-    pub fn type_group(self) -> u32 {
-        match self {
-            Self::Core(_) => hyd_core::HydraTransactionType::TYPE_GROUP,
-            Self::IoP(_) => IopTransactionType::TYPE_GROUP,
-        }
-    }
-
-    pub fn into_u16(self) -> u16 {
-        match self {
-            Self::Core(core_type) => core_type as u16,
-            Self::IoP(iop_type) => iop_type as u16,
-        }
-    }
-}
-
-// TODO consider using a better programming construction than this Default here
-impl Default for TransactionType {
+impl Default for TxTypeGroup {
     fn default() -> Self {
-        Self::Core(hyd_core::HydraTransactionType::Transfer)
+        Self::Core
+    }
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TypedAsset {
+    #[serde(default)]
+    pub(crate) type_group: TxTypeGroup,
+    #[serde(rename = "type")]
+    pub(crate) transaction_type: u16,
+    pub(crate) asset: Asset,
+}
+
+impl Default for TypedAsset {
+    fn default() -> Self {
+        Self {
+            type_group: TxTypeGroup::default(),
+            transaction_type: CoreTransactionType::default() as u16,
+            asset: Asset::Core(CoreAsset::default()),
+        }
+    }
+}
+
+impl From<(CoreTransactionType, CoreAsset)> for TypedAsset {
+    fn from(value: (CoreTransactionType, CoreAsset)) -> Self {
+        Self {
+            type_group: TxTypeGroup::Core,
+            transaction_type: value.0 as u16,
+            asset: Asset::Core(value.1),
+        }
+    }
+}
+
+impl From<MorpheusAsset> for TypedAsset {
+    fn from(value: MorpheusAsset) -> Self {
+        Self {
+            type_group: TxTypeGroup::Iop,
+            transaction_type: IopTransactionType::Morpheus as u16,
+            asset: Asset::Iop(IopAsset::Morpheus(value)),
+        }
+    }
+}
+
+impl From<CoeusAsset> for TypedAsset {
+    fn from(value: CoeusAsset) -> Self {
+        Self {
+            type_group: TxTypeGroup::Iop,
+            transaction_type: IopTransactionType::Coeus as u16,
+            asset: Asset::Iop(IopAsset::Coeus(value)),
+        }
+    }
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, Serialize)]
+#[serde(untagged)]
+pub enum Asset {
+    Core(CoreAsset),
+    Iop(IopAsset),
+}
+
+impl<'de> Deserialize<'de> for TypedAsset {
+    fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        struct TypedAssetVisitor;
+
+        impl<'de> SerdeVisitor<'de> for TypedAssetVisitor {
+            type Value = TypedAsset;
+
+            fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+                formatter.write_str("struct TypedAsset")
+            }
+
+            fn visit_map<M>(self, mut map: M) -> Result<TypedAsset, M::Error>
+            where
+                M: MapAccess<'de>,
+            {
+                let mut type_group = None;
+                let mut transaction_type = None;
+                let mut asset = None;
+
+                while let Some(key) = map.next_key()? {
+                    match key {
+                        "typeGroup" => {
+                            if type_group.is_some() {
+                                return Err(de::Error::duplicate_field("typeGroup"));
+                            }
+                            type_group = Some(map.next_value()?);
+                        }
+                        "type" => {
+                            if transaction_type.is_some() {
+                                return Err(de::Error::duplicate_field("type"));
+                            }
+                            transaction_type = Some(map.next_value()?);
+                        }
+                        "asset" => {
+                            if asset.is_some() {
+                                return Err(de::Error::duplicate_field("asset"));
+                            }
+                            if type_group.is_none() || transaction_type.is_none() {
+                                return Err(de::Error::missing_field(
+                                    "typeGroup or type is missing BEFORE asset",
+                                ));
+                            }
+                            let type_group = type_group.unwrap();
+                            let transaction_type = transaction_type.unwrap();
+                            match (type_group, transaction_type) {
+                                (TxTypeGroup::Core, _) => {
+                                    let core_asset: CoreAsset = map.next_value()?;
+                                    asset = Some(Asset::Core(core_asset));
+                                }
+                                (TxTypeGroup::Iop, 1) => {
+                                    // TODO IopTransactionType::Morpheus
+                                    let morpheus_asset: MorpheusAsset = map.next_value()?;
+                                    asset = Some(Asset::Iop(IopAsset::Morpheus(morpheus_asset)));
+                                }
+                                (TxTypeGroup::Iop, 2) => {
+                                    // TODO IopTransactionType::Coeus
+                                    let coeus_asset: CoeusAsset = map.next_value()?;
+                                    asset = Some(Asset::Iop(IopAsset::Coeus(coeus_asset)));
+                                }
+                                _ => {
+                                    return Err(de::Error::custom(format!(
+                                        "Invalid (typeGroup,type) pair: ({:?},{})",
+                                        type_group, transaction_type
+                                    )))
+                                }
+                            }
+                        }
+                        other => {
+                            return Err(de::Error::custom(format!("Key {} is not known.", other)));
+                        }
+                    }
+                }
+
+                let type_group = type_group.ok_or_else(|| de::Error::missing_field("typeGroup"))?;
+                let transaction_type =
+                    transaction_type.ok_or_else(|| de::Error::missing_field("type"))?;
+                let asset = asset.ok_or_else(|| de::Error::missing_field("asset"))?;
+                Ok(TypedAsset { type_group, transaction_type, asset })
+            }
+        }
+
+        const FIELDS: &[&str] = &["typeGroup", "type", "asset"];
+        deserializer.deserialize_struct("TypedAsset", FIELDS, TypedAssetVisitor)
     }
 }
 
@@ -41,29 +176,22 @@ pub enum IopTransactionType {
     Coeus = 2,
 }
 
-// impl Default for IoPTransactionType {
-//     fn default() -> Self {
-//         Self::Morpheus
-//     }
-// }
-
 impl IopTransactionType {
     pub const TYPE_GROUP: u32 = 4242;
+}
 
-    pub fn to_bytes(&self, asset: &Asset) -> Result<Vec<u8>> {
-        match asset {
-            Asset::Coeus(coeus_asset) => {
-                ensure!(*self == IopTransactionType::Coeus, "Expected Coeus transaction type");
-                coeus_asset.to_bytes()
-            }
-            Asset::Morpheus(morpheus_asset) => {
-                ensure!(
-                    *self == IopTransactionType::Morpheus,
-                    "Expected Morpheus transaction type"
-                );
-                morpheus_asset.to_bytes()
-            }
-            Asset::Core(_) => bail!("Expected IoP transaction type"),
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[serde(untagged)]
+pub enum IopAsset {
+    Coeus(coeus::CoeusAsset),
+    Morpheus(morpheus::MorpheusAsset),
+}
+
+impl IopAsset {
+    pub fn to_bytes(&self) -> Result<Vec<u8>> {
+        match self {
+            IopAsset::Coeus(coeus_asset) => coeus_asset.to_bytes(),
+            IopAsset::Morpheus(morpheus_asset) => morpheus_asset.to_bytes(),
         }
     }
 
@@ -92,14 +220,6 @@ impl IopTransactionType {
 
         Ok(String::from_utf8(str_bytes)?)
     }
-}
-
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
-#[serde(untagged)]
-pub enum Asset {
-    Core(hyd_core::HydraAsset),
-    Coeus(coeus::CoeusAsset),
-    Morpheus(morpheus::MorpheusAsset),
 }
 
 pub trait Aip29Transaction {

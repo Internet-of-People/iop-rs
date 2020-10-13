@@ -15,7 +15,7 @@ impl JsCoeusAsset {
     }
 
     pub fn deserialize(bytes: &[u8]) -> Result<JsCoeusAsset, JsValue> {
-        let asset_str = IopTransactionType::protobuf_to_string(bytes).map_err_to_js()?;
+        let asset_str = IopAsset::protobuf_to_string(bytes).map_err_to_js()?;
         let inner = serde_json::from_str(&asset_str).map_err_to_js()?;
         Ok(JsCoeusAsset { inner })
     }
