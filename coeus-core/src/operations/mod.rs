@@ -14,7 +14,7 @@ pub use update::*;
 
 use super::*;
 
-pub(crate) trait Command {
+pub trait Command {
     fn execute(self, state: &mut State) -> Result<UndoOperation>;
 }
 
@@ -26,7 +26,8 @@ pub trait Priced {
     fn get_price(&self) -> Price;
 }
 
-pub(crate) trait UndoCommand {
+// TODO this should be pub(crate) but exposing "apply system operations" on wasm required public on short term
+pub trait UndoCommand {
     fn execute(self, state: &mut State) -> Result<()>;
 }
 
@@ -161,7 +162,7 @@ impl From<UserOperation> for Operation {
 
 #[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
 #[serde(tag = "type", rename_all = "camelCase")]
-pub(crate) enum UndoOperation {
+pub enum UndoOperation {
     StartBlock(UndoStartBlock),
     Register(Box<UndoRegister>),
     Update(UndoUpdate),

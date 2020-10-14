@@ -22,7 +22,7 @@ impl Command for DoStartBlock {
 
 #[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
 #[serde(rename_all = "camelCase")]
-pub(crate) struct UndoStartBlock {
+pub struct UndoStartBlock {
     height: BlockHeight,
 }
 

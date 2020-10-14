@@ -1,20 +1,16 @@
 use super::*;
 
-#[wasm_bindgen(js_name = Operation)]
-pub struct JsOperation {
-    inner: Operation,
+#[wasm_bindgen(js_name = UserOperation)]
+pub struct JsUserOperation {
+    inner: UserOperation,
 }
 
-#[wasm_bindgen(js_class = Operation)]
-impl JsOperation {
-    pub fn start_block(height: BlockHeight) -> JsOperation {
-        Operation::from(SystemOperation::start_block(height)).into()
-    }
-
+#[wasm_bindgen(js_class = UserOperation)]
+impl JsUserOperation {
     pub fn register(
         name: &JsDomainName, owner: &JsPrincipal, subtree_policies: &JsSubtreePolicies,
         data: &JsValue, expires_at_height: BlockHeight,
-    ) -> Result<JsOperation, JsValue> {
+    ) -> Result<JsUserOperation, JsValue> {
         let reg_op = UserOperation::register(
             name.inner().to_owned(),
             owner.inner().to_owned(),
@@ -23,41 +19,66 @@ impl JsOperation {
             data.into_serde().map_err_to_js()?,
             expires_at_height,
         );
-        Ok(Operation::from(reg_op).into())
+        Ok(reg_op.into())
     }
 
-    pub fn update(name: &JsDomainName, data: &JsValue) -> Result<JsOperation, JsValue> {
+    pub fn update(name: &JsDomainName, data: &JsValue) -> Result<JsUserOperation, JsValue> {
         let name = name.inner().to_owned();
         let upd_op = UserOperation::update(name, data.into_serde().map_err_to_js()?);
-        Ok(Operation::from(upd_op).into())
+        Ok(upd_op.into())
     }
 
-    pub fn renew(name: &JsDomainName, expires_at_height: BlockHeight) -> JsOperation {
+    pub fn renew(name: &JsDomainName, expires_at_height: BlockHeight) -> JsUserOperation {
         let name = name.inner().to_owned();
         let ren_op = UserOperation::renew(name, expires_at_height);
-        Operation::from(ren_op).into()
+        ren_op.into()
     }
 
-    pub fn transfer(name: &JsDomainName, to_owner: &JsPrincipal) -> JsOperation {
+    pub fn transfer(name: &JsDomainName, to_owner: &JsPrincipal) -> JsUserOperation {
         let name = name.inner().to_owned();
         let tr_op = UserOperation::transfer(name, to_owner.inner().to_owned());
-        Operation::from(tr_op).into()
+        tr_op.into()
     }
 
-    pub fn delete(name: &JsDomainName) -> JsOperation {
+    pub fn delete(name: &JsDomainName) -> JsUserOperation {
         let del_op = UserOperation::delete(name.inner().to_owned());
-        Operation::from(del_op).into()
+        del_op.into()
     }
 }
 
-impl From<Operation> for JsOperation {
-    fn from(inner: Operation) -> Self {
+impl From<UserOperation> for JsUserOperation {
+    fn from(inner: UserOperation) -> Self {
         Self { inner }
     }
 }
 
-impl Wraps<Operation> for JsOperation {
-    fn inner(&self) -> &Operation {
+impl Wraps<UserOperation> for JsUserOperation {
+    fn inner(&self) -> &UserOperation {
+        &self.inner
+    }
+}
+
+#[wasm_bindgen(js_name = SystemOperation)]
+pub struct JsSystemOperation {
+    inner: SystemOperation,
+}
+
+#[wasm_bindgen(js_class = SystemOperation)]
+impl JsSystemOperation {
+    #[wasm_bindgen(js_name = startBlock)]
+    pub fn start_block(height: BlockHeight) -> JsSystemOperation {
+        SystemOperation::start_block(height).into()
+    }
+}
+
+impl From<SystemOperation> for JsSystemOperation {
+    fn from(inner: SystemOperation) -> Self {
+        Self { inner }
+    }
+}
+
+impl Wraps<SystemOperation> for JsSystemOperation {
+    fn inner(&self) -> &SystemOperation {
         &self.inner
     }
 }

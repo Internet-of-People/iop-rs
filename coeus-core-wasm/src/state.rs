@@ -26,6 +26,11 @@ impl JsState {
         self.inner.apply_signed_operations(ops.inner().to_owned()).map_err_to_js()
     }
 
+    #[wasm_bindgen(js_name = applySystemOperation)]
+    pub fn apply_system_operation(&mut self, op: &JsSystemOperation) -> Result<Version, JsValue> {
+        self.inner.apply_operations(vec![op.inner().to_owned()]).map_err_to_js()
+    }
+
     #[wasm_bindgen(getter)]
     pub fn version(&self) -> Version {
         self.inner.version()

@@ -13,14 +13,10 @@ impl JsNoncedOperationsBuilder {
     }
 
     // TODO Alternative design would be to just have a build() that takes a JS array of
-    // JsOperations, and we make sure each item is of correct type and convert it to a Rust Vec
-    pub fn add(mut self, operation: &JsOperation) -> Result<JsNoncedOperationsBuilder, JsValue> {
-        if let Operation::User(user_op) = operation.inner() {
-            self.operations.push(user_op.to_owned());
-        } else {
-            return Err("NoncedOperations may contain only user operations").map_err_to_js();
-        }
-        Ok(self)
+    //      JsOperations, and we make sure each item is of correct type and convert it to a Rust Vec
+    pub fn add(mut self, user_operation: &JsUserOperation) -> JsNoncedOperationsBuilder {
+        self.operations.push(user_operation.inner().to_owned());
+        self
     }
 
     pub fn build(self, nonce: Nonce) -> JsNoncedOperations {
@@ -69,6 +65,12 @@ pub struct JsSignedOperations {
 
 #[wasm_bindgen(js_class = SignedOperations)]
 impl JsSignedOperations {
+    #[wasm_bindgen(constructor)]
+    pub fn new(data: &JsValue) -> Result<JsSignedOperations, JsValue> {
+        let signed_ops: SignedOperations = data.into_serde().map_err_to_js()?;
+        Ok(signed_ops.into())
+    }
+
     pub fn price(&self, state: &JsState) -> JsPrice {
         let _state = state.inner();
         self.inner.get_price().into()

@@ -72,7 +72,7 @@ impl State {
         Ok(version)
     }
 
-    pub(crate) fn apply_operations(&mut self, mut ops: Vec<impl Command>) -> Result<Version> {
+    pub fn apply_operations(&mut self, mut ops: Vec<impl Command>) -> Result<Version> {
         let mut undos = vec![];
         let res = ops.drain(..).try_fold(&mut undos, |undos, op| {
             let undo = op.execute(self)?;
@@ -81,7 +81,7 @@ impl State {
         });
         match res {
             Err(e) => {
-                // TODO Corrupt state if next like errs
+                // TODO Corrupt state if next line fails
                 undos.drain(..).rev().try_for_each(|op| op.execute(self))?;
                 Err(e)
             }

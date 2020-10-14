@@ -27,7 +27,7 @@ impl Command for DoRenew {
 
 #[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
 #[serde(rename_all = "camelCase")]
-pub(crate) struct UndoRenew {
+pub struct UndoRenew {
     name: DomainName,
     expires_at_height: BlockHeight,
 }

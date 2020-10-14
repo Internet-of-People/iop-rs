@@ -9,15 +9,13 @@ pub struct JsCoeusAsset {
 impl JsCoeusAsset {
     #[wasm_bindgen(constructor)]
     pub fn new(data: &JsValue) -> Result<JsCoeusAsset, JsValue> {
-        let data_serde: serde_json::Value = data.into_serde().map_err_to_js()?;
-        let inner: CoeusAsset = serde_json::from_value(data_serde).map_err_to_js()?;
+        let inner: CoeusAsset = data.into_serde().map_err_to_js()?;
         Ok(inner.into())
     }
 
     pub fn deserialize(bytes: &[u8]) -> Result<JsCoeusAsset, JsValue> {
-        let asset_str = IopAsset::protobuf_to_string(bytes).map_err_to_js()?;
-        let inner = serde_json::from_str(&asset_str).map_err_to_js()?;
-        Ok(JsCoeusAsset { inner })
+        let inner = CoeusAsset::from_bytes(bytes).map_err_to_js()?;
+        Ok(inner.into())
     }
 
     pub fn serialize(&self) -> Result<Vec<u8>, JsValue> {

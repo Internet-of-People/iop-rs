@@ -68,7 +68,7 @@ impl Command for DoRegister {
 
 #[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
 #[serde(rename_all = "camelCase")]
-pub(crate) struct UndoRegister {
+pub struct UndoRegister {
     name: DomainName,
     old_domain: Option<Domain>,
 }

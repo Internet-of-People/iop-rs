@@ -59,4 +59,38 @@ impl CoeusAsset {
         let asset_json = serde_json::to_string(self)?;
         IopAsset::string_to_protobuf(&asset_json)
     }
+
+    pub fn from_bytes(bytes: impl AsRef<[u8]>) -> Result<Self> {
+        let asset_json = IopAsset::protobuf_to_string(bytes.as_ref())?;
+        let asset = serde_json::from_str(&asset_json)?;
+        Ok(asset)
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    use iop_keyvault::multicipher::MPrivateKey;
+    use iop_keyvault::PrivateKey;
+
+    #[test]
+    fn protobuf_binary_roundtrip() {
+        let domain: DomainName = ".schema.test".parse().unwrap();
+
+        let ark_passphrase =
+            "scout try doll stuff cake welcome random taste load town clerk ostrich";
+        let secp_privkey = SecpPrivateKey::from_ark_passphrase(ark_passphrase).unwrap();
+        let privkey = MPrivateKey::from(secp_privkey);
+
+        let op_renew = UserOperation::renew(domain.clone(), 12345);
+        let op_transfer =
+            UserOperation::transfer(domain, Principal::PublicKey(privkey.public_key()));
+        let nonced_ops = NoncedOperations::new(vec![op_renew, op_transfer], 42);
+        let signed_ops = nonced_ops.sign(&privkey).unwrap();
+
+        let original_asset = CoeusAsset { signed_operations: vec![signed_ops] };
+        let bytes = original_asset.to_bytes().unwrap();
+        let loaded_asset = CoeusAsset::from_bytes(&bytes).unwrap();
+        assert_eq!(original_asset, loaded_asset);
+    }
 }

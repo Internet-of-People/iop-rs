@@ -31,7 +31,7 @@ impl Command for DoTransfer {
 
 #[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
 #[serde(rename_all = "camelCase")]
-pub(crate) struct UndoTransfer {
+pub struct UndoTransfer {
     pub(super) name: DomainName,
     pub(super) owner: Principal,
 }
