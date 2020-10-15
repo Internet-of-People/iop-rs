@@ -13,8 +13,7 @@ pub struct DoRegister {
 
 impl AuthorizedCommand for DoRegister {
     fn validate_auth(&self, state: &State, pk: &MPublicKey) -> Result<()> {
-        let parent = self.name.parent().with_context(|| "Cannot register root domain")?;
-        state.validate_domain_owner(&parent, pk)
+        self.owner.validate_impersonation(pk)
     }
 }
 
@@ -38,10 +37,7 @@ impl Command for DoRegister {
     fn execute(self, state: &mut State) -> Result<UndoOperation> {
         let parent_name = self.name.parent().with_context(|| "Cannot register root domain")?;
         let parent_domain = state.domain_mut(&parent_name)?;
-        if let Principal::System(_) = &self.owner {
-            bail!("Cannot register system domains");
-        }
-        parent_domain.validate_registration(&self)?;
+        parent_domain.registration_policy().validate(parent_domain, &self)?;
 
         // NOTE child domain must be inserted into state so that
         //      it can be reached by domain::child(edge) -> domain queries during schema validation

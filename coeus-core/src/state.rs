@@ -51,7 +51,7 @@ impl State {
 
     pub fn validate_domain_owner(&self, name: &DomainName, pk: &MPublicKey) -> Result<()> {
         let domain = self.domain(name)?;
-        domain.owner().validate(pk)
+        domain.owner().validate_impersonation(pk)
     }
 
     pub(crate) fn apply_nonced_operations(
@@ -315,13 +315,31 @@ mod test {
         assert!(!parent.child_names().contains(&edge));
     }
 
-    #[test]
-    fn register_system_domain_fails() {
+    fn execute_tld_register_system_domain() -> State {
         let mut state = State::new();
 
         let register_operation = UserOperation::register(
             domain_name(".wallet"),
             Principal::system(),
+            no_policies(),
+            RegistrationPolicy::Owner,
+            data("a"),
+            ExpirationPolicy::YEAR,
+        );
+        let version = state.apply_operation(register_operation).unwrap();
+
+        assert_eq!(version, 1);
+
+        state
+    }
+
+    #[test]
+    fn execute_checks_registration_policy() {
+        let mut state = execute_tld_register_system_domain();
+
+        let register_operation = UserOperation::register(
+            domain_name(".wallet.wigy"),
+            Principal::public_key("pezDj6ea4tVfNRUTMyssVDepAAzPW67Fe3yHtuHL6ZNtcfJ").unwrap(),
             no_policies(),
             Default::default(),
             data("a"),
@@ -329,7 +347,26 @@ mod test {
         );
         let err = state.apply_operation(register_operation).unwrap_err();
 
-        assert_eq!(err.to_string(), "Cannot register system domains");
+        assert_eq!(err.to_string(), "Only system can register a child of .wallet");
+    }
+
+    #[test]
+    fn signed_register_cannot_impersonate_system() {
+        let mut state = State::new();
+        let sk = signed::test::ark_sk();
+
+        let register_operation = UserOperation::register(
+            domain_name(".schema.system"),
+            Principal::system(),
+            no_policies(),
+            Default::default(),
+            data("a"),
+            ExpirationPolicy::YEAR,
+        );
+        let signed_ops = NoncedOperations::new(vec![register_operation], 42).sign(&sk).unwrap();
+        let err = state.apply_signed_operations(signed_ops).unwrap_err();
+
+        assert_eq!(err.to_string(), "System principal cannot be impersonated");
     }
 
     #[test]

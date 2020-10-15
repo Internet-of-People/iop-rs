@@ -17,8 +17,9 @@ impl JsPrincipal {
         Ok(principal.into())
     }
 
-    pub fn validate(&self, pk: &JsMPublicKey) -> Result<(), JsValue> {
-        self.inner.validate(pk.inner()).map_err_to_js()
+    #[wasm_bindgen(js_name = validateImpersonation)]
+    pub fn validate_impersonation(&self, pk: &JsMPublicKey) -> Result<(), JsValue> {
+        self.inner.validate_impersonation(pk.inner()).map_err_to_js()
     }
 }
 

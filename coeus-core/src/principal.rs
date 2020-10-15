@@ -26,15 +26,15 @@ impl Principal {
         Ok(Principal::Did(Did::from_str(input)?))
     }
 
-    pub fn validate(&self, pk: &MPublicKey) -> Result<()> {
+    pub fn validate_impersonation(&self, impersonator_pk: &MPublicKey) -> Result<()> {
         match self {
             Self::System(_) => bail!("System principal cannot be impersonated"),
             Self::PublicKey(mypk) => {
                 ensure!(
-                    mypk == pk,
+                    mypk == impersonator_pk,
                     "PublicKey principal {} cannot be impersonated by {}",
                     mypk,
-                    pk
+                    impersonator_pk
                 );
                 Ok(())
             }

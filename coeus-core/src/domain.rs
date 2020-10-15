@@ -92,8 +92,8 @@ impl Domain {
         &self.subtree_policies
     }
 
-    pub(crate) fn validate_registration(&self, operation: &DoRegister) -> Result<()> {
-        self.registration_policy.validate(self, operation)
+    pub(crate) fn registration_policy(&self) -> &RegistrationPolicy {
+        &self.registration_policy
     }
 
     pub(crate) fn validate_subtree_policies(
