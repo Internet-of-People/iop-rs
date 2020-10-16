@@ -27,12 +27,12 @@ impl Default for TxTypeGroup {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Serialize)]
-#[serde(rename_all = "camelCase")]
 pub struct TypedAsset {
-    #[serde(default)]
+    #[serde(rename = "typeGroup")]
     pub(crate) type_group: TxTypeGroup,
     #[serde(rename = "type")]
     pub(crate) transaction_type: u16,
+    #[serde(skip_serializing_if = "Asset::is_default")]
     pub(crate) asset: Asset,
 }
 
@@ -41,7 +41,7 @@ impl Default for TypedAsset {
         Self {
             type_group: TxTypeGroup::default(),
             transaction_type: CoreTransactionType::default() as u16,
-            asset: Asset::Core(CoreAsset::default()),
+            asset: Asset::default(),
         }
     }
 }
@@ -81,6 +81,18 @@ impl From<CoeusAsset> for TypedAsset {
 pub enum Asset {
     Core(CoreAsset),
     Iop(IopAsset),
+}
+
+impl Asset {
+    pub fn is_default(&self) -> bool {
+        *self == Self::default()
+    }
+}
+
+impl Default for Asset {
+    fn default() -> Self {
+        Self::Core(CoreAsset::default())
+    }
 }
 
 impl<'de> Deserialize<'de> for TypedAsset {
@@ -159,7 +171,7 @@ impl<'de> Deserialize<'de> for TypedAsset {
                 let type_group = type_group.ok_or_else(|| de::Error::missing_field("typeGroup"))?;
                 let transaction_type =
                     transaction_type.ok_or_else(|| de::Error::missing_field("type"))?;
-                let asset = asset.ok_or_else(|| de::Error::missing_field("asset"))?;
+                let asset = asset.unwrap_or(Asset::default());
                 Ok(TypedAsset { type_group, transaction_type, asset })
             }
         }

@@ -12,6 +12,8 @@ pub struct TransactionData {
     pub version: Option<u8>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub network: Option<u8>,
+    #[serde(flatten)]
+    pub typed_asset: txtype::TypedAsset,
     // pub timestamp: u32, // present in the v2 schema only for v1 compatibility
     #[serde(skip_serializing_if = "Option::is_none")]
     pub nonce: Option<String>,
@@ -22,8 +24,6 @@ pub struct TransactionData {
     pub expiration: Option<u32>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub recipient_id: Option<String>,
-    #[serde(flatten)]
-    pub typed_asset: txtype::TypedAsset,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub vendor_field: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
