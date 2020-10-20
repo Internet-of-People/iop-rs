@@ -4,7 +4,7 @@ use super::*;
 #[derive(Clone, Debug)]
 pub struct JsBip32;
 
-#[wasm_bindgen(js_name = Bip32)]
+#[wasm_bindgen(js_class = Bip32)]
 impl JsBip32 {
     pub fn master(seed: &JsSeed, name: &str) -> Result<JsBip32Node, JsValue> {
         let network = Networks::by_name(name).map_err_to_js()?;
