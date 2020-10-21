@@ -24,7 +24,7 @@ impl JsCoeusTxBuilder {
             network: self.network,
             sender_public_key: sender_pubkey.inner().to_owned(),
             nonce,
-            ..Default::default()
+            optional: Default::default(),
         };
 
         let tx = coeus::Transaction::new(common_fields, vec![ops.inner().clone()]);

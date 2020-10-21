@@ -3,12 +3,14 @@ mod private;
 mod private_kind;
 mod public;
 mod public_kind;
+mod tx;
 
 pub use plugin::*;
 pub use private::*;
 pub use private_kind::*;
 pub use public::*;
 pub use public_kind::*;
+pub use tx::*;
 
 use super::*;
 

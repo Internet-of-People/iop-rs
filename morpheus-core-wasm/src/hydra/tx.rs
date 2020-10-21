@@ -1,9 +1,5 @@
 use super::*;
 
-use iop_hydra_proto::txtype::{hyd_core, Aip29Transaction, CommonTransactionFields};
-use iop_keyvault::secp256k1::SecpPublicKey;
-use iop_keyvault::{secp256k1::Secp256k1, Network};
-
 #[wasm_bindgen(js_name = HydraTxBuilder)]
 pub struct JsHydraTxBuilder {
     network: &'static dyn Network<Suite = Secp256k1>,
@@ -25,9 +21,8 @@ impl JsHydraTxBuilder {
         let common_fields = CommonTransactionFields {
             network: self.network,
             sender_public_key: sender_pubkey.inner().to_owned(),
-            amount: amount_flake,
             nonce,
-            ..Default::default()
+            optional: OptionalTransactionFields { amount: amount_flake, ..Default::default() },
         };
 
         let transfer = hyd_core::Transaction::transfer(common_fields, recipient_id.inner());
@@ -54,7 +49,7 @@ impl JsHydraTxBuilder {
             network: self.network,
             sender_public_key: sender_pubkey.inner().to_owned(),
             nonce,
-            ..Default::default()
+            optional: Default::default(),
         };
 
         let tx = hyd_core::Transaction::register_delegate(common_fields, delegate_name);
@@ -69,7 +64,7 @@ impl JsHydraTxBuilder {
             network: self.network,
             sender_public_key: sender_pubkey.inner().to_owned(),
             nonce,
-            ..Default::default()
+            optional: Default::default(),
         };
 
         let vote = build_tx(common_fields, delegate.inner());

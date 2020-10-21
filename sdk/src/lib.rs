@@ -8,12 +8,15 @@ mod test {
         transaction::{TransactionData, TxBatch},
         txtype::{
             hyd_core, morpheus, morpheus::OperationAttempt, Aip29Transaction,
-            CommonTransactionFields,
+            CommonTransactionFields, OptionalTransactionFields,
         },
     };
     use iop_hydra_sdk::vault::{self as hydra, HydraSigner};
-    use iop_keyvault::secp256k1::{SecpKeyId, SecpPublicKey};
-    use iop_keyvault::{multicipher::MKeyId, secp256k1::hyd, PublicKey, Seed};
+    use iop_keyvault::{
+        multicipher::MKeyId,
+        secp256k1::{hyd, SecpKeyId, SecpPublicKey},
+        PublicKey, Seed,
+    };
     use iop_morpheus_core::{
         crypto::sign::PrivateKeySigner,
         data::{auth::Authentication, did::Did, diddoc::Right},
@@ -42,14 +45,18 @@ mod test {
         );
 
         let common_fields = CommonTransactionFields {
+            network: &hyd::Testnet,
             sender_public_key: hyd_wallet_pubkey0,
             nonce: 245,
-            ..Default::default()
+            optional: Default::default(),
         };
 
         let transfer_common = CommonTransactionFields {
-            amount: 3_141_593,
-            manual_fee: Some(1_000_000),
+            optional: OptionalTransactionFields {
+                amount: 3_141_593,
+                manual_fee: Some(1_000_000),
+                ..common_fields.optional.clone()
+            },
             ..common_fields.clone()
         };
         let recipient_id =
@@ -112,9 +119,10 @@ mod test {
         println!("Morpheus Persona 0 Did: {}", mph_persona_did0.to_string());
 
         let common_fields = CommonTransactionFields {
+            network: &hyd::Testnet,
             sender_public_key: hyd_wallet_pubkey0,
             nonce: 14,
-            ..Default::default()
+            optional: Default::default(),
         };
 
         let reg_proof_attempt = morpheus::OperationAttempt::RegisterBeforeProof {

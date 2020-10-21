@@ -17,10 +17,11 @@ impl Principal {
         Self::System(SystemPrincipal())
     }
 
-    pub fn public_key(input: &str) -> Result<Self> {
-        Ok(Principal::PublicKey(MPublicKey::from_str(input)?))
+    pub fn public_key(pk: &MPublicKey) -> Self {
+        Principal::PublicKey(pk.to_owned())
     }
 
+    // TODO input should be &JsDid
     #[cfg(feature = "did")]
     pub fn did(input: &str) -> Result<Self> {
         Ok(Principal::Did(Did::from_str(input)?))
@@ -120,8 +121,9 @@ mod test {
 
     #[test]
     fn serde_pk() {
-        let pk = "pez2CLkBUjHB8w8G87D3YkREjpRuiqPu6BrRsgHMQy2Pzt6";
-        serde_roundtrip(Principal::public_key(pk).unwrap(), pk);
+        let pk_str = "pez2CLkBUjHB8w8G87D3YkREjpRuiqPu6BrRsgHMQy2Pzt6";
+        let pk = pk_str.parse().unwrap();
+        serde_roundtrip(Principal::public_key(&pk), pk_str);
     }
 
     #[cfg(feature = "did")]

@@ -56,14 +56,13 @@ impl CoeusAsset {
     }
 
     pub fn to_bytes(&self) -> Result<Vec<u8>> {
-        let asset_json = serde_json::to_string(self)?;
-        IopAsset::string_to_protobuf(&asset_json)
+        let json_val = serde_json::to_value(self)?;
+        let json_str = canonical_json(&json_val)?;
+        Ok(json_str.into_bytes())
     }
 
-    pub fn from_bytes(bytes: impl AsRef<[u8]>) -> Result<Self> {
-        let asset_json = IopAsset::protobuf_to_string(bytes.as_ref())?;
-        let asset = serde_json::from_str(&asset_json)?;
-        Ok(asset)
+    pub fn from_bytes(bytes: &[u8]) -> Result<Self> {
+        Ok(serde_json::from_slice(bytes)?)
     }
 }
 
@@ -74,7 +73,7 @@ mod test {
     use iop_keyvault::PrivateKey;
 
     #[test]
-    fn protobuf_binary_roundtrip() {
+    fn binary_roundtrip() {
         let domain: DomainName = ".schema.test".parse().unwrap();
 
         let ark_passphrase =

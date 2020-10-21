@@ -12,8 +12,8 @@ impl JsPrincipal {
     }
 
     #[wasm_bindgen(js_name = publicKey)]
-    pub fn public_key(pk: &str) -> Result<JsPrincipal, JsValue> {
-        let principal = Principal::public_key(pk).map_err_to_js()?;
+    pub fn public_key(pk: &JsMPublicKey) -> Result<JsPrincipal, JsValue> {
+        let principal = Principal::public_key(pk.inner());
         Ok(principal.into())
     }
 

@@ -20,6 +20,8 @@ pub use vault::*;
 
 // imports from standard library
 
+use std::str::FromStr;
+
 // imports from 3rd party crates
 
 use anyhow::{Context, Result};
@@ -29,9 +31,16 @@ use wasm_bindgen::prelude::*;
 
 // imports from own crates
 
-use iop_hydra_proto::TransactionData as HydraTransactionData;
+use iop_hydra_proto::{
+    txtype::{hyd_core, Aip29Transaction, CommonTransactionFields, OptionalTransactionFields},
+    TransactionData as HydraTransactionData,
+};
 use iop_hydra_sdk::vault as hd_hydra;
-use iop_keyvault::{multicipher::*, Networks, PublicKey as _};
+use iop_keyvault::{
+    multicipher::*,
+    secp256k1::{Secp256k1, SecpPublicKey},
+    Network, Networks, PublicKey as _,
+};
 use iop_keyvault_wasm::*;
 use iop_morpheus_core::{
     crypto::{

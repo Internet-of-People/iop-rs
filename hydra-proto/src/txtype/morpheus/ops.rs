@@ -1,60 +1,4 @@
-use iop_morpheus_core::{crypto::sign::SyncMorpheusSigner, data::auth::Authentication};
-
 use super::*;
-
-#[derive(Clone, Debug)]
-pub struct Transaction {
-    common_fields: CommonTransactionFields,
-    asset: MorpheusAsset,
-}
-
-impl Transaction {
-    pub fn new(
-        common_fields: CommonTransactionFields, operation_attempts: Vec<OperationAttempt>,
-    ) -> Self {
-        Self { common_fields, asset: MorpheusAsset { operation_attempts } }
-    }
-
-    pub fn fee(&self) -> u64 {
-        self.asset.fee()
-    }
-}
-
-impl Aip29Transaction for Transaction {
-    fn fee(&self) -> u64 {
-        self.asset.fee()
-    }
-
-    fn to_data(&self) -> TransactionData {
-        let mut tx_data: TransactionData = self.common_fields.to_data();
-        tx_data.typed_asset = self.asset.to_owned().into();
-        tx_data.fee = self.common_fields.calculate_fee(self).to_string();
-        tx_data
-    }
-}
-
-#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct MorpheusAsset {
-    pub operation_attempts: Vec<OperationAttempt>,
-}
-
-impl MorpheusAsset {
-    const FEE_BYTES_OFFSET: u64 = 15;
-    const FLAKES_PER_BYTES: u64 = 3000;
-
-    pub fn fee(&self) -> u64 {
-        let op_attempts_json = serde_json::to_string(&self.operation_attempts)
-            .expect("Implementation error: serializing operation attempts must not fail");
-        let bytes = (op_attempts_json.len() as u64).checked_add(Self::FEE_BYTES_OFFSET);
-        bytes.and_then(|bytes| bytes.checked_mul(Self::FLAKES_PER_BYTES)).unwrap_or(u64::MAX)
-    }
-
-    pub fn to_bytes(&self) -> Result<Vec<u8>> {
-        let asset_json = serde_json::to_string(self)?;
-        IopAsset::string_to_protobuf(&asset_json)
-    }
-}
 
 #[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", tag = "operation")]
@@ -86,10 +30,7 @@ impl SignableOperation {
     fn to_signable_bytes(&self) -> Result<Vec<u8>> {
         let asset_val = serde_json::to_value(&self.signables)?;
         let asset_json = canonical_json(&asset_val)?;
-        // NOTE this is a weird historical implementation detail with double-escaping,
-        //      ideally should not be here, but fixing would require a hardfork
-        let asset_str = serde_json::to_string(&asset_json)?;
-        IopAsset::string_to_protobuf(&asset_str)
+        Ok(serializer::frame_bytes(asset_json.as_bytes())?)
     }
 
     pub fn sign(self, signer: &dyn SyncMorpheusSigner) -> Result<SignedOperation> {

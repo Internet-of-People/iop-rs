@@ -337,9 +337,10 @@ mod test {
     fn execute_checks_registration_policy() {
         let mut state = execute_tld_register_system_domain();
 
+        let pk = "pezDj6ea4tVfNRUTMyssVDepAAzPW67Fe3yHtuHL6ZNtcfJ".parse().unwrap();
         let register_operation = UserOperation::register(
             domain_name(".wallet.wigy"),
-            Principal::public_key("pezDj6ea4tVfNRUTMyssVDepAAzPW67Fe3yHtuHL6ZNtcfJ").unwrap(),
+            Principal::public_key(&pk),
             no_policies(),
             Default::default(),
             data("a"),
@@ -431,8 +432,8 @@ mod test {
         assert_eq!(state.version(), 2);
         check_domain_exists(&state, &domain_name(), &data("cool, heh?"), &domain_owner());
 
-        let transfer_to =
-            Principal::public_key("pezDj6ea4tVfNRUTMyssVDepAAzPW67Fe3yHtuHL6ZNtcfJ").unwrap();
+        let pk = "pezDj6ea4tVfNRUTMyssVDepAAzPW67Fe3yHtuHL6ZNtcfJ".parse().unwrap();
+        let transfer_to = Principal::public_key(&pk);
         let transfer_operation = UserOperation::transfer(domain_name(), transfer_to.clone());
         state.apply_operation(transfer_operation).unwrap();
 

@@ -1,6 +1,8 @@
 use super::*;
 
-use iop_hydra_proto::txtype::{hyd_core, morpheus, Aip29Transaction, CommonTransactionFields};
+use iop_hydra_proto::txtype::{
+    hyd_core, morpheus, Aip29Transaction, CommonTransactionFields, OptionalTransactionFields,
+};
 use iop_keyvault::Networks;
 
 #[no_mangle]
@@ -17,9 +19,8 @@ pub extern "C" fn HydraTxBuilder_transfer(
         let common_fields = CommonTransactionFields {
             network,
             sender_public_key,
-            amount,
             nonce,
-            ..Default::default()
+            optional: OptionalTransactionFields { amount, ..Default::default() },
         };
         let recipient_id = SecpKeyId::from_p2pkh_addr(recipient_id, network)?;
         let transfer_tx = hyd_core::Transaction::transfer(common_fields, &recipient_id);
@@ -43,7 +44,7 @@ fn create_vote_tx(
             network: Networks::by_name(network)?,
             sender_public_key,
             nonce,
-            ..Default::default()
+            optional: Default::default(),
         };
         let delegate = delegate.parse()?;
         let vote_tx = build_tx(common_fields, &delegate);
@@ -80,8 +81,12 @@ pub extern "C" fn HydraTxBuilder_register_delegate(
         let delegate_name = unsafe { convert::str_in(delegate_name)? };
         let network = Networks::by_name(network)?;
         let sender_public_key = sender_public_key.parse()?;
-        let common_fields =
-            CommonTransactionFields { network, sender_public_key, nonce, ..Default::default() };
+        let common_fields = CommonTransactionFields {
+            network,
+            sender_public_key,
+            nonce,
+            optional: Default::default(),
+        };
         let reg_tx = hyd_core::Transaction::register_delegate(common_fields, delegate_name);
         let tx_str = serde_json::to_string(&reg_tx.to_data())?;
         Ok(convert::string_out(tx_str))
@@ -104,10 +109,10 @@ pub extern "C" fn MorpheusTxBuilder_new(
             network: Networks::by_name(network)?,
             sender_public_key,
             nonce,
-            ..Default::default()
+            optional: Default::default(),
         };
-        let transfer_tx = morpheus::Transaction::new(common_fields, op_attempts);
-        let tx_str = serde_json::to_string(&transfer_tx.to_data())?;
+        let morpheus_tx = morpheus::Transaction::new(common_fields, op_attempts);
+        let tx_str = serde_json::to_string(&morpheus_tx.to_data())?;
         Ok(convert::string_out(tx_str))
     };
     cresult(fun())
