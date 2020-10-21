@@ -3,6 +3,7 @@ use super::*;
 #[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct DoRenew {
+    #[serde(with = "serde_str")]
     pub(super) name: DomainName,
     pub(super) expires_at_height: BlockHeight,
 }
@@ -28,6 +29,7 @@ impl Command for DoRenew {
 #[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct UndoRenew {
+    #[serde(with = "serde_str")]
     name: DomainName,
     expires_at_height: BlockHeight,
 }

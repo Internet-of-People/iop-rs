@@ -3,6 +3,7 @@ use super::*;
 #[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct DoUpdate {
+    #[serde(with = "serde_str")]
     pub(super) name: DomainName,
     pub(super) data: DynamicContent,
 }
@@ -36,6 +37,7 @@ impl Command for DoUpdate {
 #[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct UndoUpdate {
+    #[serde(with = "serde_str")]
     name: DomainName,
     data: DynamicContent,
 }

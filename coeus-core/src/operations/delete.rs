@@ -3,6 +3,7 @@ use super::*;
 #[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct DoDelete {
+    #[serde(with = "serde_str")]
     pub(super) name: DomainName,
 }
 

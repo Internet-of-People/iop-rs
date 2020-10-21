@@ -3,6 +3,7 @@ use super::*;
 #[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct DoRegister {
+    #[serde(with = "serde_str")]
     pub(crate) name: DomainName,
     pub(crate) owner: Principal,
     pub(crate) subtree_policies: SubtreePolicies,
@@ -65,6 +66,7 @@ impl Command for DoRegister {
 #[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct UndoRegister {
+    #[serde(with = "serde_str")]
     name: DomainName,
     old_domain: Option<Domain>,
 }

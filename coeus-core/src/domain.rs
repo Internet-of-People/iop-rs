@@ -6,6 +6,7 @@ pub type DynamicContent = serde_json::Value;
 #[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Domain {
+    #[serde(with = "serde_str")]
     name: DomainName,
     owner: Principal,
     children: HashMap<Edge, Domain>,
@@ -197,18 +198,14 @@ mod test {
 
         println!("{}", serde_json::to_string_pretty(&wallet).unwrap());
 
-        // TODO: Seems like the `name` field in `Domain` is redundant in the current implementation
+        // TODO: Consider removing redundancy from the `name` field of `Domain`,
+        //       e.g. ".wallet" child name ".wallet.joe" could be just "joe" or ".joe"
         let expected = json!( {
-          "name": [
-            "wallet"
-          ],
+          "name": ".wallet",
           "owner": "system",
           "children": {
             "joe": {
-              "name": [
-                "wallet",
-                "joe"
-              ],
+              "name": ".wallet.joe",
               "owner": "pez2CLkBUjHB8w8G87D3YkREjpRuiqPu6BrRsgHMQy2Pzt6",
               "children": {},
               "subtreePolicies": {},

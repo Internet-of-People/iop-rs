@@ -3,6 +3,7 @@ use super::*;
 #[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct DoTransfer {
+    #[serde(with = "serde_str")]
     pub(super) name: DomainName,
     pub(super) to_owner: Principal,
 }
@@ -32,6 +33,7 @@ impl Command for DoTransfer {
 #[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct UndoTransfer {
+    #[serde(with = "serde_str")]
     pub(super) name: DomainName,
     pub(super) owner: Principal,
 }

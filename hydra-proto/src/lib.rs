@@ -23,7 +23,7 @@ use serde::{
 };
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use sha2::{Digest, Sha256};
-use varint::{VarintRead, VarintWrite};
+use varint::VarintWrite; // VarintRead
 
 // imports from own crates
 
