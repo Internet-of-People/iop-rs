@@ -15,7 +15,7 @@ Please contact the package authors.
 
 ## Usage
 
-See the [IoP developer page](https://developer.iop.global).
+See the [IOP developer page](https://developer.iop.global).
 
 ## Contributing
 

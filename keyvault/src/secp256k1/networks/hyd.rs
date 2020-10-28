@@ -35,7 +35,7 @@ impl Network for Mainnet {
     }
     fn message_prefix(&self) -> &'static str {
         // TODO usually there is a binary length prefix, but so many btc forks screwed that
-        // up (including IoP) that now many include it as part of this string. Wigy could
+        // up (including IOP) that now many include it as part of this string. Wigy could
         // not find out whether ARK has a length prefix here and if yes, what is that.
         "HYD message:\n"
     }
