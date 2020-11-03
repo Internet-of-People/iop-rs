@@ -27,5 +27,6 @@ use varint::VarintWrite; // VarintRead
 
 // imports from own crates
 
+use iop_coeus_core::*;
 use iop_keyvault::{secp256k1::*, Network};
 use json_digest::*;

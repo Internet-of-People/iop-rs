@@ -1,7 +1,7 @@
 [package]
 name = "iop-vault"
 version = "0.0.6"
-authors = ["IoP Ventures LLC <info@iop-ventures.com>", "Rache Bartmoss <bartmoss@tutanota.com>", "wigy <wigy_opensource_developer@yahoo.com>"]
+authors = ["IOP Ventures LLC <dev@iop-ventures.com>", "Rache Bartmoss <bartmoss@tutanota.com>", "wigy <wigy_opensource_developer@yahoo.com>"]
 edition = "2018"
 
 

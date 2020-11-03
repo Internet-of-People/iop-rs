@@ -19,9 +19,9 @@ impl HydraDidLedger {
     /// You can instantiate a light client for the Hydra chain passing in a URL to the wallet.
     ///
     /// - local testnet: http://127.0.0.1:4703
-    /// - IoP testnet: http://35.187.56.222:4703
-    /// - An IoP devnet node: http://35.240.62.119:4703
-    /// - An IoP mainnet node: http://35.195.150.223:4703
+    /// - IOP testnet: http://35.187.56.222:4703
+    /// - An IOP devnet node: http://35.240.62.119:4703
+    /// - An IOP mainnet node: http://35.195.150.223:4703
     pub fn new(url: impl AsRef<str>) -> Self {
         let url = url.as_ref().to_owned();
         let client = Client::default();

@@ -57,28 +57,3 @@ impl Wraps<UserOperation> for JsUserOperation {
         &self.inner
     }
 }
-
-#[wasm_bindgen(js_name = SystemOperation)]
-pub struct JsSystemOperation {
-    inner: SystemOperation,
-}
-
-#[wasm_bindgen(js_class = SystemOperation)]
-impl JsSystemOperation {
-    #[wasm_bindgen(js_name = startBlock)]
-    pub fn start_block(height: BlockHeight) -> JsSystemOperation {
-        SystemOperation::start_block(height).into()
-    }
-}
-
-impl From<SystemOperation> for JsSystemOperation {
-    fn from(inner: SystemOperation) -> Self {
-        Self { inner }
-    }
-}
-
-impl Wraps<SystemOperation> for JsSystemOperation {
-    fn inner(&self) -> &SystemOperation {
-        &self.inner
-    }
-}

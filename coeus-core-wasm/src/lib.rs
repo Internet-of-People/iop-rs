@@ -18,8 +18,8 @@ pub use signed::*;
 pub use state::*;
 pub use tx::*;
 
+use serde::Serialize;
 use wasm_bindgen::prelude::*;
 
 use iop_coeus_core::*;
-use iop_hydra_proto::txtype::coeus::CoeusAsset;
 use iop_keyvault_wasm::*;

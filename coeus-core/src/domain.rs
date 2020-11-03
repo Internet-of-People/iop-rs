@@ -93,7 +93,7 @@ impl Domain {
         &self.subtree_policies
     }
 
-    pub(crate) fn registration_policy(&self) -> &RegistrationPolicy {
+    pub fn registration_policy(&self) -> &RegistrationPolicy {
         &self.registration_policy
     }
 
@@ -120,7 +120,7 @@ impl Domain {
             subtree_policies: SubtreePolicies::new().with_schema(Self::json_schema_draft6()),
             registration_policy: RegistrationPolicy::any(),
             data: json!({}),
-            expires_at_height: BlockHeight::max_value(),
+            expires_at_height: BlockHeight::MAX,
         };
         let mut root = Self {
             name: name(&[]),
@@ -130,7 +130,7 @@ impl Domain {
             subtree_policies: SubtreePolicies::new().with_expiration(2 * ExpirationPolicy::YEAR),
             registration_policy: Default::default(),
             data: json!({}),
-            expires_at_height: BlockHeight::max_value(),
+            expires_at_height: BlockHeight::MAX,
         };
         root.insert_or_replace_child(schema).unwrap();
         root

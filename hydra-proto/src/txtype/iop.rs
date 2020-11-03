@@ -10,7 +10,7 @@ pub enum IopTransactionType {
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
 #[serde(untagged)]
 pub enum IopAsset {
-    Coeus(coeus::CoeusAsset),
+    Coeus(CoeusAsset),
     Morpheus(morpheus::MorpheusAsset),
 }
 

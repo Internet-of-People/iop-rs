@@ -1,7 +1,7 @@
 [package]
 name = "iop-hydra-sdk"
 version = "0.0.6"
-authors = ["IoP Ventures LLC <info@iop-ventures.com>", "Rache Bartmoss <bartmoss@tutanota.com>", "wigy <wigy_opensource_developer@yahoo.com>"]
+authors = ["IOP Ventures LLC <dev@iop-ventures.com>", "Rache Bartmoss <bartmoss@tutanota.com>", "wigy <wigy_opensource_developer@yahoo.com>"]
 license = "LGPL-3.0-or-later"
 edition = "2018"
 

@@ -3,23 +3,33 @@ use super::*;
 pub type Version = u64;
 
 #[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
+pub struct TxnStatus {
+    pub version_before_txn: Version,
+    pub success: bool,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct State {
-    last_seen_height: BlockHeight,
+    corrupted: bool,
     root: Domain,
+    last_seen_height: BlockHeight,
     version_of_first_undo_operation: Version,
-    nonces: HashMap<MPublicKey, Nonce>,
     undo_operations: Vec<UndoOperation>,
+    nonces: HashMap<MPublicKey, Nonce>,
+    txn_statuses: HashMap<String, TxnStatus>,
 }
 
 impl Default for State {
     fn default() -> Self {
         Self {
+            corrupted: false,
             root: Domain::new_root(),
             last_seen_height: Default::default(),
+            version_of_first_undo_operation: Default::default(),
             undo_operations: Default::default(),
             nonces: Default::default(),
-            version_of_first_undo_operation: Default::default(),
+            txn_statuses: Default::default(),
         }
     }
 }
@@ -29,23 +39,99 @@ impl State {
         Default::default()
     }
 
+    pub fn is_corrupted(&self) -> bool {
+        self.corrupted
+    }
+
+    pub fn ensure_not_corrupted(&self) -> Result<()> {
+        if self.corrupted {
+            bail!("Coeus state is corrupt. All incoming changes will be ignored.");
+        }
+        Ok(())
+    }
+
     pub fn root(&self) -> &Domain {
         &self.root
+    }
+
+    pub fn last_seen_height(&self) -> BlockHeight {
+        self.last_seen_height
+    }
+
+    pub(crate) fn set_last_seen_height(&mut self, height: BlockHeight) {
+        self.last_seen_height = height;
     }
 
     pub fn version(&self) -> Version {
         self.undo_operations.len() as Version + self.version_of_first_undo_operation
     }
 
-    pub fn apply_signed_operations(&mut self, ops: SignedOperations) -> Result<Version> {
-        ensure!(ops.verify(), "Invalid signature or the operations were tampered with");
-        self.authorize_operations(&ops.operations.operations, &ops.public_key)?;
-        self.apply_nonced_operations(ops.operations, ops.public_key)
+    pub fn block_applying(&mut self, height: BlockHeight) -> Result<()> {
+        self.ensure_not_corrupted()?;
+        self.apply_operations(vec![SystemOperation::start_block(height)]).map(|_| ())
     }
 
-    pub(crate) fn authorize_operations(
-        &mut self, ops: &[UserOperation], pk: &MPublicKey,
-    ) -> Result<()> {
+    pub fn block_reverted(&mut self, height: BlockHeight) -> Result<()> {
+        self.ensure_not_corrupted()?;
+        let height_before_revert = self.last_seen_height;
+        self.set_corrupted_on_err(|state| {
+            ensure!(
+                height_before_revert == height,
+                "Cannot revert block at height {}, because currently the state is at height {}",
+                height,
+                height_before_revert,
+            );
+            state.undo_operation(state.version() - 1)?;
+            ensure!(height_before_revert > state.last_seen_height, "Cannot revert block at height {}, because the operation undone was not reducing the block height.", height);
+            Ok(())
+        })
+    }
+
+    pub fn apply_transaction(&mut self, txid: &str, asset: CoeusAsset) -> Result<()> {
+        self.ensure_not_corrupted()?;
+
+        let version_before_txn = self.version();
+
+        for bundle in asset.bundles {
+            if let Err(e) = self.apply_signed_bundle(bundle) {
+                self.undo_operations(version_before_txn)?;
+                self.txn_statuses
+                    .insert(txid.to_owned(), TxnStatus { version_before_txn, success: false });
+                return Err(e);
+            }
+        }
+        self.txn_statuses.insert(txid.to_owned(), TxnStatus { version_before_txn, success: true });
+        Ok(())
+    }
+
+    pub fn revert_transaction(&mut self, txid: &str, asset: CoeusAsset) -> Result<()> {
+        self.ensure_not_corrupted()?;
+        self.set_corrupted_on_err(|state| match state.txn_statuses.remove(txid) {
+            None => {
+                bail!("Transaction has not been applied previously.");
+            }
+            Some(status) => {
+                let current_version = state.version();
+                let version_before_txn = status.version_before_txn;
+                let operation_count: usize =
+                    asset.bundles.iter().map(|signed| signed.bundle.operations.len()).sum();
+                ensure!(
+                    version_before_txn + operation_count as u64 == current_version,
+                    "Number of operations in transaction do not match our previous records."
+                );
+                state.undo_operations(version_before_txn)?;
+                return Ok(());
+            }
+        })
+    }
+
+    pub(crate) fn apply_signed_bundle(&mut self, ops: SignedBundle) -> Result<Version> {
+        ensure!(ops.verify(), "Invalid signature or the operations were tampered with");
+        self.authorize_operations(&ops.bundle.operations, &ops.public_key)?;
+        self.apply_nonced_bundle(ops.bundle, ops.public_key)
+    }
+
+    fn authorize_operations(&mut self, ops: &[UserOperation], pk: &MPublicKey) -> Result<()> {
         ops.iter().try_for_each(|op| op.validate_auth(self, pk))
     }
 
@@ -54,25 +140,23 @@ impl State {
         domain.owner().validate_impersonation(pk)
     }
 
-    pub(crate) fn apply_nonced_operations(
-        &mut self, ops: NoncedOperations, pk: MPublicKey,
-    ) -> Result<Version> {
+    fn apply_nonced_bundle(&mut self, bundle: NoncedBundle, pk: MPublicKey) -> Result<Version> {
         let old_nonce = self.nonces.get(&pk).copied().unwrap_or_default();
         ensure!(
-            ops.nonce == old_nonce + 1,
+            bundle.nonce == old_nonce + 1,
             "Invalid nonce {}, expected {}",
-            ops.nonce,
+            bundle.nonce,
             old_nonce + 1
         );
 
-        let version = self.apply_operations(ops.operations)?;
+        let version = self.apply_operations(bundle.operations)?;
 
         self.nonces.insert(pk, old_nonce + 1);
 
         Ok(version)
     }
 
-    pub fn apply_operations(&mut self, mut ops: Vec<impl Command>) -> Result<Version> {
+    pub(crate) fn apply_operations(&mut self, mut ops: Vec<impl Command>) -> Result<Version> {
         let mut undos = vec![];
         let res = ops.drain(..).try_fold(&mut undos, |undos, op| {
             let undo = op.execute(self)?;
@@ -92,29 +176,6 @@ impl State {
         }
     }
 
-    pub fn undo_last_operation(&mut self, to_version: Version) -> Result<()> {
-        ensure!(
-            self.version() == to_version + 1,
-            "Incorrect version: got {}, should be {}",
-            to_version,
-            self.version() - 1
-        );
-        let undo_op = self
-            .undo_operations
-            .pop()
-            .with_context(|| format!("Cannot undo to version {} anymore", to_version))?;
-        undo_op.execute(self)?;
-        Ok(())
-    }
-
-    pub fn last_seen_height(&self) -> BlockHeight {
-        self.last_seen_height
-    }
-
-    pub(crate) fn set_last_seen_height(&mut self, height: BlockHeight) {
-        self.last_seen_height = height;
-    }
-
     pub fn domain(&self, name: &DomainName) -> Result<&Domain> {
         name.iter()
             .try_fold(&self.root, |dom, e| dom.child(e))
@@ -129,6 +190,10 @@ impl State {
 
     pub fn nonce(&self, pk: &MPublicKey) -> Nonce {
         self.nonces.get(pk).copied().unwrap_or(0)
+    }
+
+    pub fn get_txn_status(&self, txid: &str) -> Result<&TxnStatus> {
+        self.txn_statuses.get(txid).with_context(|| format!("Cannot find txn with id {}", txid))
     }
 
     pub fn resolve_data(&self, name: &DomainName) -> Result<&DynamicContent> {
@@ -159,6 +224,33 @@ impl State {
         }
 
         Ok(())
+    }
+
+    fn set_corrupted_on_err<R>(&mut self, func: impl FnOnce(&mut Self) -> Result<R>) -> Result<R> {
+        match func(self) {
+            Err(e) => {
+                self.corrupted = true;
+                Err(e)
+            }
+            Ok(r) => Ok(r),
+        }
+    }
+
+    fn undo_operations(&mut self, to_version: Version) -> Result<()> {
+        for version in (to_version..self.version()).rev() {
+            self.undo_operation(version)?;
+        }
+        Ok(())
+    }
+
+    fn undo_operation(&mut self, to_version: Version) -> Result<()> {
+        self.set_corrupted_on_err(|state| {
+            let undo_op = state
+                .undo_operations
+                .pop()
+                .with_context(|| format!("Cannot undo to version {} anymore", to_version))?;
+            undo_op.execute(state)
+        })
     }
 }
 
@@ -235,26 +327,26 @@ mod test {
 
         name_resolves_to(&state, &domain_name, &domain_data).unwrap();
 
-        state.apply_operation(SystemOperation::start_block(41)).unwrap();
+        state.block_applying(41).unwrap();
         name_resolves_to(&state, &domain_name, &domain_data).unwrap();
 
-        state.apply_operation(SystemOperation::start_block(42)).unwrap();
+        state.block_applying(42).unwrap();
         name_does_not_resolve(&state, &domain_name).unwrap();
 
         state.apply_operation(UserOperation::renew(domain_name.clone(), 43)).unwrap();
         name_resolves_to(&state, &domain_name, &domain_data).unwrap();
 
-        state.apply_operation(SystemOperation::start_block(1234567890)).unwrap();
+        state.block_applying(1234567890).unwrap();
         name_does_not_resolve(&state, &domain_name).unwrap();
         assert_eq!(state.version(), 5);
 
-        state.undo_last_operation(4).unwrap(); // undo block 1234567890
+        state.block_reverted(1234567890).unwrap(); // undo block 1234567890
         name_resolves_to(&state, &domain_name, &domain_data).unwrap();
 
-        state.undo_last_operation(3).unwrap(); // undo renew
+        state.undo_operation(3).unwrap(); // undo renew
         name_does_not_resolve(&state, &domain_name).unwrap();
 
-        state.undo_last_operation(2).unwrap(); // undo block 42
+        state.block_reverted(42).unwrap(); // undo block 42
         name_resolves_to(&state, &domain_name, &domain_data).unwrap();
     }
 
@@ -279,14 +371,14 @@ mod test {
         Principal::PublicKey(domain_owner_pk())
     }
 
-    fn sign_ops(ops: NoncedOperations) -> SignedOperations {
+    fn sign_ops(ops: NoncedBundle) -> SignedBundle {
         let sk = crate::signed::test::ark_sk_from(
             "scout try doll stuff cake welcome random taste load town clerk ostrich",
         );
         ops.sign(&sk).unwrap()
     }
 
-    fn sign_ops_by_wrong_key(ops: NoncedOperations) -> SignedOperations {
+    fn sign_ops_by_wrong_key(ops: NoncedBundle) -> SignedBundle {
         let sk = crate::signed::test::ark_sk_from(
             "not scout try doll stuff cake welcome random taste load town clerk ostrich",
         );
@@ -364,8 +456,8 @@ mod test {
             data("a"),
             ExpirationPolicy::YEAR,
         );
-        let signed_ops = NoncedOperations::new(vec![register_operation], 42).sign(&sk).unwrap();
-        let err = state.apply_signed_operations(signed_ops).unwrap_err();
+        let signed_ops = NoncedBundle::new(vec![register_operation], 42).sign(&sk).unwrap();
+        let err = state.apply_signed_bundle(signed_ops).unwrap_err();
 
         assert_eq!(err.to_string(), "System principal cannot be impersonated");
     }
@@ -446,20 +538,20 @@ mod test {
         assert_eq!(state.last_seen_height(), 0);
         assert_eq!(state.version(), 4);
 
-        state.undo_last_operation(3).unwrap(); // undo delete
+        state.undo_operation(3).unwrap(); // undo delete
 
         check_domain_exists(&state, &domain_name(), &data("cool, heh?"), &transfer_to);
 
-        state.undo_last_operation(2).unwrap(); // undo transfer
+        state.undo_operation(2).unwrap(); // undo transfer
 
         check_domain_exists(&state, &domain_name(), &data("cool, heh?"), &domain_owner());
 
-        state.undo_last_operation(1).unwrap(); // undo update
+        state.undo_operation(1).unwrap(); // undo update
 
         check_domain_exists(&state, &domain_name(), &data("top level"), &domain_owner());
         assert_eq!(state.version(), 1);
 
-        state.undo_last_operation(0).unwrap(); // undo register
+        state.undo_operation(0).unwrap(); // undo register
 
         check_domain_missing(&state, &domain_name());
         assert_eq!(state.version(), 0);
@@ -547,36 +639,36 @@ mod test {
         check_domain_exists(&state, &domain_name(), &data("top level"), &domain_owner());
         name_resolves_to(&state, &domain_name(), &data("top level")).unwrap();
 
-        state.apply_operation(SystemOperation::start_block(10)).unwrap();
+        state.block_applying(10).unwrap();
         assert_eq!(state.version(), 2);
         name_does_not_resolve(&state, &domain_name()).unwrap();
 
         let update_op = UserOperation::update(domain_name(), data("cool, heh?"));
         let renew_op = UserOperation::renew(domain_name(), 20);
-        let nonced_ops = NoncedOperations::new(vec![renew_op.clone(), update_op.clone()], 1);
+        let nonced_ops = NoncedBundle::new(vec![renew_op.clone(), update_op.clone()], 1);
 
-        let bad_nonce_ops = NoncedOperations::new(vec![update_op.clone(), renew_op.clone()], 2);
+        let bad_nonce_ops = NoncedBundle::new(vec![update_op.clone(), renew_op.clone()], 2);
         let signed_ops_bad_nonce = sign_ops(bad_nonce_ops);
-        let bad_nonce_err = state.apply_signed_operations(signed_ops_bad_nonce).unwrap_err();
+        let bad_nonce_err = state.apply_signed_bundle(signed_ops_bad_nonce).unwrap_err();
         assert_eq!(bad_nonce_err.to_string(), "Invalid nonce 2, expected 1");
         assert_eq!(state.version(), 2);
         name_does_not_resolve(&state, &domain_name()).unwrap();
 
         let bad_signed_ops = sign_ops_by_wrong_key(nonced_ops.clone());
-        let bad_signer_err = state.apply_signed_operations(bad_signed_ops).unwrap_err();
+        let bad_signer_err = state.apply_signed_bundle(bad_signed_ops).unwrap_err();
         assert_eq!(
             bad_signer_err.to_string(),
             "PublicKey principal psz291QGsvwafGPkKMu6MUsXThWRcBRzRf6pcVPM1Pst6WgW cannot be impersonated by pszcYyCB1iBEWSD9xFGzFYYQnJvYyvaENgRS9TnjJPNqfkz"
         );
         name_does_not_resolve(&state, &domain_name()).unwrap();
 
-        let bad_order_ops = NoncedOperations::new(vec![update_op, renew_op], 1);
+        let bad_order_ops = NoncedBundle::new(vec![update_op, renew_op], 1);
         let bad_order_signed_ops = sign_ops(bad_order_ops);
-        let bad_order_err = state.apply_signed_operations(bad_order_signed_ops).unwrap_err();
+        let bad_order_err = state.apply_signed_bundle(bad_order_signed_ops).unwrap_err();
         assert_eq!(bad_order_err.to_string(), "Domain .schema.a expired");
 
         let signed_ops = sign_ops(nonced_ops);
-        state.apply_signed_operations(signed_ops).unwrap();
+        state.apply_signed_bundle(signed_ops).unwrap();
 
         assert_eq!(state.version(), 4);
         assert_eq!(state.nonce(&domain_owner_pk()), 1);

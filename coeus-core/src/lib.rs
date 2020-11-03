@@ -1,3 +1,4 @@
+mod asset;
 mod domain;
 mod domain_name;
 mod operations;
@@ -7,6 +8,7 @@ mod principal;
 mod signed;
 mod state;
 
+pub use asset::*;
 pub use domain::*;
 pub use domain_name::*;
 pub use operations::*;
@@ -34,6 +36,7 @@ use iop_keyvault::{
 };
 #[cfg(feature = "did")]
 use iop_morpheus_core::data::did::Did;
+use json_digest::canonical_json;
 
 // TODO move all blockchain-related types to hydra-proto after adding typetags to Asset and TransactionType.
 /// State identifier of a decentralized ledger, usually represented as a sequence number of blocks.

@@ -183,3 +183,23 @@ impl UndoCommand for UndoOperation {
         }
     }
 }
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn serde() {
+        let input = r#"{"type":"register","name":".schema.company","owner":"pszp9HBQY4qrx2yPGqM6biZeLmudJanMK6LXzXzLZGciLYA","subtreePolicies":{},"registrationPolicy":"owner","data":{},"expiresAtHeight":1000}"#;
+        let op: UserOperation = serde_json::from_str(input).unwrap();
+
+        assert!(matches!(op, UserOperation::Register(_)));
+        if let UserOperation::Register(r) = &op {
+            assert_eq!(r.name.to_string(), ".schema.company");
+        }
+
+        let output = serde_json::to_string(&op).unwrap();
+
+        assert_eq!(output, input);
+    }
+}

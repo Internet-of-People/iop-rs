@@ -18,4 +18,6 @@ rm pkg/browser/package.json
 rm pkg/node/*.d.ts
 rm pkg/node/.gitignore
 rm pkg/node/package.json
-cp .package.json pkg/package.json
+
+# We add some description of the git version of the rust code into the created package.json to make debugging easier
+git describe --dirty --all --long | jq -R '{"git-describe":.}' | cat .package.json - | jq -s add > pkg/package.json

@@ -8,7 +8,6 @@ pub use iop::*;
 pub use typed_asset::*; // TODO Move transaction.rs and serializer.rs into this module, then remove pub from this use
 
 use super::*;
-use crate::txtype::coeus::CoeusAsset;
 use crate::txtype::hyd_core::{CoreAsset, CoreTransactionType};
 use crate::txtype::morpheus::MorpheusAsset;
 

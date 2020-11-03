@@ -2,20 +2,20 @@ use super::*;
 
 #[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
 #[serde(rename_all = "camelCase")]
-pub struct NoncedOperations {
+pub struct NoncedBundle {
     pub(crate) operations: Vec<UserOperation>,
     pub(crate) nonce: Nonce,
 }
 
-impl NoncedOperations {
+impl NoncedBundle {
     pub fn new(operations: Vec<UserOperation>, nonce: Nonce) -> Self {
         Self { operations, nonce }
     }
 
-    pub fn sign(self, sk: &MPrivateKey) -> Result<SignedOperations> {
+    pub fn sign(self, sk: &MPrivateKey) -> Result<SignedBundle> {
         let signature = sk.sign(self.serialize()?);
         let public_key = sk.public_key();
-        Ok(SignedOperations { operations: self, public_key, signature })
+        Ok(SignedBundle { bundle: self, public_key, signature })
     }
 
     pub fn serialize(&self) -> Result<String> {
@@ -24,7 +24,7 @@ impl NoncedOperations {
     }
 }
 
-impl Priced for NoncedOperations {
+impl Priced for NoncedBundle {
     fn get_price(&self) -> Price {
         let mut price = Price::zero();
         for op in &self.operations {
@@ -37,25 +37,25 @@ impl Priced for NoncedOperations {
 // TODO think about reusing Signed<T> as in morpheus SignedJson and SignedBytes
 #[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
 #[serde(rename_all = "camelCase")]
-pub struct SignedOperations {
+pub struct SignedBundle {
     #[serde(flatten)]
-    pub(crate) operations: NoncedOperations,
+    pub(crate) bundle: NoncedBundle,
     #[serde(with = "serde_str")]
     pub(crate) public_key: MPublicKey,
     #[serde(with = "serde_str")]
     pub(crate) signature: MSignature,
 }
 
-impl SignedOperations {
+impl SignedBundle {
     /// Verifies whether the operations are correctly signed with the public key provided
     pub fn verify(&self) -> bool {
-        self.operations.serialize().map_or(false, |s| self.public_key.verify(s, &self.signature))
+        self.bundle.serialize().map_or(false, |s| self.public_key.verify(s, &self.signature))
     }
 }
 
-impl Priced for SignedOperations {
+impl Priced for SignedBundle {
     fn get_price(&self) -> Price {
-        self.operations.get_price()
+        self.bundle.get_price()
     }
 }
 
@@ -84,7 +84,7 @@ pub(crate) mod test {
         let op1 = UserOperation::update(domain_name(), json! { "apfelstrudel" });
         let op2 = UserOperation::transfer(domain_name(), Principal::system());
 
-        let signed = NoncedOperations::new(vec![op1, op2], 42).sign(&sk).unwrap();
+        let signed = NoncedBundle::new(vec![op1, op2], 42).sign(&sk).unwrap();
 
         assert!(signed.verify());
     }
@@ -95,9 +95,8 @@ pub(crate) mod test {
         let op1 = UserOperation::update(domain_name(), json! { "apfelstrudel" });
         let op2 = UserOperation::transfer(domain_name(), Principal::system());
 
-        let mut signed = NoncedOperations::new(vec![op1, op2], 42).sign(&sk).unwrap();
-        signed.operations.operations[0] =
-            UserOperation::update(domain_name(), json! { "braune soße" });
+        let mut signed = NoncedBundle::new(vec![op1, op2], 42).sign(&sk).unwrap();
+        signed.bundle.operations[0] = UserOperation::update(domain_name(), json! { "braune soße" });
 
         assert!(!signed.verify());
     }
@@ -107,13 +106,13 @@ pub(crate) mod test {
         let sk = ark_sk();
         let op1 = UserOperation::update(domain_name(), json! { "apfelstrudel" });
         let op2 = UserOperation::transfer(domain_name(), Principal::system());
-        let signed = NoncedOperations::new(vec![op1, op2], 42).sign(&sk).unwrap();
+        let signed = NoncedBundle::new(vec![op1, op2], 42).sign(&sk).unwrap();
 
         let serialized = serde_json::to_string(&signed).unwrap();
 
         // println!("{}", serde_json::to_string_pretty(&signed).unwrap());
 
-        let deserialized: SignedOperations = serde_json::from_str(&serialized).unwrap();
+        let deserialized: SignedBundle = serde_json::from_str(&serialized).unwrap();
 
         assert_eq!(deserialized, signed);
     }

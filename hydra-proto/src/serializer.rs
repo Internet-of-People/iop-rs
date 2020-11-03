@@ -44,7 +44,7 @@ pub fn to_bytes(
                 let framed_asset = frame_bytes(&iop_asset.to_bytes()?)?;
                 bytes.write_all(&framed_asset)?
             } else {
-                bail!("Implementation error: expected IoP transaction type");
+                bail!("Implementation error: expected IOP transaction type");
             }
         }
     }
