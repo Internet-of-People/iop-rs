@@ -1,8 +1,32 @@
 # Changelog
 
+## 0.0.6 (2020-11-06)
+
+We're heavily refactoring our crate structure while implementing Coeus, our decentralized naming system as our second Layer-2 component. Our end goal is to make fine-grained crates for reducing dependency footprint for integrators by separating client/server sides and making Morpheus and Coeus optional plugins.
+
+### Added
+- Coeus: generic decentralized naming system built on top of a distributed ledger. Allows binding arbitrary data to names, allowing naming schemas, wallets, DIDs, devices, etc. This helps public figures and services to be more accessible and transparent. For more details, see the [IOP Developer Portal](https://developer.iop.global/dns).
+
+### Changed
+- BREAKING: changed crate hierarchy
+  - coeus-core: a temporary crate with proto, sdk and node parts are not separated yet
+  - coeus-core-wasm: WebAssembly bindings for Coeus, sdk and node parts are not separated yet 
+  - hydra-proto: extracted hydra-dependent blockchain features (e.g. Morpheus and Coeus transactions) into their own crate
+  - hydra-sdk: Hydra BIP32 subtree plugin for the Vault
+  - morpheus-sdk-legacy: the old morpheus-sdk is now considered to be legacy code and was thus renamed
+  - morpheus-sdk: Morpheus BIP32 subtree plugin for the Vault
+  - sdk: IOP aggregate crate for clients (stub)
+  - vault: extracted keyvault state serialization into its own crate
+
+### Fixed
+- serde structure of Morpheus transactions, parsing them will not collide with core transactions
+- core transactions without an asset will not serialize an `"asset": "none"`JSON field  
+- cleaned up some basic API types like BlockHeight and BlockCount
+- fixed contact email in crate descriptions
+
 ## 0.0.5 (2020-09-21)
 
-### Change
+### Changed
 - Extracted and released `json-digest` as separate crate
 
 ## 0.0.4 (2020-09-07)
