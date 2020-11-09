@@ -8,8 +8,10 @@ pub struct CoeusAsset {
 
 // TODO work out ecosystem for pricing model
 impl CoeusAsset {
+    const MAX_ASSET_SIZE: usize = 1024 * 1024;
+
     const FEE_BYTES_OFFSET: u64 = 0;
-    //const FLAKES_PER_BYTES: u64 = 3000;
+    //const FEE_FLAKES_PER_BYTES: u64 = 3000;
 
     pub fn fee(&self) -> u64 {
         let price =
@@ -27,6 +29,35 @@ impl CoeusAsset {
     }
 
     pub fn from_bytes(bytes: &[u8]) -> Result<Self> {
-        Ok(serde_json::from_slice(bytes)?)
+        ensure!(
+            bytes.len() <= Self::MAX_ASSET_SIZE,
+            format!("CoeusAsset max size is {} bytes", Self::MAX_ASSET_SIZE)
+        );
+        let this: Self = serde_json::from_slice(bytes)?;
+        let canonical_bytes = this.to_bytes()?;
+        ensure!(
+            bytes == canonical_bytes.as_slice(),
+            "Attempt to construct CoeusAsset from non-canonical bytes"
+        );
+        Ok(this)
+    }
+}
+
+#[cfg(test)]
+pub(crate) mod test {
+    use super::*;
+
+    #[test]
+    fn canonical_format_works() {
+        let canonical_json = r#"{"bundles":[]}"#.as_bytes();
+        let asset = CoeusAsset::from_bytes(canonical_json).unwrap();
+        assert!(asset.bundles.is_empty());
+    }
+
+    #[test]
+    fn non_canonical_format_fails() {
+        let canonical_json = r#"{"bundles": []}"#.as_bytes();
+        let err = CoeusAsset::from_bytes(canonical_json).unwrap_err();
+        assert_eq!(err.to_string(), "Attempt to construct CoeusAsset from non-canonical bytes");
     }
 }
