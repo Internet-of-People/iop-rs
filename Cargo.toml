@@ -1,14 +1,13 @@
 [workspace]
 members = [
     "coeus-core",
-    "coeus-core-ffi",
     "coeus-core-wasm",
     "hydra-proto",
     "hydra-sdk",
     "json-digest",
     "morpheus-core",
     "morpheus-core-wasm",
-    "morpheus-core-ffi",
+    "sdk-ffi",
     "morpheus-sdk",
     "morpheus-sdk-legacy",
     "sdk",
