@@ -31,8 +31,7 @@ pub struct JsNoncedBundle {
 
 #[wasm_bindgen(js_class = NoncedBundle)]
 impl JsNoncedBundle {
-    pub fn price(&self, state: &JsState) -> JsPrice {
-        let _state = state.inner();
+    pub fn price(&self) -> JsPrice {
         self.inner.get_price().into()
     }
 
@@ -71,8 +70,7 @@ impl JsSignedBundle {
         Ok(signed_ops.into())
     }
 
-    pub fn price(&self, state: &JsState) -> JsPrice {
-        let _state = state.inner();
+    pub fn price(&self) -> JsPrice {
         self.inner.get_price().into()
     }
     pub fn verify(&self) -> bool {

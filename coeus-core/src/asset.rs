@@ -6,19 +6,21 @@ pub struct CoeusAsset {
     pub bundles: Vec<SignedBundle>,
 }
 
-// TODO work out ecosystem for pricing model
+// TODO Coeus txn builder (or operation builder) should check on client-side whether the asset is canonical
 impl CoeusAsset {
     const MAX_ASSET_SIZE: usize = 1024 * 1024;
 
     const FEE_BYTES_OFFSET: u64 = 0;
-    //const FEE_FLAKES_PER_BYTES: u64 = 3000;
+    const FEE_FLAKES_PER_BYTES: u64 = 3000;
 
+    // TODO fee calculation could also err, so why is it not a Result<u64>?
     pub fn fee(&self) -> u64 {
-        let price =
-            self.bundles.iter().fold(Price::fee(Self::FEE_BYTES_OFFSET), |mut price, bundle| {
-                price += bundle.get_price();
-                price
-            });
+        let size_fee =
+            Price::fee((Self::FEE_BYTES_OFFSET + self.size()) * Self::FEE_FLAKES_PER_BYTES);
+        let price = self.bundles.iter().fold(size_fee, |mut price, bundle| {
+            price += bundle.get_price();
+            price
+        });
         price.fee
     }
 
@@ -40,6 +42,25 @@ impl CoeusAsset {
             "Attempt to construct CoeusAsset from non-canonical bytes"
         );
         Ok(this)
+    }
+
+    // TODO We are forced not to err, so we are rather pessimistic if serialization fails
+    fn size(&self) -> u64 {
+        match serde_json::to_string(self) {
+            Ok(json) => {
+                // json might be not canonical, but latest when posting the transaction to the mempool,
+                // from_bytes will reject not canonical data, so it will not get into the blockchain.
+                // This might mislead the client, but a dry-run on a node will report a proper error
+                // pointing to a non-canonical asset.
+                //
+                // The calculated fee might be wrong in these cases, but that is the least problem with
+                // a non-canonical asset that will be rejected. Extra whitespace, key duplication, and
+                // non-NFKD Unicode normalization in schema or resolved data are the possible causes for
+                // these mistakes.
+                json.len() as u64
+            }
+            Err(_) => Self::MAX_ASSET_SIZE as u64,
+        }
     }
 }
 

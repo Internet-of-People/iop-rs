@@ -7,6 +7,12 @@ pub struct JsCoeusAsset {
 
 #[wasm_bindgen(js_class = CoeusAsset)]
 impl JsCoeusAsset {
+    #[wasm_bindgen(constructor)]
+    pub fn new(data: &JsValue) -> Result<JsCoeusAsset, JsValue> {
+        let inner: CoeusAsset = data.clone().into_serde().map_err_to_js()?;
+        Ok(inner.into())
+    }
+
     pub fn deserialize(bytes: &[u8]) -> Result<JsCoeusAsset, JsValue> {
         let inner = CoeusAsset::from_bytes(bytes).map_err_to_js()?;
         Ok(inner.into())

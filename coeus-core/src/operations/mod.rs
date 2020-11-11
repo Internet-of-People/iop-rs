@@ -86,16 +86,16 @@ impl Command for UserOperation {
     }
 }
 
-// TODO work out ecosystem for pricing model: naming system state (e.g. subdomain registration policies)
-//      and operation properties (especially last_edge length) might influence prices
 impl Priced for UserOperation {
     fn get_price(&self) -> Price {
+        // Register is sooo much bigger in its serialized form that we try to compensate other operations
+        // with a small offset in addition to the size-based fee of the whole transaction
         match self {
-            Self::Register(_op) => Price::fee(100_000_000),
-            Self::Update(_op) => Price::fee(10_000_000),
-            Self::Renew(_op) => Price::fee(50_000_000),
-            Self::Transfer(_op) => Price::fee(25_000_000),
-            Self::Delete(_op) => Price::fee(1_000_000),
+            Self::Register(_op) => Price::fee(0),
+            Self::Update(_op) => Price::fee(200_000),
+            Self::Renew(_op) => Price::fee(200_000),
+            Self::Transfer(_op) => Price::fee(200_000),
+            Self::Delete(_op) => Price::fee(200_000),
         }
     }
 }
