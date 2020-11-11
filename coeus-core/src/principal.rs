@@ -21,7 +21,7 @@ impl Principal {
         Principal::PublicKey(pk.to_owned())
     }
 
-    // TODO input should be &JsDid
+    // TODO input should be strongly typed
     #[cfg(feature = "did")]
     pub fn did(input: &str) -> Result<Self> {
         Ok(Principal::Did(Did::from_str(input)?))

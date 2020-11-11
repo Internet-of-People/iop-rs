@@ -1,5 +1,12 @@
 use super::*;
 
+pub(crate) unsafe fn move_in<T>(t: *mut T) -> Option<Box<T>> {
+    if t.is_null() {
+        return None;
+    }
+    Some(Box::from_raw(t))
+}
+
 pub(crate) unsafe fn borrow_in<'a, T>(value: *const T) -> &'a T {
     &*value
 }
@@ -46,10 +53,10 @@ pub(crate) fn move_out<T>(value: T) -> *mut T {
     Box::into_raw(Box::new(value))
 }
 
-pub(crate) fn move_out_opt<T>(o: Option<T>) -> *mut T {
-    if let Some(t) = o {
-        move_out(t)
-    } else {
-        std::ptr::null_mut()
-    }
-}
+// pub(crate) fn move_out_opt<T>(o: Option<T>) -> *mut T {
+//     if let Some(t) = o {
+//         move_out(t)
+//     } else {
+//         std::ptr::null_mut()
+//     }
+// }

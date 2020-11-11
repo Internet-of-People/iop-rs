@@ -1,6 +1,7 @@
 #![allow(clippy::not_unsafe_ptr_arg_deref)]
 #![allow(non_snake_case)]
 
+mod coeus;
 mod crypto;
 mod did;
 mod ffi;
@@ -36,11 +37,3 @@ use json_digest::*;
 
 // TODO consider killing usize type all around FFI
 use crate::ffi::{convert, *};
-
-fn delete<T>(t: *mut T) {
-    if t.is_null() {
-        return;
-    }
-    let t = unsafe { Box::from_raw(t) };
-    drop(t); // NOTE redundant, but clearer than let _t = ...;
-}

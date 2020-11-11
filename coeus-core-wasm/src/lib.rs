@@ -1,6 +1,6 @@
 mod asset;
 mod domain_name;
-mod operations;
+mod operation;
 mod policy;
 mod price;
 mod principal;
@@ -10,7 +10,7 @@ mod tx;
 
 pub use asset::*;
 pub use domain_name::*;
-pub use operations::*;
+pub use operation::*;
 pub use policy::*;
 pub use price::*;
 pub use principal::*;
