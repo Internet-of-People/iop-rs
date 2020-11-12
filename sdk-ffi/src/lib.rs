@@ -21,6 +21,7 @@ use std::str::FromStr;
 
 use anyhow::{Context, Result};
 
+use iop_hydra_proto::txtype::CommonTransactionFields;
 use iop_keyvault::{
     ed25519::{MorpheusPrivateKey, MorpheusPublicKey},
     multicipher::*,

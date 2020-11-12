@@ -49,7 +49,7 @@ impl JsState {
     }
 
     #[wasm_bindgen(js_name = lastNonce)]
-    pub fn last_nonce(&self, pk: &JsMPublicKey) -> u64 {
+    pub fn last_nonce(&self, pk: &JsMPublicKey) -> Nonce {
         return self.inner.nonce(pk.inner());
     }
 

@@ -18,7 +18,7 @@ impl JsCoeusTxBuilder {
 
     // TODO support multiple signed operations
     pub fn build(
-        &self, ops: &JsSignedBundle, sender_pubkey: &JsSecpPublicKey, nonce: u64,
+        &self, ops: &JsSignedBundle, sender_pubkey: &JsSecpPublicKey, nonce: Nonce,
     ) -> Result<JsValue, JsValue> {
         let common_fields = CommonTransactionFields {
             network: self.network,
