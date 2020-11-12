@@ -16,15 +16,16 @@ mod vault;
 
 // use std::panic::catch_unwind; // TODO consider panic unwinding strategies
 use std::os::raw;
+use std::ptr::null_mut;
 use std::str::FromStr;
 
-use anyhow::Result;
+use anyhow::{Context, Result};
 
 use iop_keyvault::{
     ed25519::{MorpheusPrivateKey, MorpheusPublicKey},
     multicipher::*,
     secp256k1::*,
-    Bip32Node, Bip32PublicNode, Bip44Key, Bip44PublicKey, Networks, PrivateKey as _,
+    Bip32Node, Bip32PublicNode, Bip44Key, Bip44PublicKey, Network, Networks, PrivateKey as _,
     PublicKey as _,
 };
 use iop_morpheus_core::{

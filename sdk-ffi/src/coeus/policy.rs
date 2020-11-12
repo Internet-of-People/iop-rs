@@ -17,7 +17,7 @@ pub extern "C" fn SubtreePolicies_with_schema(
     let fun = || {
         let this = unsafe { convert::borrow_in(policies) };
         let schema = unsafe { convert::str_in(schema)? }.parse()?;
-        let this = this.clone().with_schema(schema);
+        let this = this.to_owned().with_schema(schema);
         Ok(convert::move_out(this))
     };
     cresult(fun())
@@ -29,7 +29,7 @@ pub extern "C" fn SubtreePolicies_with_expiration(
 ) -> CPtrResult<SubtreePolicies> {
     let fun = || {
         let this = unsafe { convert::borrow_in(policies) };
-        let this = this.clone().with_expiration(max_expiry);
+        let this = this.to_owned().with_expiration(max_expiry);
         Ok(convert::move_out(this))
     };
     cresult(fun())
