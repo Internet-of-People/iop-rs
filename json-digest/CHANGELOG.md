@@ -1,8 +1,13 @@
 # Changelog
 
-## 0.0.6 (...TODO...)
+## 0.0.7 (2020-11-12)
+
+- Just rereleased it to be in synch with our other crates
+
+## 0.0.6 (2020-11-06)
 
 ### Change
+
 - Breaking change: Rename `Nonce` to `Nonce264` to avoid confusion with sequential nonces in Hydra and Coeus.
 
 ## 0.0.5 (2020-09-21)

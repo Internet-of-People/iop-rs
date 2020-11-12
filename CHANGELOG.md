@@ -1,13 +1,22 @@
 # Changelog
 
+## 0.0.7 (2020-11-12)
+
+### Fixed
+
+- Implemented mostly size-based fees on Coeus transactions
+- Enforce canonical Json format and limit sizes on CoeusAsset and MorpheusAsset deserialization from bytes
+
 ## 0.0.6 (2020-11-06)
 
 We're heavily refactoring our crate structure while implementing Coeus, our decentralized naming system as our second Layer-2 component. Our end goal is to make fine-grained crates for reducing dependency footprint for integrators by separating client/server sides and making Morpheus and Coeus optional plugins.
 
 ### Added
+
 - Coeus: generic decentralized naming system built on top of a distributed ledger. Allows binding arbitrary data to names, allowing naming schemas, wallets, DIDs, devices, etc. This helps public figures and services to be more accessible and transparent. For more details, see the [IOP Developer Portal](https://developer.iop.global/dns).
 
 ### Changed
+
 - BREAKING: changed crate hierarchy
   - coeus-core: a temporary crate with proto, sdk and node parts are not separated yet
   - coeus-core-wasm: WebAssembly bindings for Coeus, sdk and node parts are not separated yet 
@@ -19,6 +28,7 @@ We're heavily refactoring our crate structure while implementing Coeus, our dece
   - vault: extracted keyvault state serialization into its own crate
 
 ### Fixed
+
 - serde structure of Morpheus transactions, parsing them will not collide with core transactions
 - core transactions without an asset will not serialize an `"asset": "none"`JSON field  
 - cleaned up some basic API types like BlockHeight and BlockCount
@@ -27,11 +37,13 @@ We're heavily refactoring our crate structure while implementing Coeus, our dece
 ## 0.0.5 (2020-09-21)
 
 ### Changed
+
 - Extracted and released `json-digest` as separate crate
 
 ## 0.0.4 (2020-09-07)
 
 ### Added
+
 - Create and verify JWT tokens with multicipher
 - Hydra transaction builder, exposed on FFI and Wasm
   - transfer

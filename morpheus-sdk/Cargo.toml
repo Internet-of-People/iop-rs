@@ -1,6 +1,6 @@
 [package]
 name = "iop-morpheus-sdk"
-version = "0.0.6"
+version = "0.0.7"
 authors = ["IOP Ventures LLC <dev@iop-ventures.com>", "Rache Bartmoss <bartmoss@tutanota.com>", "wigy <wigy_opensource_developer@yahoo.com>"]
 license = "LGPL-3.0-or-later"
 edition = "2018"
@@ -8,8 +8,8 @@ edition = "2018"
 
 [dependencies]
 anyhow = "1.0.32"
-iop-keyvault = "0.0.6"
-iop-vault = "0.0.6"
+iop-keyvault = "0.0.7"
+iop-vault = "0.0.7"
 rand = "0.7.3"
 serde = "1.0.115"
 serde_bytes = "0.11.5"
@@ -19,8 +19,8 @@ typetag = "0.1.5"
 
 [dev-dependencies]
 chrono = { version = "0.4.15", features = ["wasmbind"] }
-iop-morpheus-core = "0.0.6"
-json-digest = "0.0.6"
+iop-morpheus-core = "0.0.7"
+json-digest = "0.0.7"
 serde_json = "1.0.57"
 
 
