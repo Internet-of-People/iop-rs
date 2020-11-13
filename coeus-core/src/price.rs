@@ -19,10 +19,9 @@ impl Price {
     pub fn fee(fee: u64) -> Self {
         Self { fee }
     }
-}
 
-impl ops::AddAssign for Price {
-    fn add_assign(&mut self, rhs: Self) {
-        self.fee += rhs.fee;
+    pub fn checked_add(mut self, rhs: Self) -> Option<Self> {
+        self.fee = self.fee.checked_add(rhs.fee)?;
+        Some(self)
     }
 }

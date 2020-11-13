@@ -1,6 +1,6 @@
 [package]
 name = "iop-morpheus-sdk-legacy"
-version = "0.0.7"
+version = "0.0.9"
 authors = ["IOP Ventures LLC <dev@iop-ventures.com>", "Rache Bartmoss <bartmoss@tutanota.com>", "wigy <wigy_opensource_developer@yahoo.com>"]
 license = "LGPL-3.0-or-later"
 edition = "2018"
@@ -15,8 +15,8 @@ crate-type = ["rlib","cdylib"]
 anyhow = "1.0.32"
 async-trait = "0.1.40"
 hyper = "0.13.7"
-iop-keyvault = "0.0.7"
-iop-morpheus-core = "0.0.7"
+iop-keyvault = "0.0.9"
+iop-morpheus-core = "0.0.9"
 log = "0.4.11"
 rand = "0.7.3"
 serde = "1.0.115"

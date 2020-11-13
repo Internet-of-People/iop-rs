@@ -26,11 +26,10 @@ impl NoncedBundle {
 
 impl Priced for NoncedBundle {
     fn get_price(&self) -> Price {
-        let mut price = Price::zero();
-        for op in &self.operations {
-            price += op.get_price();
-        }
-        price
+        self.operations
+            .iter()
+            .try_fold(Price::zero(), |price, op| price.checked_add(op.get_price()))
+            .unwrap_or(Price::fee(u64::MAX))
     }
 }
 

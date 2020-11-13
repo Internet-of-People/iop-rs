@@ -1,6 +1,6 @@
 [package]
 name = "iop-sdk-wasm"
-version = "0.0.7"
+version = "0.0.9"
 authors = [
     "IOP Ventures LLC <dev@iop-ventures.com>",
     "Rache Bartmoss <bartmoss@tutanota.com>",

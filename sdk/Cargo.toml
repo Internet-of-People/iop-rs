@@ -1,6 +1,6 @@
 [package]
 name = "iop-sdk"
-version = "0.0.7"
+version = "0.0.9"
 authors = ["IOP Ventures LLC <dev@iop-ventures.com>", "Rache Bartmoss <bartmoss@tutanota.com>", "wigy <wigy_opensource_developer@yahoo.com>"]
 license = "LGPL-3.0-or-later"
 edition = "2018"
@@ -16,12 +16,12 @@ crate-type = ["rlib","cdylib"]
 
 [dev-dependencies]
 anyhow = "1.0.32"
-iop-hydra-proto = "0.0.7"
-iop-hydra-sdk = "0.0.7"
-iop-keyvault = "0.0.7"
-iop-morpheus-core = "0.0.7"
-iop-morpheus-sdk = "0.0.7"
-iop-vault = "0.0.7"
+iop-hydra-proto = "0.0.9"
+iop-hydra-sdk = "0.0.9"
+iop-keyvault = "0.0.9"
+iop-morpheus-core = "0.0.9"
+iop-morpheus-sdk = "0.0.9"
+iop-vault = "0.0.9"
 rand = "0.7.3"
 serde = "1.0.115"
 serde_bytes = "0.11.5"

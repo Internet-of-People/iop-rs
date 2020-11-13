@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.0.9 (2020-11-13)
+
+### Fixed
+
+- Enforcing canonical Json introduced in 0.0.7 would have broken layer-1 consensus in unexpected ways.
+  Fixed this regression before getting it on devnet or mainnet.
+
+## 0.0.8 (2020-11-12)
+
+- Rereleased, because the sdk-wasm package was released with some changes missing on npmjs.com
+
 ## 0.0.7 (2020-11-12)
 
 ### Fixed

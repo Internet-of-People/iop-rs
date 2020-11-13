@@ -22,7 +22,6 @@ use std::collections::HashMap;
 use std::convert::{TryFrom, TryInto};
 use std::fmt;
 use std::hash::Hash;
-use std::ops;
 use std::str::FromStr;
 
 use anyhow::{bail, ensure, Context, Result};
