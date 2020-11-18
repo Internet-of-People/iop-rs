@@ -16,10 +16,9 @@ mod vault;
 
 // use std::panic::catch_unwind; // TODO consider panic unwinding strategies
 use std::os::raw;
-use std::ptr::null_mut;
 use std::str::FromStr;
 
-use anyhow::{Context, Result};
+use anyhow::Result;
 
 use iop_hydra_proto::txtype::CommonTransactionFields;
 use iop_keyvault::{

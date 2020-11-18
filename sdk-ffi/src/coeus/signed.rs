@@ -15,15 +15,10 @@ pub extern "C" fn NoncedBundleBuilder_new() -> *mut NoncedBundleBuilder {
 #[no_mangle]
 pub extern "C" fn NoncedBundleBuilder_add(
     builder: *mut NoncedBundleBuilder, operation: *mut UserOperation,
-) -> CPtrResult<raw::c_void> {
-    let fun = || {
-        let builder = unsafe { convert::borrow_mut_in(builder) };
-        let operation = unsafe { convert::move_in(operation) }
-            .with_context(|| "Attempt to add nullptr as operation")?;
-        builder.push(*operation);
-        Ok(null_mut())
-    };
-    cresult(fun())
+) {
+    let builder = unsafe { convert::borrow_mut_in(builder) };
+    let operation = unsafe { convert::borrow_in(operation) };
+    builder.push(operation.to_owned());
 }
 
 #[no_mangle]
