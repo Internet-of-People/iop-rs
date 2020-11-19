@@ -7,18 +7,17 @@ use iop_keyvault::Networks;
 
 #[no_mangle]
 pub extern "C" fn HydraTxBuilder_transfer(
-    network: *const raw::c_char, sender_public_key: *const raw::c_char,
+    network: *const raw::c_char, sender_public_key: *const SecpPublicKey,
     recipient_id: *const raw::c_char, amount: u64, nonce: u64,
 ) -> CPtrResult<raw::c_char> {
     let fun = || {
         let network = unsafe { convert::str_in(network)? };
         let recipient_id = unsafe { convert::str_in(recipient_id)? };
-        let sender_public_key = unsafe { convert::str_in(sender_public_key)? };
+        let sender_public_key = unsafe { convert::borrow_in(sender_public_key) };
         let network = Networks::by_name(network)?;
-        let sender_public_key = sender_public_key.parse()?;
         let common_fields = CommonTransactionFields {
             network,
-            sender_public_key,
+            sender_public_key: sender_public_key.to_owned(),
             nonce,
             optional: OptionalTransactionFields { amount, ..Default::default() },
         };
@@ -31,23 +30,21 @@ pub extern "C" fn HydraTxBuilder_transfer(
 }
 
 fn create_vote_tx(
-    network: *const raw::c_char, sender_public_key: *const raw::c_char,
-    delegate: *const raw::c_char, nonce: u64,
+    network: *const raw::c_char, sender_public_key: *const SecpPublicKey,
+    delegate: *const SecpPublicKey, nonce: u64,
     build_tx: fn(CommonTransactionFields, &SecpPublicKey) -> hyd_core::Transaction,
 ) -> CPtrResult<raw::c_char> {
     let fun = || {
         let network = unsafe { convert::str_in(network)? };
-        let delegate = unsafe { convert::str_in(delegate)? };
-        let sender_public_key = unsafe { convert::str_in(sender_public_key)? };
-        let sender_public_key = sender_public_key.parse()?;
+        let delegate = unsafe { convert::borrow_in(delegate) };
+        let sender_public_key = unsafe { convert::borrow_in(sender_public_key) };
         let common_fields = CommonTransactionFields {
             network: Networks::by_name(network)?,
-            sender_public_key,
+            sender_public_key: sender_public_key.to_owned(),
             nonce,
             optional: Default::default(),
         };
-        let delegate = delegate.parse()?;
-        let vote_tx = build_tx(common_fields, &delegate);
+        let vote_tx = build_tx(common_fields, delegate);
         let tx_str = serde_json::to_string(&vote_tx.to_data())?;
         Ok(convert::string_out(tx_str))
     };
@@ -56,34 +53,33 @@ fn create_vote_tx(
 
 #[no_mangle]
 pub extern "C" fn HydraTxBuilder_vote(
-    network: *const raw::c_char, sender_public_key: *const raw::c_char,
-    delegate: *const raw::c_char, nonce: u64,
+    network: *const raw::c_char, sender_public_key: *const SecpPublicKey,
+    delegate: *const SecpPublicKey, nonce: u64,
 ) -> CPtrResult<raw::c_char> {
     create_vote_tx(network, sender_public_key, delegate, nonce, hyd_core::Transaction::vote)
 }
 
 #[no_mangle]
 pub extern "C" fn HydraTxBuilder_unvote(
-    network: *const raw::c_char, sender_public_key: *const raw::c_char,
-    delegate: *const raw::c_char, nonce: u64,
+    network: *const raw::c_char, sender_public_key: *const SecpPublicKey,
+    delegate: *const SecpPublicKey, nonce: u64,
 ) -> CPtrResult<raw::c_char> {
     create_vote_tx(network, sender_public_key, delegate, nonce, hyd_core::Transaction::unvote)
 }
 
 #[no_mangle]
 pub extern "C" fn HydraTxBuilder_register_delegate(
-    network: *const raw::c_char, sender_public_key: *const raw::c_char,
+    network: *const raw::c_char, sender_public_key: *const SecpPublicKey,
     delegate_name: *const raw::c_char, nonce: u64,
 ) -> CPtrResult<raw::c_char> {
     let fun = || {
         let network = unsafe { convert::str_in(network)? };
-        let sender_public_key = unsafe { convert::str_in(sender_public_key)? };
+        let sender_public_key = unsafe { convert::borrow_in(sender_public_key) };
         let delegate_name = unsafe { convert::str_in(delegate_name)? };
         let network = Networks::by_name(network)?;
-        let sender_public_key = sender_public_key.parse()?;
         let common_fields = CommonTransactionFields {
             network,
-            sender_public_key,
+            sender_public_key: sender_public_key.to_owned(),
             nonce,
             optional: Default::default(),
         };
@@ -96,18 +92,17 @@ pub extern "C" fn HydraTxBuilder_register_delegate(
 
 #[no_mangle]
 pub extern "C" fn MorpheusTxBuilder_new(
-    network: *const raw::c_char, sender_public_key: *const raw::c_char,
+    network: *const raw::c_char, sender_public_key: *const SecpPublicKey,
     attempts: *const raw::c_char, nonce: u64,
 ) -> CPtrResult<raw::c_char> {
     let fun = || {
         let network = unsafe { convert::str_in(network)? };
         let attempts = unsafe { convert::str_in(attempts)? };
-        let sender_public_key = unsafe { convert::str_in(sender_public_key)? };
+        let sender_public_key = unsafe { convert::borrow_in(sender_public_key) };
         let op_attempts: Vec<morpheus::OperationAttempt> = serde_json::from_str(attempts)?;
-        let sender_public_key = sender_public_key.parse()?;
         let common_fields = CommonTransactionFields {
             network: Networks::by_name(network)?,
-            sender_public_key,
+            sender_public_key: sender_public_key.to_owned(),
             nonce,
             optional: Default::default(),
         };
