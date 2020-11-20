@@ -1,6 +1,6 @@
 [package]
 name = "json-digest"
-version = "0.0.9"
+version = "0.0.10"
 authors = ["IOP Ventures LLC <dev@iop-ventures.com>", "Rache Bartmoss <bartmoss@tutanota.com>", "wigy <wigy_opensource_developer@yahoo.com>"]
 edition = "2018"
 description = "Allow selective masking of JSON subdocuments for privacy, preserving the digest of the whole document."

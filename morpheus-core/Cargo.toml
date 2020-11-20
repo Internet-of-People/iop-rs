@@ -1,6 +1,6 @@
 [package]
 name = "iop-morpheus-core"
-version = "0.0.9"
+version = "0.0.10"
 authors = ["IOP Ventures LLC <dev@iop-ventures.com>", "Rache Bartmoss <bartmoss@tutanota.com>", "wigy <wigy_opensource_developer@yahoo.com>"]
 edition = "2018"
 
@@ -8,8 +8,8 @@ edition = "2018"
 [dependencies]
 anyhow = "1.0.32"
 chrono = { version = "0.4.15", features = ["wasmbind"] }
-iop-keyvault = "0.0.9"
-json-digest = "0.0.9"
+iop-keyvault = "0.0.10"
+json-digest = "0.0.10"
 jwt-compact = { version = "0.2.0", default-features = false }
 multibase = "0.8.0"
 rand = "0.7.3"

@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.0.10 (2020-11-20)
+
+### Added
+
+- FFI bindings for creating Coeus transactions
+- Automated build of sdk-wasm on github
+
 ## 0.0.9 (2020-11-13)
 
 ### Fixed

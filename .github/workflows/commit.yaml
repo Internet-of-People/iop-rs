@@ -37,6 +37,26 @@ jobs:
           args: --target ${{matrix.triple.target}} --release
       - uses: actions/upload-artifact@v2
         with:
-          name: ${{matrix.triple.name}}.zip
+          name: ${{matrix.triple.name}}
           path: |
-            target/${{matrix.triple.target}}/release/libmorpheus_core.so
+            target/${{matrix.triple.target}}/release/libiop_sdk_ffi.so
+  wasm:
+    name: Compile WASM package
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install prerequisites
+        # Add binaryen adding wasm-opt after github finally upgrades to 20.04
+        run: sudo apt install libssh-dev clang jq
+      - name: Install wasm-pack
+        run: cargo install wasm-pack
+      - name: Run wasm-pack
+        run: ./build.sh
+        working-directory: ./sdk-wasm
+      - uses: actions/upload-artifact@v2
+        with:
+          name: sdk-wasm
+          path: |
+            sdk-wasm/pkg/
+          if-no-files-found: error

@@ -1,6 +1,7 @@
 #!/bin/bash
 
 set -ex
+echo Starting
 
 # Prerequisites:
 # - OpenSSH headers, e.g. sudo apt install libssh-dev
@@ -21,3 +22,4 @@ rm pkg/node/package.json
 
 # We add some description of the git version of the rust code into the created package.json to make debugging easier
 git describe --dirty --all --long | jq -R '{"git-describe":.}' | cat .package.json - | jq -s add > pkg/package.json
+echo Ending
