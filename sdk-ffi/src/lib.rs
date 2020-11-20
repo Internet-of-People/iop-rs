@@ -10,7 +10,6 @@ mod jwt;
 mod keyvault;
 mod morpheus;
 mod signed;
-mod tx;
 mod validation;
 mod vault;
 
@@ -20,7 +19,9 @@ use std::str::FromStr;
 
 use anyhow::Result;
 
-use iop_hydra_proto::txtype::CommonTransactionFields;
+use iop_hydra_proto::txtype::{
+    Aip29Transaction, CommonTransactionFields, OptionalTransactionFields,
+};
 use iop_keyvault::{
     ed25519::{MorpheusPrivateKey, MorpheusPublicKey},
     multicipher::*,

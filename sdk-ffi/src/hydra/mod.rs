@@ -2,6 +2,7 @@ mod plugin;
 mod private;
 mod public;
 mod sign;
+mod tx;
 
 use super::*;
 

@@ -5,6 +5,7 @@ mod private_kind;
 mod public;
 mod public_key;
 mod public_kind;
+mod tx;
 
 use super::*;
 
