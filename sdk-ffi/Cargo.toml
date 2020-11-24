@@ -1,6 +1,6 @@
 [package]
 name = "iop-sdk-ffi"
-version = "0.0.10"
+version = "0.0.11"
 authors = ["IOP Ventures LLC <dev@iop-ventures.com>", "Rache Bartmoss <bartmoss@tutanota.com>", "wigy <wigy_opensource_developer@yahoo.com>"]
 edition = "2018"
 
@@ -13,14 +13,14 @@ crate-type = ["rlib", "cdylib"]
 [dependencies]
 anyhow = "1.0.32"
 chrono = { version = "0.4.15", features = ["wasmbind"] }
-iop-coeus-core = "0.0.10"
-iop-hydra-proto = "0.0.10"
-iop-hydra-sdk = "0.0.10"
-iop-keyvault = "0.0.10"
-iop-morpheus-core = "0.0.10"
-iop-morpheus-sdk = "0.0.10"
-iop-vault = "0.0.10"
-json-digest = "0.0.10"
+iop-coeus-core = "0.0.11"
+iop-hydra-proto = "0.0.11"
+iop-hydra-sdk = "0.0.11"
+iop-keyvault = "0.0.11"
+iop-morpheus-core = "0.0.11"
+iop-morpheus-sdk = "0.0.11"
+iop-vault = "0.0.11"
+json-digest = "0.0.11"
 serde = { version = "1.0.115", features = ["derive", "rc"] }
 serde_json = { version = "1.0.57", features = ["preserve_order"] }
 serde_repr = "0.1.6"

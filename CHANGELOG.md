@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.0.11 (2020-11-24)
+
+### Added
+
+- WASM binding for CoeusAsset::fee
+- scripts/set-version.sh helps in releasing new versions
+
 ## 0.0.10 (2020-11-20)
 
 ### Added
