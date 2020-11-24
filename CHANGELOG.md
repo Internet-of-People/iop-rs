@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.0.11 (2020-11-24)
+
+### Add
+
+- scripts/set-version.sh helps in releasing new versions
+
 ## 0.0.10 (2020-11-20)
 
 - Just rereleased it to be in synch with our other crates
