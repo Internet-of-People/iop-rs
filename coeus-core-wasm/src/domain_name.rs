@@ -12,6 +12,11 @@ impl JsDomainName {
         let inner = domain_name.parse::<DomainName>().map_err_to_js()?;
         Ok(Self { inner })
     }
+
+    #[wasm_bindgen(js_name = toString)]
+    pub fn stringify(&self) -> String {
+        self.inner.to_string()
+    }
 }
 
 impl From<DomainName> for JsDomainName {
