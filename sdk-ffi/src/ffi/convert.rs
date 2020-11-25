@@ -7,6 +7,7 @@ pub(crate) unsafe fn move_in<T>(t: *mut T) -> Option<Box<T>> {
     Some(Box::from_raw(t))
 }
 
+// TODO consider null checks for all borrow_... functions as well with Result<> return value
 pub(crate) unsafe fn borrow_in<'a, T>(value: *const T) -> &'a T {
     &*value
 }
@@ -24,6 +25,7 @@ pub(crate) unsafe fn borrow_mut_in<'a, T>(value: *mut T) -> &'a mut T {
 }
 
 pub(crate) unsafe fn str_in<'a>(s: *const raw::c_char) -> Result<&'a str> {
+    ensure!(!s.is_null(), "Attempt to convert null pointer to string");
     let c_str = ffi::CStr::from_ptr(s);
     let s = c_str.to_str()?;
     Ok(s)

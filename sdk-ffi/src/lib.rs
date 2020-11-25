@@ -17,7 +17,7 @@ mod vault;
 use std::os::raw;
 use std::str::FromStr;
 
-use anyhow::Result;
+use anyhow::{ensure, Result};
 
 use iop_hydra_proto::txtype::{
     Aip29Transaction, CommonTransactionFields, OptionalTransactionFields,

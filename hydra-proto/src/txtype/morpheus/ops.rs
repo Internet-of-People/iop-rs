@@ -1,4 +1,5 @@
 use super::*;
+use iop_morpheus_core::data::did::Did;
 
 #[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", tag = "operation")]
@@ -57,7 +58,8 @@ pub struct SignedOperation {
 #[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SignableOperationAttempt {
-    pub did: String,
+    #[serde(with = "serde_str")]
+    pub did: Did,
     pub last_tx_id: Option<String>,
     #[serde(flatten)]
     pub operation: SignableOperationDetails,

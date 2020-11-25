@@ -182,7 +182,7 @@ mod test {
         let last_tx_id =
             Some("88df06a4faa3401c35c82177dcbd6a27e56acde4155ff11adfe4fdbd7509ec65".to_owned());
         let addkey_attempt = morpheus::SignableOperationAttempt {
-            did: mph_persona_did0.to_string(),
+            did: mph_persona_did0.clone(),
             last_tx_id: last_tx_id.clone(),
             operation: morpheus::SignableOperationDetails::AddKey {
                 auth: auth.clone(),
@@ -190,7 +190,7 @@ mod test {
             },
         };
         let addright_attempt = morpheus::SignableOperationAttempt {
-            did: mph_persona_did0.to_string(),
+            did: mph_persona_did0.clone(),
             last_tx_id: last_tx_id.clone(),
             operation: morpheus::SignableOperationDetails::AddRight {
                 auth: auth.clone(),
@@ -223,7 +223,7 @@ mod test {
         let last_tx_id =
             Some("88df06a4faa3401c35c82177dcbd6a27e56acde4155ff11adfe4fdbd7509ec65".to_string());
         let revokeright_attempt = morpheus::SignableOperationAttempt {
-            did: mph_persona_did0.to_string(),
+            did: mph_persona_did0.clone(),
             last_tx_id: last_tx_id.clone(),
             operation: morpheus::SignableOperationDetails::RevokeRight {
                 auth: auth.clone(),
@@ -231,7 +231,7 @@ mod test {
             },
         };
         let revokekey_attempt = morpheus::SignableOperationAttempt {
-            did: mph_persona_did0.to_string(),
+            did: mph_persona_did0.clone(),
             last_tx_id: last_tx_id.clone(),
             operation: morpheus::SignableOperationDetails::RevokeKey { auth },
         };
@@ -255,7 +255,7 @@ mod test {
         );
 
         let _tombstone_attempt = morpheus::SignableOperationAttempt {
-            did: mph_persona_did0.to_string(),
+            did: mph_persona_did0,
             last_tx_id: last_tx_id.clone(),
             operation: morpheus::SignableOperationDetails::TombstoneDid {},
         };

@@ -12,15 +12,12 @@ impl JsNoncedBundleBuilder {
         Self { operations: Default::default() }
     }
 
-    // TODO Alternative design would be to just have a build() that takes a JS array of
-    //      JsOperations, and we make sure each item is of correct type and convert it to a Rust Vec
-    pub fn add(mut self, user_operation: &JsUserOperation) -> JsNoncedBundleBuilder {
+    pub fn add(&mut self, user_operation: &JsUserOperation) {
         self.operations.push(user_operation.inner().to_owned());
-        self
     }
 
-    pub fn build(self, nonce: Nonce) -> JsNoncedBundle {
-        NoncedBundle::new(self.operations, nonce).into()
+    pub fn build(&self, nonce: Nonce) -> JsNoncedBundle {
+        NoncedBundle::new(self.operations.to_owned(), nonce).into()
     }
 }
 
