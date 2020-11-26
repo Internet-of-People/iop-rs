@@ -27,10 +27,10 @@ pub extern "C" fn delete_MorpheusOperationBuilder(builder: *mut MorpheusOperatio
 
 #[no_mangle]
 pub extern "C" fn MorpheusOperationBuilder_new(
-    did: *const raw::c_char, last_tx_id: *const raw::c_char,
+    did: *const Did, last_tx_id: *const raw::c_char,
 ) -> CPtrResult<MorpheusOperationBuilder> {
     let fun = || {
-        let did = unsafe { convert::str_in(did) }?.parse()?;
+        let did = unsafe { convert::borrow_in(did) }.to_owned();
         let last_tx_id = unsafe { convert::str_in(last_tx_id) }.ok().map(|t| t.to_owned());
         let builder = MorpheusOperationBuilder { did, last_tx_id };
         Ok(convert::move_out(builder))

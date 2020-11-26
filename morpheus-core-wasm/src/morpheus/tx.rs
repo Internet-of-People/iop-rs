@@ -3,14 +3,11 @@ use super::*;
 use iop_hydra_proto::txtype::{
     morpheus::{
         OperationAttempt, SignableOperation, SignableOperationAttempt, SignableOperationDetails,
-        Transaction,
+        SignedOperation, Transaction,
     },
     Aip29Transaction, CommonTransactionFields,
 };
-use iop_morpheus_core::data::auth::Authentication;
 
-// TODO use strict types all around this API
-//      i.e. create JsSpecificType instead of using JsValue at many places
 #[wasm_bindgen(js_name = MorpheusTxBuilder)]
 #[derive(Clone)]
 pub struct JsMorpheusTxBuilder {
@@ -46,10 +43,11 @@ impl JsMorpheusTxBuilder {
     }
 
     #[wasm_bindgen(js_name = addSigned)]
-    pub fn add_signed(&self, signed_operation: &JsValue) -> Result<JsMorpheusTxBuilder, JsValue> {
-        let signed_op = signed_operation.into_serde().map_err_to_js()?;
+    pub fn add_signed(
+        &self, signed_operation: &JsMorpheusSignedOperation,
+    ) -> Result<JsMorpheusTxBuilder, JsValue> {
         let mut result = self.clone();
-        result.op_attempts.push(OperationAttempt::Signed(signed_op));
+        result.op_attempts.push(OperationAttempt::Signed(signed_operation.inner.to_owned()));
         Ok(result)
     }
 
@@ -57,6 +55,23 @@ impl JsMorpheusTxBuilder {
         let morpheus_tx =
             Transaction::new(self.common_fields.to_owned(), self.op_attempts.to_owned());
         JsValue::from_serde(&morpheus_tx.to_data()).map_err_to_js()
+    }
+}
+
+#[wasm_bindgen(js_name = MorpheusSignableOperation)]
+pub struct JsMorpheusSignableOperation {
+    inner: SignableOperationAttempt,
+}
+
+impl From<SignableOperationAttempt> for JsMorpheusSignableOperation {
+    fn from(inner: SignableOperationAttempt) -> Self {
+        Self { inner }
+    }
+}
+
+impl Wraps<SignableOperationAttempt> for JsMorpheusSignableOperation {
+    fn inner(&self) -> &SignableOperationAttempt {
+        &self.inner
     }
 }
 
@@ -77,60 +92,95 @@ impl JsMorpheusOperationBuilder {
     #[wasm_bindgen(js_name = addKey)]
     pub fn add_key(
         &self, authentication: &str, expires_at_height: JsValue,
-    ) -> Result<JsValue, JsValue> {
+    ) -> Result<JsMorpheusSignableOperation, JsValue> {
         let auth = Authentication::from_str(authentication).map_err_to_js()?;
         let expires_at_height = expires_at_height.into_serde().map_err_to_js()?;
         let operation = SignableOperationDetails::AddKey { auth, expires_at_height };
-        self.signable_attempt_js(operation)
+        self.to_attempt(operation)
     }
 
     #[wasm_bindgen(js_name = revokeKey)]
-    pub fn revoke_key(&self, authentication: &str) -> Result<JsValue, JsValue> {
+    pub fn revoke_key(&self, authentication: &str) -> Result<JsMorpheusSignableOperation, JsValue> {
         let auth = Authentication::from_str(authentication).map_err_to_js()?;
         let operation = SignableOperationDetails::RevokeKey { auth };
-        self.signable_attempt_js(operation)
+        self.to_attempt(operation)
     }
 
     #[wasm_bindgen(js_name = addRight)]
-    pub fn add_right(&self, authentication: &str, right: &str) -> Result<JsValue, JsValue> {
+    pub fn add_right(
+        &self, authentication: &str, right: &str,
+    ) -> Result<JsMorpheusSignableOperation, JsValue> {
         let auth = Authentication::from_str(authentication).map_err_to_js()?;
         let operation = SignableOperationDetails::AddRight { auth, right: right.to_owned() };
-        self.signable_attempt_js(operation)
+        self.to_attempt(operation)
     }
 
     #[wasm_bindgen(js_name = revokeRight)]
-    pub fn revoke_right(&self, authentication: &str, right: &str) -> Result<JsValue, JsValue> {
+    pub fn revoke_right(
+        &self, authentication: &str, right: &str,
+    ) -> Result<JsMorpheusSignableOperation, JsValue> {
         let auth = Authentication::from_str(authentication).map_err_to_js()?;
         let operation = SignableOperationDetails::RevokeRight { auth, right: right.to_owned() };
-        self.signable_attempt_js(operation)
+        self.to_attempt(operation)
     }
 
     #[wasm_bindgen(js_name = tombstoneDid)]
-    pub fn tombstone_did(&self) -> Result<JsValue, JsValue> {
+    pub fn tombstone_did(&self) -> Result<JsMorpheusSignableOperation, JsValue> {
         let operation = SignableOperationDetails::TombstoneDid {};
-        self.signable_attempt_js(operation)
+        self.to_attempt(operation)
     }
 }
 
 impl JsMorpheusOperationBuilder {
-    fn signable_attempt_js(&self, operation: SignableOperationDetails) -> Result<JsValue, JsValue> {
-        let signable_op = SignableOperationAttempt {
+    fn to_attempt(
+        &self, operation: SignableOperationDetails,
+    ) -> Result<JsMorpheusSignableOperation, JsValue> {
+        let attempt = SignableOperationAttempt {
             did: self.did.to_owned(),
             last_tx_id: self.last_tx_id.to_owned(),
             operation,
         };
-        let signable_op_js = JsValue::from_serde(&signable_op).map_err_to_js()?;
-        Ok(signable_op_js)
+        Ok(attempt.into())
     }
 }
 
-#[wasm_bindgen(js_name = signMorpheusOperations)]
-pub fn sign_morpheus_operations(
-    operations: &JsValue, private_key: &JsMPrivateKey,
-) -> Result<JsValue, JsValue> {
-    let signables = operations.into_serde().map_err_to_js()?;
-    let signable_ops = SignableOperation::new(signables);
-    let signer = PrivateKeySigner::new(private_key.inner().to_owned());
-    let signed_ops = signable_ops.sign(&signer).map_err_to_js()?;
-    JsValue::from_serde(&signed_ops).map_err_to_js()
+#[wasm_bindgen(js_name = MorpheusOperationSigner)]
+pub struct JsMorpheusOperationSigner {
+    signables: Vec<SignableOperationAttempt>,
+}
+
+#[wasm_bindgen(js_class = MorpheusOperationSigner)]
+impl JsMorpheusOperationSigner {
+    #[wasm_bindgen(constructor)]
+    pub fn new() -> JsMorpheusOperationSigner {
+        Self { signables: vec![] }
+    }
+
+    pub fn add(&mut self, signable: &JsMorpheusSignableOperation) {
+        self.signables.push(signable.inner().to_owned())
+    }
+
+    pub fn sign(&self, private_key: &JsMPrivateKey) -> Result<JsMorpheusSignedOperation, JsValue> {
+        let signable_ops = SignableOperation::new(self.signables.to_owned());
+        let signer = PrivateKeySigner::new(private_key.inner().to_owned());
+        let signed = signable_ops.sign(&signer).map_err_to_js()?;
+        Ok(signed.into())
+    }
+}
+
+#[wasm_bindgen(js_name = MorpheusSignedOperation)]
+pub struct JsMorpheusSignedOperation {
+    inner: SignedOperation,
+}
+
+impl From<SignedOperation> for JsMorpheusSignedOperation {
+    fn from(inner: SignedOperation) -> Self {
+        Self { inner }
+    }
+}
+
+impl Wraps<SignedOperation> for JsMorpheusSignedOperation {
+    fn inner(&self) -> &SignedOperation {
+        &self.inner
+    }
 }
