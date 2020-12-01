@@ -1,8 +1,8 @@
 use super::*;
 
 use iop_hydra_proto::txtype::morpheus::{
-    OperationAttempt, SignableOperation, SignableOperationAttempt, SignableOperationDetails,
-    SignedOperation, Transaction,
+    MorpheusAsset, OperationAttempt, SignableOperation, SignableOperationAttempt,
+    SignableOperationDetails, SignedOperation, Transaction,
 };
 
 pub struct MorpheusOperationBuilder {
@@ -153,38 +153,41 @@ pub extern "C" fn MorpheusOperationSigner_sign(
     cresult(fun())
 }
 
-pub struct MorpheusTxBuilder {
-    common_fields: CommonTransactionFields,
-    op_attempts: Vec<OperationAttempt>,
+#[no_mangle]
+pub extern "C" fn delete_MorpheusSignedOperation(operation: *mut SignedOperation) {
+    delete(operation)
 }
 
 #[no_mangle]
-pub extern "C" fn delete_MorpheusTxBuilder(builder: *mut MorpheusTxBuilder) {
-    delete(builder)
-}
-
-#[no_mangle]
-pub extern "C" fn MorpheusTxBuilder_new(
-    network: *const raw::c_char, sender_public_key: *const SecpPublicKey, nonce: u64,
-) -> CPtrResult<MorpheusTxBuilder> {
+pub extern "C" fn MorpheusSignedOperation_to_string(
+    signed_op: *mut SignedOperation,
+) -> CPtrResult<raw::c_char> {
     let fun = || {
-        let network = unsafe { convert::str_in(network)? };
-        let sender_public_key = unsafe { convert::borrow_in(sender_public_key) };
-        let common_fields = CommonTransactionFields {
-            network: Networks::by_name(network)?,
-            sender_public_key: sender_public_key.to_owned(),
-            nonce,
-            optional: Default::default(),
-        };
-        let builder = MorpheusTxBuilder { common_fields, op_attempts: Default::default() };
-        Ok(convert::move_out(builder))
+        let signed_op = unsafe { convert::borrow_in(signed_op) };
+        let json_str = serde_json::to_string(signed_op)?;
+        Ok(convert::string_out(json_str))
     };
     cresult(fun())
 }
 
+pub struct MorpheusAssetBuilder {
+    op_attempts: Vec<OperationAttempt>,
+}
+
 #[no_mangle]
-pub extern "C" fn MorpheusTxBuilder_add_signed(
-    builder: *mut MorpheusTxBuilder, signed_ops: *mut SignedOperation,
+pub extern "C" fn delete_MorpheusAssetBuilder(builder: *mut MorpheusAssetBuilder) {
+    delete(builder)
+}
+
+#[no_mangle]
+pub extern "C" fn MorpheusAssetBuilder_new() -> *mut MorpheusAssetBuilder {
+    let builder = MorpheusAssetBuilder { op_attempts: Default::default() };
+    convert::move_out(builder)
+}
+
+#[no_mangle]
+pub extern "C" fn MorpheusAssetBuilder_add_signed(
+    builder: *mut MorpheusAssetBuilder, signed_ops: *mut SignedOperation,
 ) {
     let builder = unsafe { convert::borrow_mut_in(builder) };
     let signed_ops = unsafe { convert::borrow_in(signed_ops) };
@@ -192,8 +195,8 @@ pub extern "C" fn MorpheusTxBuilder_add_signed(
 }
 
 #[no_mangle]
-pub extern "C" fn MorpheusTxBuilder_add_register_before_proof(
-    builder: *mut MorpheusTxBuilder, content_id: *const raw::c_char,
+pub extern "C" fn MorpheusAssetBuilder_add_register_before_proof(
+    builder: *mut MorpheusAssetBuilder, content_id: *const raw::c_char,
 ) -> CPtrResult<raw::c_void> {
     let fun = || {
         let builder = unsafe { convert::borrow_mut_in(builder) };
@@ -207,12 +210,46 @@ pub extern "C" fn MorpheusTxBuilder_add_register_before_proof(
 }
 
 #[no_mangle]
+pub extern "C" fn MorpheusAssetBuilder_build(
+    builder: *mut MorpheusAssetBuilder,
+) -> *mut MorpheusAsset {
+    let builder = unsafe { convert::borrow_mut_in(builder) };
+    let asset = MorpheusAsset::new(builder.op_attempts.to_owned());
+    convert::move_out(asset)
+}
+
+#[no_mangle]
+pub extern "C" fn delete_MorpheusAsset(asset: *mut MorpheusAsset) {
+    delete(asset)
+}
+
+#[no_mangle]
+pub extern "C" fn MorpheusAsset_to_string(asset: *mut MorpheusAsset) -> CPtrResult<raw::c_char> {
+    let fun = || {
+        let asset = unsafe { convert::borrow_in(asset) };
+        let json_str = serde_json::to_string(asset)?;
+        Ok(convert::string_out(json_str))
+    };
+    cresult(fun())
+}
+
+#[no_mangle]
 pub extern "C" fn MorpheusTxBuilder_build(
-    builder: *mut MorpheusTxBuilder,
+    network: *const raw::c_char, asset: *const MorpheusAsset,
+    sender_public_key: *const SecpPublicKey, nonce: u64,
 ) -> CPtrResult<raw::c_char> {
     let fun = || {
-        let builder = unsafe { convert::borrow_mut_in(builder) };
-        let tx = Transaction::new(builder.common_fields.to_owned(), builder.op_attempts.to_owned());
+        let network = unsafe { convert::str_in(network)? };
+        let asset = unsafe { convert::borrow_in(asset) };
+        let sender_public_key = unsafe { convert::borrow_in(sender_public_key) };
+        let common_fields = CommonTransactionFields {
+            network: Networks::by_name(network)?,
+            sender_public_key: sender_public_key.to_owned(),
+            nonce,
+            optional: Default::default(),
+        };
+
+        let tx = Transaction::new(common_fields.to_owned(), asset.operation_attempts.to_owned());
         let tx_json = serde_json::to_string(&tx.to_data())?;
         Ok(convert::string_out(tx_json))
     };

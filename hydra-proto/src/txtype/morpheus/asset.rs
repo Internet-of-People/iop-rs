@@ -12,6 +12,10 @@ impl MorpheusAsset {
     const FEE_BYTES_OFFSET: u64 = 15;
     const FEE_FLAKES_PER_BYTES: u64 = 3000;
 
+    pub fn new(operation_attempts: Vec<OperationAttempt>) -> Self {
+        Self { operation_attempts }
+    }
+
     pub fn fee(&self) -> u64 {
         let len = self
             .to_bytes()

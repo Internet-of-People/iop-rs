@@ -2,65 +2,73 @@ use super::*;
 
 use iop_hydra_proto::txtype::{
     morpheus::{
-        OperationAttempt, SignableOperation, SignableOperationAttempt, SignableOperationDetails,
-        SignedOperation, Transaction,
+        MorpheusAsset, OperationAttempt, SignableOperation, SignableOperationAttempt,
+        SignableOperationDetails, SignedOperation, Transaction,
     },
     Aip29Transaction, CommonTransactionFields,
 };
 
 #[wasm_bindgen(js_name = MorpheusTxBuilder)]
-#[derive(Clone)]
-pub struct JsMorpheusTxBuilder {
-    common_fields: CommonTransactionFields<'static>,
-    op_attempts: Vec<OperationAttempt>,
-}
+pub struct JsMorpheusTxBuilder {}
 
 #[wasm_bindgen(js_class = MorpheusTxBuilder)]
 impl JsMorpheusTxBuilder {
-    #[wasm_bindgen(constructor)]
-    pub fn new(
-        network_name: &str, sender_pubkey: &JsSecpPublicKey, nonce: u64,
-    ) -> Result<JsMorpheusTxBuilder, JsValue> {
+    pub fn build(
+        network_name: &str, morpheus_asset: JsValue, sender_pubkey: &JsSecpPublicKey, nonce: u64,
+    ) -> Result<JsValue, JsValue> {
+        let morpheus_asset: MorpheusAsset = morpheus_asset.into_serde().map_err_to_js()?;
         let common_fields = CommonTransactionFields {
             network: Networks::by_name(network_name).map_err_to_js()?,
             sender_public_key: sender_pubkey.inner().to_owned(),
             nonce,
             optional: Default::default(),
         };
-        let tx = JsMorpheusTxBuilder { common_fields, op_attempts: vec![] };
-        Ok(tx.into())
+        let morpheus_tx = Transaction::new(common_fields, morpheus_asset.operation_attempts);
+        JsValue::from_serde(&morpheus_tx.to_data()).map_err_to_js()
+    }
+}
+
+#[wasm_bindgen(js_name = MorpheusAssetBuilder)]
+pub struct JsMorpheusAssetBuilder {
+    op_attempts: Vec<OperationAttempt>,
+}
+
+#[wasm_bindgen(js_class = MorpheusAssetBuilder)]
+impl JsMorpheusAssetBuilder {
+    #[wasm_bindgen(constructor)]
+    pub fn new() -> JsMorpheusAssetBuilder {
+        JsMorpheusAssetBuilder { op_attempts: vec![] }
     }
 
     #[wasm_bindgen(js_name = addRegisterBeforeProof)]
-    pub fn add_register_before_proof(
-        &self, content_id: &str,
-    ) -> Result<JsMorpheusTxBuilder, JsValue> {
+    pub fn add_register_before_proof(&mut self, content_id: &str) {
         let before_proof =
             OperationAttempt::RegisterBeforeProof { content_id: content_id.to_owned() };
-        let mut result = self.clone();
-        result.op_attempts.push(before_proof);
-        Ok(result)
+        self.op_attempts.push(before_proof);
     }
 
     #[wasm_bindgen(js_name = addSigned)]
-    pub fn add_signed(
-        &self, signed_operation: &JsMorpheusSignedOperation,
-    ) -> Result<JsMorpheusTxBuilder, JsValue> {
-        let mut result = self.clone();
-        result.op_attempts.push(OperationAttempt::Signed(signed_operation.inner.to_owned()));
-        Ok(result)
+    pub fn add_signed(&mut self, signed_operation: &JsMorpheusSignedOperation) {
+        self.op_attempts.push(OperationAttempt::Signed(signed_operation.inner.to_owned()));
     }
 
     pub fn build(&self) -> Result<JsValue, JsValue> {
-        let morpheus_tx =
-            Transaction::new(self.common_fields.to_owned(), self.op_attempts.to_owned());
-        JsValue::from_serde(&morpheus_tx.to_data()).map_err_to_js()
+        let asset = MorpheusAsset::new(self.op_attempts.to_owned());
+        JsValue::from_serde(&asset).map_err_to_js()
     }
 }
 
 #[wasm_bindgen(js_name = MorpheusSignableOperation)]
 pub struct JsMorpheusSignableOperation {
     inner: SignableOperationAttempt,
+}
+
+#[wasm_bindgen(js_class = MorpheusSignableOperation)]
+impl JsMorpheusSignableOperation {
+    #[wasm_bindgen(js_name = toJson)]
+    pub fn to_json(&self) -> Result<JsValue, JsValue> {
+        JsValue::from_serde(&self.inner).map_err_to_js()
+    }
 }
 
 impl From<SignableOperationAttempt> for JsMorpheusSignableOperation {
@@ -171,6 +179,14 @@ impl JsMorpheusOperationSigner {
 #[wasm_bindgen(js_name = MorpheusSignedOperation)]
 pub struct JsMorpheusSignedOperation {
     inner: SignedOperation,
+}
+
+#[wasm_bindgen(js_class = MorpheusSignedOperation)]
+impl JsMorpheusSignedOperation {
+    #[wasm_bindgen(js_name = toJson)]
+    pub fn to_json(&self) -> Result<JsValue, JsValue> {
+        JsValue::from_serde(&self.inner).map_err_to_js()
+    }
 }
 
 impl From<SignedOperation> for JsMorpheusSignedOperation {
