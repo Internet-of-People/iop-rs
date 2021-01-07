@@ -11,7 +11,7 @@ pub extern "C" fn MorpheusPlugin_rewind(
     let vault = unsafe { convert::borrow_mut_in(vault) };
     let mut fun = || {
         let unlock_password = unsafe { convert::str_in(unlock_pwd)? };
-        Plugin::rewind(vault, unlock_password)?;
+        Plugin::init(vault, unlock_password)?;
         Ok(())
     };
     cresult_void(fun())

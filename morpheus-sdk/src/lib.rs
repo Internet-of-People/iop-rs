@@ -43,7 +43,7 @@ mod test {
         let unlock_pw = "correct horse battery staple";
         let word25 = "";
         let mut vault = Vault::create(Some("en"), Seed::DEMO_PHRASE, word25, unlock_pw)?;
-        MorpheusPlugin::rewind(&mut vault, unlock_pw)?;
+        MorpheusPlugin::init(&mut vault, unlock_pw)?;
         let morpheus = MorpheusPlugin::get(&vault)?;
         let persona0 = morpheus.private(unlock_pw)?.personas()?.key(0)?;
 

@@ -43,7 +43,7 @@ impl Plugin {
         Self { inner }
     }
 
-    pub fn rewind(vault: &mut Vault, unlock_password: impl AsRef<str>) -> Result<()> {
+    pub fn init(vault: &mut Vault, unlock_password: impl AsRef<str>) -> Result<()> {
         let seed = vault.unlock(unlock_password.as_ref())?;
         let persona0 = Morpheus.root(&seed)?.personas()?.key(0)?.neuter();
         let plugin = Self::new(vec![persona0.public_key().to_string()]);

@@ -10,7 +10,7 @@ pub enum OperationAttempt {
     Signed(SignedOperation),
 }
 
-#[derive(Clone, Debug, Default)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct SignableOperation {
     signables: Vec<SignableOperationAttempt>,
 }

@@ -24,7 +24,7 @@ mod test {
         let unlock_password = "correct horse battery staple";
         let mut vault = Vault::create(None, Seed::DEMO_PHRASE, "", unlock_password)?;
         let parameters = Parameters::new(&hyd::Testnet, 0);
-        vault::Plugin::rewind(&mut vault, unlock_password, &parameters)?;
+        vault::Plugin::init(&mut vault, unlock_password, &parameters)?;
 
         let hyd = vault::Plugin::get(&vault, &parameters)?;
         let mut hyd_priv = hyd.private(unlock_password)?;
@@ -45,7 +45,7 @@ mod test {
 
         assert_eq!(priv_key_0_by_pk.bip44_path().key(), 0);
 
-        let err = Plugin::rewind(&mut vault, unlock_password, &parameters).unwrap_err();
+        let err = Plugin::init(&mut vault, unlock_password, &parameters).unwrap_err();
         assert!((&err.to_string()).contains("was already added"));
 
         Ok(())

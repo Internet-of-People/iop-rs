@@ -52,7 +52,7 @@ impl Plugin {
         Self { inner }
     }
 
-    pub fn rewind(
+    pub fn init(
         vault: &mut Vault, unlock_password: impl AsRef<str>, parameters: &Parameters,
     ) -> Result<()> {
         let seed = vault.unlock(unlock_password.as_ref())?;
@@ -88,7 +88,7 @@ impl Plugin {
         imp.parameters.account
     }
 
-    fn create_account(parameters: &Parameters, seed: &Seed) -> Result<Bip44Account<Secp256k1>> {
+    pub fn create_account(parameters: &Parameters, seed: &Seed) -> Result<Bip44Account<Secp256k1>> {
         let network = Networks::by_name(&parameters.network)?;
         Bip44.network(seed, network)?.account(parameters.account)
     }

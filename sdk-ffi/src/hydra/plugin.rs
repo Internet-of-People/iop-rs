@@ -11,14 +11,14 @@ fn params(network: *const raw::c_char, account: i32) -> Result<Parameters> {
 }
 
 #[no_mangle]
-pub extern "C" fn HydraPlugin_rewind(
+pub extern "C" fn HydraPlugin_init(
     vault: *mut Vault, unlock_pwd: *const raw::c_char, network: *const raw::c_char, account: i32,
 ) -> CPtrResult<raw::c_void> {
     let vault = unsafe { convert::borrow_mut_in(vault) };
     let mut fun = || {
         let unlock_password = unsafe { convert::str_in(unlock_pwd)? };
         let params = params(network, account)?;
-        Plugin::rewind(vault, unlock_password, &params)?;
+        Plugin::init(vault, unlock_password, &params)?;
         Ok(())
     };
     cresult_void(fun())

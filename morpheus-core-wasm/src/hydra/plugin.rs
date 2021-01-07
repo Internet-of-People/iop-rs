@@ -10,7 +10,7 @@ impl JsHydraPlugin {
     pub fn rewind(
         vault: &mut JsVault, unlock_password: &str, parameters: &JsHydraParameters,
     ) -> Result<(), JsValue> {
-        hd_hydra::Plugin::rewind(vault.inner_mut(), unlock_password, parameters.inner())
+        hd_hydra::Plugin::init(vault.inner_mut(), unlock_password, parameters.inner())
             .map_err_to_js()?;
         Ok(())
     }

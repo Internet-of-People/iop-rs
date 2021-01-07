@@ -1,6 +1,40 @@
+pub mod ciphersuite {
+    pub mod ed25519 {
+        pub use iop_keyvault::ed25519::*;
+    }
+    pub mod secp256k1 {
+        pub use iop_keyvault::secp256k1::*;
+    }
+}
+
+pub mod multicipher {
+    pub use iop_keyvault::multicipher::*;
+}
+
+pub mod hydra {
+    pub use iop_hydra_proto::{
+        transaction::{TransactionData, TxBatch},
+        txtype,
+    };
+}
+
+pub mod morpheus {
+    pub use iop_morpheus_core::crypto;
+    pub use iop_morpheus_core::data;
+}
+
+pub mod vault {
+    pub use iop_hydra_sdk::vault as hydra;
+    pub use iop_keyvault::{
+        Bip39, Bip39ErrorKind, Bip39Language, Bip39Phrase, PrivateKey, PublicKey, Seed,
+    };
+    pub use iop_morpheus_sdk::vault as morpheus;
+    pub use iop_vault::Vault;
+}
+
 #[cfg(test)]
 mod test {
-    //use super::*;
+    use super::*;
 
     use anyhow::Result;
 
@@ -15,14 +49,14 @@ mod test {
     use iop_keyvault::{
         multicipher::MKeyId,
         secp256k1::{hyd, SecpKeyId, SecpPublicKey},
-        PublicKey, Seed,
+        PublicKey,
     };
     use iop_morpheus_core::{
         crypto::sign::PrivateKeySigner,
         data::{auth::Authentication, did::Did, diddoc::Right},
     };
     use iop_morpheus_sdk::vault::Plugin as MorpheusPlugin;
-    use iop_vault::Vault;
+    use vault::{Seed, Vault};
 
     #[test]
     fn hydra_tx_builder() -> Result<()> {
@@ -30,7 +64,7 @@ mod test {
         let mut vault = Vault::create(None, Seed::DEMO_PHRASE, "", unlock_password)?;
 
         let hyd_params = hydra::Parameters::new(&hyd::Testnet, 0);
-        hydra::Plugin::rewind(&mut vault, unlock_password, &hyd_params)?;
+        hydra::Plugin::init(&mut vault, unlock_password, &hyd_params)?;
         let hydra_plugin = hydra::Plugin::get(&vault, &hyd_params)?;
         let hyd_bip44_pubkey0 = hydra_plugin.public()?.key(0)?;
         let hyd_wallet_pubkey0 = hyd_bip44_pubkey0.to_public_key();
@@ -93,7 +127,7 @@ mod test {
         let mut vault = Vault::create(None, Seed::DEMO_PHRASE, "", unlock_password)?;
 
         let hyd_params = hydra::Parameters::new(&hyd::Testnet, 0);
-        hydra::Plugin::rewind(&mut vault, unlock_password, &hyd_params)?;
+        hydra::Plugin::init(&mut vault, unlock_password, &hyd_params)?;
         let hydra_plugin = hydra::Plugin::get(&vault, &hyd_params)?;
         let hyd_bip44_pubkey0 = hydra_plugin.public()?.key(0)?;
         let hyd_wallet_pubkey0 = hyd_bip44_pubkey0.to_public_key();
@@ -107,7 +141,7 @@ mod test {
             MKeyId::from(hyd_wallet_pubkey0.ark_key_id()).to_string()
         );
 
-        MorpheusPlugin::rewind(&mut vault, &unlock_password)?;
+        MorpheusPlugin::init(&mut vault, &unlock_password)?;
         let morpheus_plugin = MorpheusPlugin::get(&vault)?;
         let mph_private = morpheus_plugin.private(&unlock_password)?;
         let mph_bip32_privkey0 = mph_private.personas()?.key(0)?;

@@ -26,7 +26,7 @@ mod test {
     fn api() -> Result<()> {
         let unlock_password = "correct horse battery staple";
         let mut vault = Vault::create(None, Seed::DEMO_PHRASE, "", unlock_password)?;
-        Plugin::rewind(&mut vault, unlock_password)?;
+        Plugin::init(&mut vault, unlock_password)?;
 
         let morpheus = Plugin::get(&vault)?;
         let morpheus_priv = morpheus.private(unlock_password)?;
@@ -45,7 +45,7 @@ mod test {
 
         assert_eq!(persona_0_by_pk.path().idx(), 0);
 
-        let err = Plugin::rewind(&mut vault, unlock_password).unwrap_err();
+        let err = Plugin::init(&mut vault, unlock_password).unwrap_err();
         assert!((&err.to_string()).contains("was already added"));
 
         Ok(())

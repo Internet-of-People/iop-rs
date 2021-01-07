@@ -8,7 +8,7 @@ pub struct JsMorpheusPlugin {
 #[wasm_bindgen(js_class = MorpheusPlugin)]
 impl JsMorpheusPlugin {
     pub fn rewind(vault: &mut JsVault, unlock_password: &str) -> Result<(), JsValue> {
-        hd_morpheus::Plugin::rewind(vault.inner_mut(), unlock_password).map_err_to_js()?;
+        hd_morpheus::Plugin::init(vault.inner_mut(), unlock_password).map_err_to_js()?;
         Ok(())
     }
 
