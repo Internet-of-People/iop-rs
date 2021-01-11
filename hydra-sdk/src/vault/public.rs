@@ -36,7 +36,12 @@ impl Public {
 
     // TODO: pub fn chain(&self, chain: Chain) -> Result<HydraPublicSubAccount>
 
-    pub fn key(&mut self, idx: i32) -> Result<Bip44PublicKey<Secp256k1>> {
+    pub fn key(&self, idx: i32) -> Result<Bip44PublicKey<Secp256k1>> {
+        ensure_idx_bounds(self.state.as_ref(), idx)?;
+        self.account.key(idx)
+    }
+
+    pub fn key_mut(&mut self, idx: i32) -> Result<Bip44PublicKey<Secp256k1>> {
         touch_receive_idx(self.state.as_mut(), idx, self.vault_dirty.as_mut())?;
         self.account.key(idx)
     }

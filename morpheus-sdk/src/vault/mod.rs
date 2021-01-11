@@ -30,7 +30,7 @@ mod test {
 
         let morpheus = Plugin::get(&vault)?;
         let morpheus_priv = morpheus.private(unlock_password)?;
-        let mut personas = morpheus_priv.personas()?;
+        let personas = morpheus_priv.personas()?;
         let persona_0 = personas.key(0)?;
         let pub_0 = persona_0.neuter();
         let pk0 = pub_0.public_key();

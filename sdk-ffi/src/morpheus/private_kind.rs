@@ -46,7 +46,7 @@ pub extern "C" fn MorpheusPrivateKind_key(
 ) -> CPtrResult<MorpheusPrivateKey> {
     let kind = unsafe { convert::borrow_mut_in(kind) };
     let mut fun = || {
-        let sk = kind.key(idx)?;
+        let sk = kind.key_mut(idx)?;
         Ok(convert::move_out(sk))
     };
     cresult(fun())
@@ -56,7 +56,7 @@ pub extern "C" fn MorpheusPrivateKind_key(
 pub extern "C" fn MorpheusPrivateKind_did(kind: *mut PrivateKind, idx: i32) -> CPtrResult<Did> {
     let kind = unsafe { convert::borrow_mut_in(kind) };
     let mut fun = || {
-        let sk = kind.key(idx)?;
+        let sk = kind.key_mut(idx)?;
         let did = Did::from(sk.neuter().public_key().key_id());
         Ok(convert::move_out(did))
     };

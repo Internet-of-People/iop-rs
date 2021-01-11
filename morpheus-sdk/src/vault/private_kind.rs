@@ -35,7 +35,14 @@ impl PrivateKind {
         PublicKind::new(self.state.clone(), self.kind.path())
     }
 
-    pub fn key(&mut self, idx: i32) -> Result<MorpheusPrivateKey> {
+    pub fn key(&self, idx: i32) -> Result<MorpheusPrivateKey> {
+        ensure!(idx >= 0, "Key index cannot be negative");
+        let count = self.state.try_borrow()?.len() as i32;
+        ensure!(idx < count, "Only existing keys can be queried");
+        self.kind.key(idx)
+    }
+
+    pub fn key_mut(&mut self, idx: i32) -> Result<MorpheusPrivateKey> {
         ensure!(idx >= 0, "Key index cannot be negative");
         let count = self.state.try_borrow()?.len() as i32;
         let required = idx + 1;

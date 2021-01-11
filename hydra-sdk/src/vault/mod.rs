@@ -27,7 +27,7 @@ mod test {
         vault::Plugin::init(&mut vault, unlock_password, &parameters)?;
 
         let hyd = vault::Plugin::get(&vault, &parameters)?;
-        let mut hyd_priv = hyd.private(unlock_password)?;
+        let hyd_priv = hyd.private(unlock_password)?;
         let priv_key_0 = hyd_priv.key(0)?;
         let pub_key_0 = priv_key_0.neuter();
         let pk0 = pub_key_0.to_public_key();

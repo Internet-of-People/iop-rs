@@ -20,6 +20,16 @@ pub struct PublicState {
     pub(super) change_keys: u32, // TODO there is no way for creating change keys for now
 }
 
+pub(super) fn ensure_idx_bounds(state: &dyn State<PublicState>, idx: i32) -> Result<()> {
+    ensure!(idx >= 0, "Key index cannot be negative");
+    let receive_keys = {
+        let state = state.try_borrow()?;
+        state.receive_keys
+    };
+    ensure!((idx as u32) < receive_keys, "Only existing keys can be queried");
+    Ok(())
+}
+
 pub(super) fn touch_receive_idx(
     state: &mut dyn State<PublicState>, idx: i32, vault_dirty: &mut dyn State<bool>,
 ) -> Result<()> {

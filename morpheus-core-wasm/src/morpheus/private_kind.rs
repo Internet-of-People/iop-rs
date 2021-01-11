@@ -26,12 +26,12 @@ impl JsMorpheusPrivateKind {
     }
 
     pub fn key(&mut self, idx: i32) -> Result<JsMorpheusPrivateKey, JsValue> {
-        let inner = self.inner.key(idx).map_err_to_js()?;
+        let inner = self.inner.key_mut(idx).map_err_to_js()?;
         Ok(JsMorpheusPrivateKey::from(inner))
     }
 
     pub fn did(&mut self, idx: i32) -> Result<JsDid, JsValue> {
-        let sk = self.inner.key(idx).map_err_to_js()?;
+        let sk = self.inner.key_mut(idx).map_err_to_js()?;
         let inner = Did::from(sk.neuter().public_key().key_id());
         Ok(JsDid::from(inner))
     }
