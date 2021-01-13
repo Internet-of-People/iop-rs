@@ -1,7 +1,7 @@
 use super::*;
 
 #[typetag::serde(tag = "pluginName")]
-pub trait VaultPlugin {
+pub trait VaultPlugin: Send + Sync {
     fn name(&self) -> &'static str;
     fn to_any(&self) -> Box<dyn Any>;
     fn eq(&self, other: &dyn VaultPlugin) -> bool;
@@ -29,16 +29,31 @@ impl VaultImpl {
     }
 }
 
-#[derive(Clone, Debug, Deserialize, Serialize)]
-#[serde(transparent)]
+#[derive(Clone, Debug, Deserialize)]
+#[serde(from = "VaultImpl")]
 pub struct Vault {
-    inner: Rc<RefCell<VaultImpl>>,
+    inner: Arc<RwLock<VaultImpl>>,
+}
+
+impl From<VaultImpl> for Vault {
+    fn from(imp: VaultImpl) -> Self {
+        Self { inner: Arc::new(RwLock::new(imp)) }
+    }
+}
+
+impl Serialize for Vault {
+    fn serialize<S: Serializer>(&self, s: S) -> Result<S::Ok, S::Error> {
+        let r = self.inner.try_borrow().map_err(|e| {
+            SerializerError::custom(format!("Failed to lock vault for serialization: {}", e))
+        })?;
+        (*r).serialize(s)
+    }
 }
 
 impl Vault {
     pub fn new(encrypted_seed: String, plugins: Vec<Box<dyn VaultPlugin>>) -> Self {
         let imp = VaultImpl::new(encrypted_seed, plugins);
-        let inner = Rc::new(RefCell::new(imp));
+        let inner = Arc::new(RwLock::new(imp));
         Self { inner }
     }
 
@@ -56,17 +71,20 @@ impl Vault {
     }
 
     pub fn unlock(&self, unlock_password: &str) -> Result<Seed> {
-        let imp = self.inner.borrow();
+        let imp = self.inner.try_read().ok_or_else(|| format_err!("Read lock on Vault failed"))?;
         Self::decrypt_seed(&imp.encrypted_seed, unlock_password)
     }
 
-    pub fn plugins_by_type<T: VaultPlugin + 'static>(&self) -> Vec<Box<T>> {
-        let imp = self.inner.borrow();
-        imp.plugins.iter().by_ref().filter_map(|p| p.to_any().downcast().ok()).collect()
+    pub fn plugins_by_type<T: VaultPlugin + 'static>(&self) -> Result<Vec<Box<T>>> {
+        let imp = self.inner.try_read().ok_or_else(|| format_err!("Read lock on Vault failed"))?;
+        let plugins =
+            imp.plugins.iter().by_ref().filter_map(|p| p.to_any().downcast().ok()).collect();
+        Ok(plugins)
     }
 
     pub fn add(&mut self, plugin: Box<dyn VaultPlugin>) -> Result<()> {
-        let mut imp = self.inner.borrow_mut();
+        let mut imp =
+            self.inner.try_write().ok_or_else(|| format_err!("Write lock on Vault failed"))?;
         ensure!(
             imp.plugins.iter().all(|p| !p.eq(plugin.as_ref())),
             "Same plugin was already added to vault"

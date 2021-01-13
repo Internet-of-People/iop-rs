@@ -3,14 +3,14 @@ pub mod vault;
 // imports from standard library
 
 use std::any::Any;
-use std::cell::RefCell;
-use std::rc::Rc;
+use std::sync::Arc;
 
 // imports from 3rd party crates
 
 use anyhow::{bail, ensure, Context, Result};
 //use log::*;
-use serde::{Deserialize, Serialize};
+use parking_lot::RwLock;
+use serde::{ser::Error as SerializerError, Deserialize, Serialize, Serializer};
 
 // imports from own crates
 

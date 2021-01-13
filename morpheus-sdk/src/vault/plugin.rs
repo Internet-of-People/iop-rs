@@ -14,10 +14,25 @@ impl Inner {
     }
 }
 
-#[derive(Clone, Debug, Deserialize, Serialize)]
-#[serde(transparent)]
+#[derive(Clone, Debug, Deserialize)]
+#[serde(from = "Inner")]
 pub struct Plugin {
-    inner: Rc<RefCell<Inner>>,
+    inner: Arc<RwLock<Inner>>,
+}
+
+impl From<Inner> for Plugin {
+    fn from(inner: Inner) -> Self {
+        Self { inner: Arc::new(RwLock::new(inner)) }
+    }
+}
+
+impl Serialize for Plugin {
+    fn serialize<S: Serializer>(&self, s: S) -> Result<S::Ok, S::Error> {
+        let r = self.inner.try_borrow().map_err(|e| {
+            SerializerError::custom(format!("Failed to lock vault for serialization: {}", e))
+        })?;
+        (*r).serialize(s)
+    }
 }
 
 #[typetag::serde(name = "Morpheus")]
@@ -39,7 +54,7 @@ impl VaultPlugin for Plugin {
 impl Plugin {
     pub fn new(personas: Vec<String>) -> Self {
         let imp = Inner::new(personas);
-        let inner = Rc::new(RefCell::new(imp));
+        let inner = Arc::new(RwLock::new(imp));
         Self { inner }
     }
 
@@ -52,7 +67,7 @@ impl Plugin {
     }
 
     pub fn get(vault: &Vault) -> Result<BoundPlugin<Plugin, Public, Private>> {
-        let morpheus_plugins = vault.plugins_by_type::<Plugin>();
+        let morpheus_plugins = vault.plugins_by_type::<Plugin>()?;
         let plugin: &Plugin = morpheus_plugins
             .iter()
             .by_ref()
