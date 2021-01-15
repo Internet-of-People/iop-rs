@@ -12,7 +12,7 @@ pub enum OperationAttempt {
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct SignableOperation {
-    signables: Vec<SignableOperationAttempt>,
+    pub signables: Vec<SignableOperationAttempt>,
 }
 
 impl SignableOperation {
@@ -47,9 +47,9 @@ impl SignableOperation {
 #[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SignedOperation {
-    signables: Vec<SignableOperationAttempt>,
-    signer_public_key: String,
-    signature: String,
+    pub signables: Vec<SignableOperationAttempt>,
+    pub signer_public_key: String,
+    pub signature: String,
 }
 
 // TODO Did probably should be strongly typed, but that complicates serialization as well.

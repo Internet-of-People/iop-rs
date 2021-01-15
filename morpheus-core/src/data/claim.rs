@@ -11,8 +11,8 @@ pub type ClaimId = ContentId;
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct Claim {
     #[serde(with = "serde_str")]
-    subject: Did,
-    content: MorpheusValue,
+    pub subject: Did,
+    pub content: MorpheusValue,
 }
 
 impl Content for Claim {}
@@ -22,12 +22,12 @@ impl Signable for Claim {}
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct WitnessRequest {
     #[serde(with = "serde_str", rename = "processId")]
-    process_id: ProcessId,
-    claimant: String, // TODO should be an AuthenticationLink on the long term
-    claim: Claim,
-    evidence: MorpheusValue,
+    pub process_id: ProcessId,
+    pub claimant: String, // TODO should be an AuthenticationLink on the long term
+    pub claim: Claim,
+    pub evidence: MorpheusValue,
     #[serde(skip_serializing_if = "Option::is_none", default)]
-    nonce: Option<Nonce264>,
+    pub nonce: Option<Nonce264>,
 }
 
 impl Content for WitnessRequest {}
@@ -37,21 +37,21 @@ impl Signable for WitnessRequest {}
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct WitnessStatement {
     #[serde(with = "serde_str", rename = "processId")]
-    process_id: ProcessId,
-    claim: Claim,
-    constraints: Constraints,
+    pub process_id: ProcessId,
+    pub claim: Claim,
+    pub constraints: Constraints,
     #[serde(skip_serializing_if = "Option::is_none", default)]
-    nonce: Option<Nonce264>,
+    pub nonce: Option<Nonce264>,
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct Constraints {
-    after: Option<String>,
-    before: Option<String>,
-    witness: String, // TODO should be an AuthenticationLink on the long term
+    pub after: Option<String>,
+    pub before: Option<String>,
+    pub witness: String, // TODO should be an AuthenticationLink on the long term
     #[serde(with = "serde_str")]
-    authority: Did,
-    content: MorpheusValue,
+    pub authority: Did,
+    pub content: MorpheusValue,
 }
 
 impl Content for WitnessStatement {}
