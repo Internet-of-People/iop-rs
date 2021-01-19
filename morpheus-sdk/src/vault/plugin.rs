@@ -58,12 +58,16 @@ impl Plugin {
         Self { inner }
     }
 
+    pub fn create(vault: &mut Vault) -> Result<()> {
+        let plugin = Self::new(vec![]);
+        vault.add(Box::new(plugin))
+    }
+
     pub fn init(vault: &mut Vault, unlock_password: impl AsRef<str>) -> Result<()> {
         let seed = vault.unlock(unlock_password.as_ref())?;
         let persona0 = Morpheus.root(&seed)?.personas()?.key(0)?.neuter();
         let plugin = Self::new(vec![persona0.public_key().to_string()]);
-        vault.add(Box::new(plugin))?;
-        Ok(())
+        vault.add(Box::new(plugin))
     }
 
     pub fn get(vault: &Vault) -> Result<BoundPlugin<Plugin, Public, Private>> {

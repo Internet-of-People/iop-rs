@@ -64,15 +64,28 @@ impl Plugin {
         Self { public_state, parameters }
     }
 
-    pub fn init(
+    pub fn instantiate(
         vault: &mut Vault, unlock_password: impl AsRef<str>, parameters: &Parameters,
+        receive_keys: u32, change_keys: u32,
     ) -> Result<()> {
         let seed = vault.unlock(unlock_password.as_ref())?;
         let account = Self::create_account(parameters, &seed)?;
-        let pk: Bip44PublicAccount<Secp256k1> = account.neuter();
-        let plugin = Self::new(parameters.to_owned(), pk.to_xpub(), 1, 0);
-        vault.add(Box::new(plugin))?;
-        Ok(())
+        let pub_account = account.neuter();
+        let plugin =
+            Self::new(parameters.to_owned(), pub_account.to_xpub(), receive_keys, change_keys);
+        vault.add(Box::new(plugin))
+    }
+
+    pub fn create(
+        vault: &mut Vault, unlock_password: impl AsRef<str>, parameters: &Parameters,
+    ) -> Result<()> {
+        Self::instantiate(vault, unlock_password, parameters, 0, 0)
+    }
+
+    pub fn init(
+        vault: &mut Vault, unlock_password: impl AsRef<str>, parameters: &Parameters,
+    ) -> Result<()> {
+        Self::instantiate(vault, unlock_password, parameters, 1, 0)
     }
 
     pub fn get(

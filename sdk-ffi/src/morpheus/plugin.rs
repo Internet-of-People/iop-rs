@@ -5,7 +5,7 @@ pub struct CMorpheusPlugin {
 }
 
 #[no_mangle]
-pub extern "C" fn MorpheusPlugin_rewind(
+pub extern "C" fn MorpheusPlugin_init(
     vault: *mut Vault, unlock_pwd: *const raw::c_char,
 ) -> CPtrResult<raw::c_void> {
     let vault = unsafe { convert::borrow_mut_in(vault) };

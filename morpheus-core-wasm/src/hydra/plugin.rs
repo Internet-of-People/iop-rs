@@ -7,7 +7,7 @@ pub struct JsHydraPlugin {
 
 #[wasm_bindgen(js_class = HydraPlugin)]
 impl JsHydraPlugin {
-    pub fn rewind(
+    pub fn init(
         vault: &mut JsVault, unlock_password: &str, parameters: &JsHydraParameters,
     ) -> Result<(), JsValue> {
         hd_hydra::Plugin::init(vault.inner_mut(), unlock_password, parameters.inner())
