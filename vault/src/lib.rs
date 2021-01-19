@@ -21,7 +21,7 @@ use anyhow::{ensure, format_err, Result};
 use parking_lot::{
     MappedRwLockReadGuard, MappedRwLockWriteGuard, RwLock, RwLockReadGuard, RwLockWriteGuard,
 };
-use serde::{ser::Error as SerializerError, Deserialize, Serialize, Serializer};
+use serde::{Deserialize, Serialize};
 
 // imports from own crates
 

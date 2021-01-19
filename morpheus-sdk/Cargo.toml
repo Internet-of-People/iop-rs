@@ -10,7 +10,7 @@ edition = "2018"
 anyhow = "1.0.32"
 iop-keyvault = "0.0.11"
 iop-vault = "0.0.11"
-parking_lot = "0.11.1"
+parking_lot = { version = "0.11.1", features = ["serde", "wasm-bindgen"] }
 rand = "0.7.3"
 serde = "1.0.115"
 serde_bytes = "0.11.5"

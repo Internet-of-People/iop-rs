@@ -2,40 +2,11 @@ use super::*;
 
 use iop_vault::{Vault, VaultPlugin};
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
-struct SerializationFormat {
-    parameters: Parameters,
-    public_state: PublicState,
-}
-
-#[derive(Clone, Debug, Deserialize)]
-#[serde(from = "SerializationFormat")]
 pub struct Plugin {
     public_state: Arc<RwLock<PublicState>>,
     parameters: Parameters,
-}
-
-impl From<SerializationFormat> for Plugin {
-    fn from(serialized: SerializationFormat) -> Self {
-        Self {
-            public_state: Arc::new(RwLock::new(serialized.public_state)),
-            parameters: serialized.parameters,
-        }
-    }
-}
-
-impl Serialize for Plugin {
-    fn serialize<S: Serializer>(&self, s: S) -> Result<S::Ok, S::Error> {
-        let r = self.public_state.try_borrow().map_err(|e| {
-            SerializerError::custom(format!("Failed to lock vault for serialization: {}", e))
-        })?;
-        let format = SerializationFormat {
-            parameters: self.parameters.to_owned(),
-            public_state: (*r).to_owned(),
-        };
-        format.serialize(s)
-    }
 }
 
 #[typetag::serde(name = "Hydra")]
@@ -64,7 +35,7 @@ impl Plugin {
         Self { public_state, parameters }
     }
 
-    pub fn instantiate(
+    fn instantiate(
         vault: &mut Vault, unlock_password: impl AsRef<str>, parameters: &Parameters,
         receive_keys: u32, change_keys: u32,
     ) -> Result<()> {

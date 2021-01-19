@@ -14,25 +14,10 @@ impl Inner {
     }
 }
 
-#[derive(Clone, Debug, Deserialize)]
-#[serde(from = "Inner")]
+#[derive(Clone, Debug, Deserialize, Serialize)]
+#[serde(transparent)]
 pub struct Plugin {
     inner: Arc<RwLock<Inner>>,
-}
-
-impl From<Inner> for Plugin {
-    fn from(inner: Inner) -> Self {
-        Self { inner: Arc::new(RwLock::new(inner)) }
-    }
-}
-
-impl Serialize for Plugin {
-    fn serialize<S: Serializer>(&self, s: S) -> Result<S::Ok, S::Error> {
-        let r = self.inner.try_borrow().map_err(|e| {
-            SerializerError::custom(format!("Failed to lock vault for serialization: {}", e))
-        })?;
-        (*r).serialize(s)
-    }
 }
 
 #[typetag::serde(name = "Morpheus")]

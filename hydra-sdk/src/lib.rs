@@ -10,7 +10,7 @@ use std::sync::Arc;
 use anyhow::{bail, ensure, Context, Result};
 //use log::*;
 use parking_lot::RwLock;
-use serde::{ser::Error as SerializerError, Deserialize, Serialize, Serializer};
+use serde::{Deserialize, Serialize};
 
 // imports from own crates
 

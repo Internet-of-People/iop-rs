@@ -29,25 +29,10 @@ impl VaultImpl {
     }
 }
 
-#[derive(Clone, Debug, Deserialize)]
-#[serde(from = "VaultImpl")]
+#[derive(Clone, Debug, Deserialize, Serialize)]
+#[serde(transparent)]
 pub struct Vault {
     inner: Arc<RwLock<VaultImpl>>,
-}
-
-impl From<VaultImpl> for Vault {
-    fn from(imp: VaultImpl) -> Self {
-        Self { inner: Arc::new(RwLock::new(imp)) }
-    }
-}
-
-impl Serialize for Vault {
-    fn serialize<S: Serializer>(&self, s: S) -> Result<S::Ok, S::Error> {
-        let r = self.inner.try_borrow().map_err(|e| {
-            SerializerError::custom(format!("Failed to lock vault for serialization: {}", e))
-        })?;
-        (*r).serialize(s)
-    }
 }
 
 impl Vault {
