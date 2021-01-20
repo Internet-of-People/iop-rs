@@ -1,5 +1,4 @@
 use ::bip39::{Mnemonic, MnemonicType};
-use failure::ResultExt;
 use getrandom::getrandom;
 
 use super::*;
@@ -106,8 +105,7 @@ impl Bip39 {
     /// assert!(bip39.validate("abandon abandon about").unwrap_err().to_string().contains("invalid number of words"));
     /// ```
     pub fn validate(self, phrase: impl AsRef<str>) -> Result<()> {
-        let val_res = Mnemonic::validate(phrase.as_ref(), self.lang);
-        Ok(val_res.compat()?)
+        Mnemonic::validate(phrase.as_ref(), self.lang)
     }
 
     /// Validates a whole BIP39 mnemonic phrase and returns an intermediate object that can be
@@ -127,7 +125,7 @@ impl Bip39 {
     /// [`phrase`]: #method.phrase
     /// [`MNEMONIC_WORDS`]: ../constant.MNEMONIC_WORDS
     pub fn short_phrase(self, phrase: impl AsRef<str>) -> Result<Bip39Phrase> {
-        let mnemonic = Mnemonic::from_phrase(phrase.as_ref(), self.lang).compat()?;
+        let mnemonic = Mnemonic::from_phrase(phrase.as_ref(), self.lang)?;
         Ok(Bip39Phrase { mnemonic })
     }
 
@@ -144,7 +142,7 @@ impl Bip39 {
     /// Use the ['entropy'] method whenever possible. This method allows some legacy use-cases to
     /// provide mnemonics with low entropy.
     pub fn short_entropy(self, entropy: impl AsRef<[u8]>) -> Result<Bip39Phrase> {
-        let mnemonic = Mnemonic::from_entropy(entropy.as_ref(), self.lang).compat()?;
+        let mnemonic = Mnemonic::from_entropy(entropy.as_ref(), self.lang)?;
         Ok(Bip39Phrase { mnemonic })
     }
 }
