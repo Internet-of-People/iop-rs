@@ -2,14 +2,15 @@ use super::*;
 
 use iop_vault::{Vault, VaultPlugin};
 
-#[derive(Clone, Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Plugin {
     public_state: Arc<RwLock<PublicState>>,
     parameters: Parameters,
 }
 
-#[typetag::serde(name = "Hydra")]
+#[cfg_attr(target_arch = "wasm32", typetag::serialize(name = "Hydra"))]
+#[cfg_attr(not(target_arch = "wasm32"), typetag::serde(name = "Hydra"))]
 impl VaultPlugin for Plugin {
     fn name(&self) -> &'static str {
         "Hydra"

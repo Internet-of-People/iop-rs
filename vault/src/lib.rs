@@ -21,7 +21,9 @@ use anyhow::{ensure, format_err, Result};
 use parking_lot::{
     MappedRwLockReadGuard, MappedRwLockWriteGuard, RwLock, RwLockReadGuard, RwLockWriteGuard,
 };
-use serde::{Deserialize, Serialize};
+#[cfg(not(target_arch = "wasm32"))]
+use serde::Deserialize;
+use serde::Serialize;
 
 // imports from own crates
 

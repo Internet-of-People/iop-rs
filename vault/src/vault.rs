@@ -1,6 +1,7 @@
 use super::*;
 
-#[typetag::serde(tag = "pluginName")]
+#[cfg_attr(target_arch = "wasm32", typetag::serialize(tag = "pluginName"))]
+#[cfg_attr(not(target_arch = "wasm32"), typetag::serde(tag = "pluginName"))]
 pub trait VaultPlugin: Send + Sync {
     fn name(&self) -> &'static str;
     fn to_any(&self) -> Box<dyn Any>;
@@ -13,7 +14,8 @@ impl fmt::Debug for dyn VaultPlugin {
     }
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[cfg_attr(not(target_arch = "wasm32"), derive(Deserialize))]
+#[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
 struct VaultImpl {
     encrypted_seed: String,
@@ -29,7 +31,8 @@ impl VaultImpl {
     }
 }
 
-#[derive(Clone, Debug, Deserialize, Serialize)]
+#[cfg_attr(not(target_arch = "wasm32"), derive(Deserialize))]
+#[derive(Clone, Debug, Serialize)]
 #[serde(transparent)]
 pub struct Vault {
     inner: Arc<RwLock<VaultImpl>>,

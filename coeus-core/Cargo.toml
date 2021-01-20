@@ -14,7 +14,9 @@ iop-morpheus-core = { version = "0.0.11", optional = true }
 serde = { version="*", features=["derive"] }
 serde_json = { version="*", features=["preserve_order"] }
 serde_str = "0.1.0"
-valico = "3.4.0"
+# Valico 3.5.0 introduced ancient dependency uritemplate, causing WASM builds to fail
+# https://github.com/s-panferov/valico/issues/70
+valico = "=3.4.0"
 
 
 [features]

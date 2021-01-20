@@ -14,13 +14,14 @@ impl Inner {
     }
 }
 
-#[derive(Clone, Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(transparent)]
 pub struct Plugin {
     inner: Arc<RwLock<Inner>>,
 }
 
-#[typetag::serde(name = "Morpheus")]
+#[cfg_attr(target_arch = "wasm32", typetag::serialize(name = "Morpheus"))]
+#[cfg_attr(not(target_arch = "wasm32"), typetag::serde(name = "Morpheus"))]
 impl VaultPlugin for Plugin {
     fn name(&self) -> &'static str {
         "Morpheus"
