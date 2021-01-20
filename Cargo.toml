@@ -8,7 +8,6 @@ members = [
     "morpheus-core",
     "morpheus-core-wasm",
     "morpheus-sdk",
-    "morpheus-sdk-legacy",
     "sdk",
     "sdk-ffi",
     "sdk-wasm",
