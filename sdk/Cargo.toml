@@ -23,7 +23,6 @@ rand = "0.7.3"
 serde = "1.0.115"
 serde_bytes = "0.11.5"
 serde_json = "1.0.57"
-tiny-bip39 = { version = "0.7.3", default-features = false }
 typetag = "0.1.5"
 
 [target.'cfg(target_os="android")'.dependencies]

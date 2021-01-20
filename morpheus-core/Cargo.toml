@@ -11,7 +11,7 @@ chrono = { version = "0.4.15", features = ["wasmbind"] }
 iop-keyvault = "0.0.11"
 json-digest = "0.0.11"
 jwt-compact = { version = "0.2.0", default-features = false }
-multibase = "0.8.0"
+#multibase = "0.9.1"
 rand = "0.7.3"
 serde = { version = "1.0.115", features = ["derive", "rc"] }
 serde_json = { version = "1.0.57", features = ["preserve_order"] }

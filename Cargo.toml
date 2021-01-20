@@ -32,9 +32,9 @@ iop-vault = { path="./vault" }
 json-digest = { path="./json-digest" }
 
 # Local clone at parent folder
-#iop-keyvault = { path="../keyvault-rs/keyvault" }
-#iop-keyvault-wasm = { path="../keyvault-rs/keyvault-wasm" }
+iop-keyvault = { path="../keyvault-rust/keyvault" }
+iop-keyvault-wasm = { path="../keyvault-rust/keyvault-wasm" }
 
 # Github develop branch
-iop-keyvault = { git="https://github.com/Internet-of-People/keyvault-rust", branch="develop" }
-iop-keyvault-wasm = { git="https://github.com/Internet-of-People/keyvault-rust", branch="develop" }
+#iop-keyvault = { git="https://github.com/Internet-of-People/keyvault-rust", branch="develop" }
+#iop-keyvault-wasm = { git="https://github.com/Internet-of-People/keyvault-rust", branch="develop" }
