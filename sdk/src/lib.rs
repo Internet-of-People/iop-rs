@@ -26,7 +26,8 @@ pub mod morpheus {
 pub mod vault {
     pub use iop_hydra_sdk::vault as hydra;
     pub use iop_keyvault::{
-        Bip39, Bip39ErrorKind, Bip39Language, Bip39Phrase, PrivateKey, PublicKey, Seed,
+        Bip39, Bip39ErrorKind, Bip39Language, Bip39Phrase, Network, Networks, PrivateKey,
+        PublicKey, Seed, Subtree,
     };
     pub use iop_morpheus_sdk::vault as morpheus;
     pub use iop_vault::Vault;

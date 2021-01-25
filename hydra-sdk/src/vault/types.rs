@@ -7,7 +7,7 @@ pub struct Parameters {
 }
 
 impl Parameters {
-    pub fn new(network: &'static dyn Network<Suite = Secp256k1>, account: i32) -> Self {
+    pub fn new(network: &dyn Network<Suite = Secp256k1>, account: i32) -> Self {
         Self { network: network.name().to_string(), account }
     }
 }
