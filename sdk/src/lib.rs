@@ -201,8 +201,8 @@ mod test {
             // _tombstone_attempt,
         ];
 
-        let mph_op_attempts1_builder = morpheus::SignableOperation::new(morpheus_tx1_signables);
-        let mph_signed_op_attempts1 = mph_op_attempts1_builder.sign(&morpheus_signer)?;
+        let mph_op_attempts1 = morpheus::SignableOperation::new(morpheus_tx1_signables);
+        let mph_signed_op_attempts1 = mph_op_attempts1.sign(&morpheus_signer)?;
 
         let did_ops_tx1 = morpheus::Transaction::new(
             common_fields.clone(),
@@ -236,8 +236,8 @@ mod test {
             // _tombstone_attempt,
         ];
 
-        let mph_op_attempts2_builder = morpheus::SignableOperation::new(morpheus_tx2_signables);
-        let mph_signed_op_attempts2 = mph_op_attempts2_builder.sign(&morpheus_signer)?;
+        let mph_op_attempts2 = morpheus::SignableOperation::new(morpheus_tx2_signables);
+        let mph_signed_op_attempts2 = mph_op_attempts2.sign(&morpheus_signer)?;
 
         let common_fields2 =
             CommonTransactionFields { nonce: common_fields.nonce, ..common_fields };

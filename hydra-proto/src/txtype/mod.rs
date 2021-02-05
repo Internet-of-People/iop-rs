@@ -49,8 +49,8 @@ pub trait Aip29Transaction {
 }
 
 #[derive(Clone, Debug)]
-pub struct CommonTransactionFields {
-    pub network: &'static dyn Network<Suite = Secp256k1>,
+pub struct CommonTransactionFields<'a> {
+    pub network: &'a dyn Network<Suite = Secp256k1>,
     pub sender_public_key: SecpPublicKey,
     pub nonce: u64,
     pub optional: OptionalTransactionFields,
@@ -63,7 +63,7 @@ pub struct OptionalTransactionFields {
     pub vendor_field: Option<String>,
 }
 
-impl CommonTransactionFields {
+impl<'a> CommonTransactionFields<'a> {
     pub fn calculate_fee(&self, tx: &dyn Aip29Transaction) -> u64 {
         self.optional.manual_fee.unwrap_or_else(|| tx.fee())
     }

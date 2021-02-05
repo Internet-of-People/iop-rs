@@ -140,15 +140,15 @@ impl Default for CoreAsset {
 }
 
 #[derive(Clone, Debug)]
-pub struct Transaction {
-    common_fields: CommonTransactionFields,
+pub struct Transaction<'a> {
+    common_fields: CommonTransactionFields<'a>,
     tx_type: CoreTransactionType,
     asset: CoreAsset,
     recipient_id: Option<SecpKeyId>,
 }
 
-impl Transaction {
-    pub fn transfer(common_fields: CommonTransactionFields, recipient_id: &SecpKeyId) -> Self {
+impl<'a> Transaction<'a> {
+    pub fn transfer(common_fields: CommonTransactionFields<'a>, recipient_id: &SecpKeyId) -> Self {
         Self {
             common_fields,
             tx_type: CoreTransactionType::Transfer,
@@ -157,7 +157,9 @@ impl Transaction {
         }
     }
 
-    pub fn register_delegate(common_fields: CommonTransactionFields, delegate_name: &str) -> Self {
+    pub fn register_delegate(
+        common_fields: CommonTransactionFields<'a>, delegate_name: &str,
+    ) -> Self {
         Self {
             common_fields,
             tx_type: CoreTransactionType::DelegateRegistration,
@@ -166,15 +168,19 @@ impl Transaction {
         }
     }
 
-    pub fn vote(common_fields: CommonTransactionFields, delegate: &SecpPublicKey) -> Self {
+    pub fn vote<'b>(
+        common_fields: CommonTransactionFields<'a>, delegate: &'b SecpPublicKey,
+    ) -> Self {
         Self::create_vote(common_fields, format!("+{}", delegate))
     }
 
-    pub fn unvote(common_fields: CommonTransactionFields, delegate: &SecpPublicKey) -> Self {
+    pub fn unvote<'b>(
+        common_fields: CommonTransactionFields<'a>, delegate: &'b SecpPublicKey,
+    ) -> Self {
         Self::create_vote(common_fields, format!("-{}", delegate))
     }
 
-    fn create_vote(common_fields: CommonTransactionFields, vote: String) -> Self {
+    fn create_vote(common_fields: CommonTransactionFields<'a>, vote: String) -> Self {
         Self {
             common_fields,
             tx_type: CoreTransactionType::Vote,
@@ -184,7 +190,7 @@ impl Transaction {
     }
 }
 
-impl Aip29Transaction for Transaction {
+impl<'a> Aip29Transaction for Transaction<'a> {
     fn fee(&self) -> u64 {
         self.tx_type.fee()
     }

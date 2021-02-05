@@ -58,7 +58,10 @@ impl JsHydraTxBuilder {
 
     fn create_vote_tx(
         &self, delegate: &JsSecpPublicKey, sender_pubkey: &JsSecpPublicKey, nonce: u64,
-        build_tx: fn(CommonTransactionFields, &SecpPublicKey) -> hyd_core::Transaction,
+        build_tx: fn(
+            CommonTransactionFields<'static>,
+            &SecpPublicKey,
+        ) -> hyd_core::Transaction<'static>,
     ) -> Result<JsValue, JsValue> {
         let common_fields = CommonTransactionFields {
             network: self.network,

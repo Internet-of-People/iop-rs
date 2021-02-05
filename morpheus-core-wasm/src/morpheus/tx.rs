@@ -14,7 +14,7 @@ use iop_morpheus_core::data::auth::Authentication;
 #[wasm_bindgen(js_name = MorpheusTxBuilder)]
 #[derive(Clone)]
 pub struct JsMorpheusTxBuilder {
-    common_fields: CommonTransactionFields,
+    common_fields: CommonTransactionFields<'static>,
     op_attempts: Vec<OperationAttempt>,
 }
 

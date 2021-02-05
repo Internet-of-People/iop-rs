@@ -1,14 +1,14 @@
 use super::*;
 
 #[derive(Clone, Debug)]
-pub struct Transaction {
-    common_fields: CommonTransactionFields,
+pub struct Transaction<'a> {
+    common_fields: CommonTransactionFields<'a>,
     asset: MorpheusAsset,
 }
 
-impl Transaction {
+impl<'a> Transaction<'a> {
     pub fn new(
-        common_fields: CommonTransactionFields, operation_attempts: Vec<OperationAttempt>,
+        common_fields: CommonTransactionFields<'a>, operation_attempts: Vec<OperationAttempt>,
     ) -> Self {
         Self { common_fields, asset: MorpheusAsset { operation_attempts } }
     }
@@ -18,7 +18,7 @@ impl Transaction {
     }
 }
 
-impl Aip29Transaction for Transaction {
+impl<'a> Aip29Transaction for Transaction<'a> {
     fn fee(&self) -> u64 {
         self.asset.fee()
     }

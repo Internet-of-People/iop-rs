@@ -29,10 +29,10 @@ pub extern "C" fn HydraTxBuilder_transfer(
     cresult(fun())
 }
 
-fn create_vote_tx(
+fn create_vote_tx<'a, 'b>(
     network: *const raw::c_char, sender_public_key: *const SecpPublicKey,
     delegate: *const SecpPublicKey, nonce: u64,
-    build_tx: fn(CommonTransactionFields, &SecpPublicKey) -> hyd_core::Transaction,
+    build_tx: fn(CommonTransactionFields<'a>, &'b SecpPublicKey) -> hyd_core::Transaction<'a>,
 ) -> CPtrResult<raw::c_char> {
     let fun = || {
         let network = unsafe { convert::str_in(network)? };
