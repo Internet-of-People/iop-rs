@@ -129,10 +129,7 @@ pub struct PaymentsItem {
 
 impl CoreAsset {
     pub fn is_none(&self) -> bool {
-        match *self {
-            CoreAsset::None => true,
-            _ => false,
-        }
+        matches!(*self, CoreAsset::None)
     }
 }
 
