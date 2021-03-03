@@ -23,6 +23,10 @@ pub mod morpheus {
     pub use iop_morpheus_core::data;
 }
 
+pub mod coeus {
+    pub use iop_coeus_core::*;
+}
+
 pub mod vault {
     pub use iop_hydra_sdk::vault as hydra;
     pub use iop_keyvault::{

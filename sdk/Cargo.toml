@@ -13,6 +13,7 @@ crate-type = ["rlib","cdylib"]
 
 [dependencies]
 anyhow = "1.0.32"
+iop-coeus-core = "0.0.12"
 iop-hydra-proto = "0.0.12"
 iop-hydra-sdk = "0.0.12"
 iop-keyvault = "0.0.12"
