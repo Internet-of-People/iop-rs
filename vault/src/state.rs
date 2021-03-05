@@ -1,13 +1,13 @@
 use super::*;
 
-pub trait State<T: 'static> {
+pub trait State<T: 'static + Send + Sync>: Send + Sync {
     fn clone(&self) -> Box<dyn State<T>>;
     fn try_borrow(&self) -> Result<MappedRwLockReadGuard<'_, T>>;
     fn try_borrow_mut(&mut self) -> Result<MappedRwLockWriteGuard<'_, T>>;
 }
 
-impl<T: 'static> dyn State<T> {
-    pub fn map<R: 'static>(
+impl<T: 'static + Send + Sync> dyn State<T> {
+    pub fn map<R: 'static + Send + Sync>(
         &self, adapt: fn(&T) -> &R, adapt_mut: fn(&mut T) -> &mut R,
     ) -> Box<dyn State<R>> {
         let state = self.clone();
@@ -16,7 +16,7 @@ impl<T: 'static> dyn State<T> {
     }
 }
 
-impl<T: 'static> State<T> for Arc<RwLock<T>> {
+impl<T: 'static + Sync + Send> State<T> for Arc<RwLock<T>> {
     fn clone(&self) -> Box<dyn State<T>> {
         Box::new(self.to_owned())
     }
@@ -39,7 +39,7 @@ struct StateAdapter<T: 'static, R: 'static> {
     adapt_mut: fn(&mut T) -> &mut R,
 }
 
-impl<T: 'static, R: 'static> State<R> for StateAdapter<T, R> {
+impl<T: 'static + Send + Sync, R: 'static + Send + Sync> State<R> for StateAdapter<T, R> {
     fn clone(&self) -> Box<dyn State<R>> {
         let state = self.state.as_ref().clone();
         let adapt = self.adapt;
