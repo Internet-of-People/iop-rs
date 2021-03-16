@@ -13,6 +13,7 @@ Keyvault can also derive all the keys you might need in other software stacks
 and aims to be your all-in-one Swiss Army knife identity manager.
 
 Keyvault can
+
 - use the same seed to derive keys with multiple cipher suites, currently `ed25519` and `secp256k1`
 - use any purpose field and account hierarchy, not only Bip43 and Bip44
 - handle several purposes (i.e. attached subhierarchies) at the same time

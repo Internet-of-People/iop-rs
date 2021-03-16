@@ -1,8 +1,9 @@
 # Changelog
 
-## 0.0.12 (TO BE RELEASED)
+## 0.0.12 (2021-03-16)
 
 ### Change
+
 - updated dependent crates
 
 ## 0.0.11 (2020-11-24)
