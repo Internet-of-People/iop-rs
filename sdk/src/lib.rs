@@ -11,6 +11,8 @@ pub mod multicipher {
     pub use iop_keyvault::multicipher::*;
 }
 
+pub use json_digest;
+
 pub mod hydra {
     pub use iop_hydra_proto::{
         transaction::{TransactionData, TxBatch},
