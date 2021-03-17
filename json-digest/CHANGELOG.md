@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.0.13 (TODO)
+
+- Just rereleased it to be in synch with our other crates
+
+## 0.0.12 (2021-03-17)
+
+- Just rereleased it to be in synch with our other crates
+
 ## 0.0.11 (2020-11-24)
 
 - Just rereleased it to be in synch with our other crates

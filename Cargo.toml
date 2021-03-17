@@ -35,5 +35,5 @@ json-digest = { path="./json-digest" }
 #iop-keyvault-wasm = { path="../keyvault-rust/keyvault-wasm" }
 
 # Github develop branch
-#iop-keyvault = { git="https://github.com/Internet-of-People/keyvault-rust", branch="develop" }
-#iop-keyvault-wasm = { git="https://github.com/Internet-of-People/keyvault-rust", branch="develop" }
+iop-keyvault = { git="https://github.com/Internet-of-People/keyvault-rust", branch="develop" }
+iop-keyvault-wasm = { git="https://github.com/Internet-of-People/keyvault-rust", branch="develop" }

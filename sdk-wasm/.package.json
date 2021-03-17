@@ -5,7 +5,7 @@
     "Rache Bartmoss <bartmoss@tutanota.com>",
     "wigy <wigy_opensource_developer@yahoo.com>"
   ],
-  "version": "0.0.12",
+  "version": "0.0.13",
   "files": [
     "browser/iop_sdk_wasm_bg.wasm",
     "browser/iop_sdk_wasm_bg.js",
