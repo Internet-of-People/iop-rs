@@ -8,7 +8,7 @@ pub use transaction::{TransactionData, TxBatch};
 
 use std::collections::HashMap;
 use std::fmt;
-use std::io::{prelude::*, Cursor};
+use std::io::prelude::*;
 
 // imports from 3rd party crates
 
@@ -23,10 +23,9 @@ use serde::{
 };
 use serde_repr::{Deserialize_repr, Serialize_repr};
 use sha2::{Digest, Sha256};
-use varint::VarintWrite; // VarintRead
 
 // imports from own crates
 
-use iop_coeus_core::*;
+//use iop_coeus_core::*;
+use iop_journal_proto::serializer::*;
 use iop_keyvault::{secp256k1::*, Network};
-use json_digest::*;

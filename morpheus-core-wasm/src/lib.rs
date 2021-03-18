@@ -42,7 +42,7 @@ use iop_keyvault::{
     Network, Networks, PublicKey as _,
 };
 use iop_keyvault_wasm::*;
-use iop_morpheus_core::{
+use iop_morpheus_proto::{
     crypto::{
         jwt::{JwtBuilder, JwtParser},
         sign::{PrivateKeySigner, Signable, Signed, SyncMorpheusSigner},

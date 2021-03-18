@@ -21,5 +21,7 @@ pub use tx::*;
 use serde::Serialize;
 use wasm_bindgen::prelude::*;
 
-use iop_coeus_core::*;
+use iop_coeus_node::*; // TODO
+use iop_coeus_proto::*;
+use iop_journal_proto::*;
 use iop_keyvault_wasm::*;

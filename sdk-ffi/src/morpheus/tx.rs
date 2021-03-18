@@ -1,8 +1,9 @@
 use super::*;
 
-use iop_hydra_proto::txtype::morpheus::{
+use iop_hydra_proto::txtype::morpheus::Transaction;
+use iop_morpheus_proto::txtype::{
     MorpheusAsset, OperationAttempt, SignableOperation, SignableOperationAttempt,
-    SignableOperationDetails, SignedOperation, Transaction,
+    SignableOperationDetails, SignedOperation,
 };
 
 pub struct MorpheusOperationBuilder {

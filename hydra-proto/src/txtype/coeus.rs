@@ -34,8 +34,8 @@ impl<'a> Aip29Transaction for Transaction<'a> {
 #[cfg(test)]
 mod test {
     use super::*;
-    use iop_keyvault::multicipher::MPrivateKey;
-    use iop_keyvault::PrivateKey;
+
+    use iop_keyvault::{multicipher::MPrivateKey, PrivateKey};
 
     #[test]
     fn binary_roundtrip() {

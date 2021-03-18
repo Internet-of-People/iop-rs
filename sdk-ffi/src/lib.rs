@@ -29,7 +29,7 @@ use iop_keyvault::{
     Bip32Node, Bip32PublicNode, Bip44Key, Bip44PublicKey, Network, Networks, PrivateKey as _,
     PublicKey as _,
 };
-use iop_morpheus_core::{
+use iop_morpheus_proto::{
     crypto::{jwt::*, sign::*},
     data::{claim::*, did::*, diddoc::*, present::*, validation::*},
 };

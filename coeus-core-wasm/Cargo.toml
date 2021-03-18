@@ -12,8 +12,10 @@ crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 anyhow = "1.0.32"
-iop-coeus-core = "0.0.13"
+iop-coeus-node = "0.0.13"
+iop-coeus-proto = "0.0.13"
 iop-hydra-proto = "0.0.13"
+iop-journal-proto = "0.0.13"
 iop-keyvault = "0.0.13"
 iop-keyvault-wasm = "0.0.13"
 serde = { version="1.0.116", features = ["derive"] }

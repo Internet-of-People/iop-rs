@@ -1,11 +1,9 @@
 use super::*;
 
-use iop_hydra_proto::txtype::{
-    morpheus::{
-        MorpheusAsset, OperationAttempt, SignableOperation, SignableOperationAttempt,
-        SignableOperationDetails, SignedOperation, Transaction,
-    },
-    Aip29Transaction, CommonTransactionFields,
+use iop_hydra_proto::txtype::{morpheus::Transaction, Aip29Transaction, CommonTransactionFields};
+use iop_morpheus_proto::txtype::{
+    MorpheusAsset, OperationAttempt, SignableOperation, SignableOperationAttempt,
+    SignableOperationDetails, SignedOperation,
 };
 
 #[wasm_bindgen(js_name = MorpheusTxBuilder)]

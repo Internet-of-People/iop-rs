@@ -11,7 +11,7 @@ pub enum IopTransactionType {
 #[serde(untagged)]
 pub enum IopAsset {
     Coeus(CoeusAsset),
-    Morpheus(morpheus::MorpheusAsset),
+    Morpheus(MorpheusAsset),
 }
 
 impl IopAsset {

@@ -21,12 +21,12 @@ pub mod hydra {
 }
 
 pub mod morpheus {
-    pub use iop_morpheus_core::crypto;
-    pub use iop_morpheus_core::data;
+    pub use iop_morpheus_proto::crypto;
+    pub use iop_morpheus_proto::data;
 }
 
 pub mod coeus {
-    pub use iop_coeus_core::*;
+    pub use iop_coeus_proto::*;
 }
 
 pub mod vault {
@@ -48,8 +48,8 @@ mod test {
     use iop_hydra_proto::{
         transaction::{TransactionData, TxBatch},
         txtype::{
-            hyd_core, morpheus, morpheus::OperationAttempt, Aip29Transaction,
-            CommonTransactionFields, OptionalTransactionFields,
+            hyd_core, morpheus as hyd_morpheus, Aip29Transaction, CommonTransactionFields,
+            OptionalTransactionFields,
         },
     };
     use iop_hydra_sdk::vault::{self as hydra, HydraSigner};
@@ -58,9 +58,11 @@ mod test {
         secp256k1::{hyd, SecpKeyId, SecpPublicKey},
         PublicKey,
     };
-    use iop_morpheus_core::{
+    use iop_morpheus_proto::{
         crypto::sign::PrivateKeySigner,
         data::{auth::Authentication, did::Did, diddoc::Right},
+        txtype as morpheus_proto,
+        txtype::OperationAttempt,
     };
     use iop_morpheus_sdk::vault::Plugin as MorpheusPlugin;
     use vault::{Seed, Vault};
@@ -166,11 +168,11 @@ mod test {
             optional: Default::default(),
         };
 
-        let reg_proof_attempt = morpheus::OperationAttempt::RegisterBeforeProof {
+        let reg_proof_attempt = morpheus_proto::OperationAttempt::RegisterBeforeProof {
             content_id: "<<placeholder of your 3rd favourite wisdom>>".to_owned(),
         };
         let reg_proof_tx =
-            morpheus::Transaction::new(common_fields.clone(), vec![reg_proof_attempt]);
+            hyd_morpheus::Transaction::new(common_fields.clone(), vec![reg_proof_attempt]);
         let mut reg_proof_tx_data: TransactionData = reg_proof_tx.to_data();
         hydra_signer.sign_hydra_transaction(&mut reg_proof_tx_data)?;
         show_tx_json("Register-before-proof transaction:", vec![reg_proof_tx_data])?;
@@ -181,18 +183,18 @@ mod test {
         let auth: Authentication = "iez25N5WZ1Q6TQpgpyYgiu9gTX".parse()?;
         let last_tx_id =
             Some("88df06a4faa3401c35c82177dcbd6a27e56acde4155ff11adfe4fdbd7509ec65".to_owned());
-        let addkey_attempt = morpheus::SignableOperationAttempt {
+        let addkey_attempt = morpheus_proto::SignableOperationAttempt {
             did: mph_persona_did0.clone(),
             last_tx_id: last_tx_id.clone(),
-            operation: morpheus::SignableOperationDetails::AddKey {
+            operation: morpheus_proto::SignableOperationDetails::AddKey {
                 auth: auth.clone(),
                 expires_at_height: None,
             },
         };
-        let addright_attempt = morpheus::SignableOperationAttempt {
+        let addright_attempt = morpheus_proto::SignableOperationAttempt {
             did: mph_persona_did0.clone(),
             last_tx_id: last_tx_id.clone(),
-            operation: morpheus::SignableOperationDetails::AddRight {
+            operation: morpheus_proto::SignableOperationDetails::AddRight {
                 auth: auth.clone(),
                 right: Right::Impersonation.to_string(),
             },
@@ -207,10 +209,10 @@ mod test {
             // _tombstone_attempt,
         ];
 
-        let mph_op_attempts1 = morpheus::SignableOperation::new(morpheus_tx1_signables);
+        let mph_op_attempts1 = morpheus_proto::SignableOperation::new(morpheus_tx1_signables);
         let mph_signed_op_attempts1 = mph_op_attempts1.sign(&morpheus_signer)?;
 
-        let did_ops_tx1 = morpheus::Transaction::new(
+        let did_ops_tx1 = hyd_morpheus::Transaction::new(
             common_fields.clone(),
             vec![OperationAttempt::Signed(mph_signed_op_attempts1)],
         );
@@ -222,18 +224,18 @@ mod test {
         // let last_tx_id = Some(did_ops_tx1_data.get_id()?);
         let last_tx_id =
             Some("88df06a4faa3401c35c82177dcbd6a27e56acde4155ff11adfe4fdbd7509ec65".to_string());
-        let revokeright_attempt = morpheus::SignableOperationAttempt {
+        let revokeright_attempt = morpheus_proto::SignableOperationAttempt {
             did: mph_persona_did0.clone(),
             last_tx_id: last_tx_id.clone(),
-            operation: morpheus::SignableOperationDetails::RevokeRight {
+            operation: morpheus_proto::SignableOperationDetails::RevokeRight {
                 auth: auth.clone(),
                 right: Right::Impersonation.to_string(),
             },
         };
-        let revokekey_attempt = morpheus::SignableOperationAttempt {
+        let revokekey_attempt = morpheus_proto::SignableOperationAttempt {
             did: mph_persona_did0.clone(),
             last_tx_id: last_tx_id.clone(),
-            operation: morpheus::SignableOperationDetails::RevokeKey { auth },
+            operation: morpheus_proto::SignableOperationDetails::RevokeKey { auth },
         };
 
         let morpheus_tx2_signables = vec![
@@ -242,22 +244,22 @@ mod test {
             // _tombstone_attempt,
         ];
 
-        let mph_op_attempts2 = morpheus::SignableOperation::new(morpheus_tx2_signables);
+        let mph_op_attempts2 = morpheus_proto::SignableOperation::new(morpheus_tx2_signables);
         let mph_signed_op_attempts2 = mph_op_attempts2.sign(&morpheus_signer)?;
 
         let common_fields2 =
             CommonTransactionFields { nonce: common_fields.nonce, ..common_fields };
         // let common_fields2 = common_fields;
 
-        let did_ops_tx2 = morpheus::Transaction::new(
+        let did_ops_tx2 = hyd_morpheus::Transaction::new(
             common_fields2,
             vec![OperationAttempt::Signed(mph_signed_op_attempts2)],
         );
 
-        let _tombstone_attempt = morpheus::SignableOperationAttempt {
+        let _tombstone_attempt = morpheus_proto::SignableOperationAttempt {
             did: mph_persona_did0,
             last_tx_id: last_tx_id.clone(),
-            operation: morpheus::SignableOperationDetails::TombstoneDid {},
+            operation: morpheus_proto::SignableOperationDetails::TombstoneDid {},
         };
 
         let mut did_ops_tx2_data: TransactionData = did_ops_tx2.to_data();

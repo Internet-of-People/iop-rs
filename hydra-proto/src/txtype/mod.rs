@@ -9,7 +9,8 @@ pub use typed_asset::*; // TODO Move transaction.rs and serializer.rs into this 
 
 use super::*;
 use crate::txtype::hyd_core::{CoreAsset, CoreTransactionType};
-use crate::txtype::morpheus::MorpheusAsset;
+use iop_coeus_proto::*;
+use iop_morpheus_proto::txtype::{MorpheusAsset, OperationAttempt};
 
 #[derive(Clone, Copy, Debug, Deserialize_repr, Eq, Hash, PartialEq, Serialize_repr)]
 #[repr(u32)]
