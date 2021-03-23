@@ -22,4 +22,4 @@ Keyvault can
 Keyvault was originally created as part of the
 [Mercury communication protocol](https://github.com/Internet-of-People/mercury-rust)
 but being a general-purpose tool it was reused in other components as well,
-hence it was separated into its own repository in the end.
+hence was separated into [its own repository](https://github.com/Internet-of-People/keyvault-rust) then finally merged into this monorepository.

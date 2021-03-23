@@ -2,7 +2,9 @@
 
 ## 0.0.13 (TODO)
 
-- Just rereleased it to be in synch with our other crates
+### Change
+
+- Merged morpheus-rust and keyvault-rust repositories as iop-rs
 
 ## 0.0.12 (2021-03-17)
 

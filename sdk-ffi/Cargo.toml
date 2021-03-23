@@ -3,6 +3,7 @@ name = "iop-sdk-ffi"
 version = "0.0.13"
 authors = ["IOP Ventures LLC <dev@iop-ventures.com>", "Rache Bartmoss <bartmoss@tutanota.com>", "wigy <wigy_opensource_developer@yahoo.com>"]
 edition = "2018"
+license = "LGPL-3.0-or-later"
 
 
 [lib]

@@ -5,6 +5,8 @@ members = [
     "hydra-proto",
     "hydra-sdk",
     "json-digest",
+    "keyvault",
+    "keyvault-wasm",
     "morpheus-core",
     "morpheus-core-wasm",
     "morpheus-sdk",
@@ -24,16 +26,10 @@ iop-coeus-core = { path="./coeus-core" }
 iop-coeus-core-wasm = { path = "./coeus-core-wasm" }
 iop-hydra-proto = { path="./hydra-proto" }
 iop-hydra-sdk = { path="./hydra-sdk" }
+iop-keyvault = { path="./keyvault" }
+iop-keyvault-wasm = { path="./keyvault-wasm" }
 iop-morpheus-core = { path="./morpheus-core" }
 iop-morpheus-sdk = { path="./morpheus-sdk" }
 iop-morpheus-core-wasm = { path = "./morpheus-core-wasm" }
 iop-vault = { path="./vault" }
 json-digest = { path="./json-digest" }
-
-# Local clone at parent folder
-#iop-keyvault = { path="../keyvault-rust/keyvault" }
-#iop-keyvault-wasm = { path="../keyvault-rust/keyvault-wasm" }
-
-# Github develop branch
-iop-keyvault = { git="https://github.com/Internet-of-People/keyvault-rust", branch="develop" }
-iop-keyvault-wasm = { git="https://github.com/Internet-of-People/keyvault-rust", branch="develop" }

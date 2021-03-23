@@ -52,3 +52,15 @@ that are irrelevant for delivering your meal like your birthday and mother's nam
 Despite those details were masked out, the restaurant can still verify that data was witnessed by the authority.
 This is achieved by signing a Merkle-proof instead of the data directly.
 We use [JSON digests](https://json-digest.rocks/) for our proofs for easy implementation and portability.
+
+## Reporting Vulnerabilities
+
+Please contact the package authors.
+
+## Usage
+
+See the [IOP developer page](https://developer.iop.global).
+
+## Contributing
+
+Please contact the package authors.

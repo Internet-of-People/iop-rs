@@ -14,8 +14,8 @@ function replace_json() {
     sed -i -E 's#^(\s*"version"\s*:\s*)".+",$#\1"'"$version"'",#g' "$json_file"
 }
 
-declare -a crates=("coeus-core" "coeus-core-wasm" "hydra-proto" "hydra-sdk" "json-digest" "morpheus-core" "morpheus-core-wasm" "morpheus-sdk" "sdk" "sdk-ffi" "sdk-wasm" "vault")
-declare -a wasm_packages=("coeus-core-wasm" "morpheus-core-wasm" "sdk-wasm")
+declare -a crates=("coeus-core" "coeus-core-wasm" "hydra-proto" "hydra-sdk" "json-digest" "keyvault" "morpheus-core" "morpheus-core-wasm" "morpheus-sdk" "sdk" "sdk-ffi" "sdk-wasm" "vault")
+declare -a wasm_packages=("coeus-core-wasm" "keyvault-wasm" "morpheus-core-wasm" "sdk-wasm")
 
 for crate in "${crates[@]}"; do
     replace_toml "$crate/Cargo.toml"
