@@ -1,0 +1,8 @@
+[workspace]
+members = [
+    "keyvault",
+    "keyvault-wasm",
+]
+
+[patch.crates-io]
+iop-keyvault = { path="./keyvault" }

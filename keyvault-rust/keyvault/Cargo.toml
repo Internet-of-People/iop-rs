@@ -1,0 +1,37 @@
+[package]
+name = "iop-keyvault"
+version = "0.0.13"
+edition = "2018"
+description = "A general-purpose hierarchical deterministic generator for asymmetric keys."
+authors = ["IOP Ventures LLC <dev@iop-ventures.com>", "wigy <wigy_opensource_developer@yahoo.com>", "Rache Bartmoss <bartmoss@tutanota.com>"]
+license = "LGPL-3.0-or-later"
+repository = "https://github.com/Internet-of-People/keyvault-rust"
+homepage = "https://iop.global"
+keywords = ["crypto", "wallet", "iop", "vault", "ssi"]
+categories = ["cryptography", "cryptography::cryptocurrencies"]
+
+[dependencies]
+anyhow = "1.0.32"
+blake2 = "0.9.0"
+digest = "0.9.0"
+ed25519-dalek = "1.0.0"
+rand = { version = "0.7.2", features = ["getrandom"] }
+getrandom = { version = "0.1.15", features = ["wasm-bindgen"] }
+hex = "0.4.2"
+hmac = "0.10.0"
+# Unfortunately the crate name of the libsecp256k1 collides with the perfect module name
+# for the cipher, so we rename the dependency here:
+secp = { version = "0.3.5", package = "libsecp256k1" }
+multibase = "0.9.1"
+# orion 0.15.4 upgraded getrandom to 0.2.0 that has breaking changes. We wait until
+# ed25519-dalek, libsecp256k1 and tiny-bip39 all depend on getrandom 0.2.0
+orion = "=0.15.3"
+ripemd160 = "0.9.1"
+serde = { version = "1.0.87", features = ["derive"] }
+serde_bytes = "0.11.3"
+sha2 = "0.9.1"
+tiny-bip39 = { version = "0.8.0", features = [] }
+
+[dev-dependencies]
+rmp-serde = "0.15.3"
+serde_json = "1.0.56"

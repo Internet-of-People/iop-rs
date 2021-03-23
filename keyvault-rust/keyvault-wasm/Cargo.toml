@@ -1,0 +1,19 @@
+[package]
+name = "iop-keyvault-wasm"
+version = "0.0.13"
+edition = "2018"
+description = "WebAssembly wrappers for the iop-keyvault crate."
+authors = ["IOP Ventures LLC <dev@iop-ventures.com>", "wigy <wigy_opensource_developer@yahoo.com>", "Rache Bartmoss <bartmoss@tutanota.com>"]
+license = "LGPL-3.0-or-later"
+repository = "https://github.com/Internet-of-People/keyvault-rust"
+homepage = "https://iop.global"
+keywords = ["crypto", "wallet", "iop", "wasm", "ssi"]
+categories = ["cryptography", "cryptography::cryptocurrencies", "wasm"]
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+iop-keyvault = "0.0.13"
+serde_json = "1.0.56"
+wasm-bindgen = { version = "=0.2.65", features = ["serde-serialize"] }
