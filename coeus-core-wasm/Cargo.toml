@@ -12,14 +12,14 @@ crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 anyhow = "1.0.32"
-iop-coeus-node = "0.0.13"
-iop-coeus-proto = "0.0.13"
-iop-hydra-proto = "0.0.13"
-iop-journal-proto = "0.0.13"
-iop-keyvault = "0.0.13"
-iop-keyvault-wasm = "0.0.13"
-serde = { version="1.0.116", features = ["derive"] }
-serde_json = { version = "1.0.57", features = ["preserve_order"] }
-# Force "wasm-bindgen" feature in uuid dependency needed by valico in coeus-core
+#iop-coeus-node = "0.0.13"
+#iop-coeus-proto = "0.0.13"
+#iop-hydra-proto = "0.0.13"
+#iop-journal-proto = "0.0.13"
+#iop-keyvault = "0.0.13"
+#iop-keyvault-wasm = "0.0.13"
+serde = { version="1.0.121", features = ["derive"] }
+serde_json = { version = "1.0.64", features = ["preserve_order"] }
+# Force `wasm-bindgen` feature in transitive dependency `uuid` needed by `valico` in `iop-coeus-node`
 uuid = { version = "0.8", features = ["v4", "wasm-bindgen"] }
-wasm-bindgen = { version = "0.2.65", features = ["serde-serialize"] }
+wasm-bindgen = { version = "0.2.73", features = ["serde-serialize"] }

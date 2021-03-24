@@ -13,8 +13,8 @@ iop-journal-proto = "0.0.13"
 iop-keyvault = "0.0.13"
 iop-morpheus-proto = { version = "0.0.13", optional = true }
 json-digest = "0.0.13"
-serde = { version="*", features=["derive"] }
-serde_json = { version="*", features=["preserve_order"] }
+serde = { version="1.0.121", features = ["derive"] }
+serde_json = { version = "1.0.64", features = ["preserve_order"] }
 serde_str = "0.1.0"
 valico = "3.6.0"
 

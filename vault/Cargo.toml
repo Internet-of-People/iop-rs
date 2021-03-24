@@ -11,7 +11,7 @@ anyhow = "1.0.32"
 iop-keyvault = "0.0.13"
 multibase = "0.9.1"
 parking_lot = { version = "0.11.1", features = ["serde", "wasm-bindgen"] }
-serde = { version = "1.0.115", features = ["rc"] }
+serde = { version="1.0.121", features = ["rc", "derive"] }
 typetag = "0.1.5"
 
 # --- Hydra dependencies

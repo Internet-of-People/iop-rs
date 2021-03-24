@@ -14,6 +14,6 @@ iop-journal-proto = "0.0.13"
 iop-keyvault = "0.0.13"
 json-digest = "0.0.13"
 jwt-compact = { version = "0.2.0", default-features = false }
-serde = { version = "1.0.115", features = ["derive", "rc"] }
-serde_json = { version = "1.0.57", features = ["preserve_order"] }
+serde = { version="1.0.121", features = ["derive"] }
+serde_json = { version = "1.0.64", features = ["preserve_order"] }
 serde_str = "0.1.0"

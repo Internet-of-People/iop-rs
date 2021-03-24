@@ -1,5 +1,5 @@
 [package]
-name = "iop-sdk-wasm"
+name = "iop-node-wasm"
 version = "0.0.13"
 authors = [
     "IOP Ventures LLC <dev@iop-ventures.com>",
@@ -12,17 +12,17 @@ license = "LGPL-3.0-or-later"
 [lib]
 crate-type = ["cdylib", "rlib"]
 
+[package.metadata.cargo-udeps.ignore]
+normal = ["uuid"]
+
 [dependencies]
-anyhow = "1.0.32"
-iop-hydra-proto = "0.0.13"
-iop-hydra-sdk = "0.0.13"
-iop-keyvault = "0.0.13"
-iop-keyvault-wasm = "0.0.13"
-iop-morpheus-proto = "0.0.13"
-iop-morpheus-sdk = "0.0.13"
+iop-coeus-node = "0.0.13"
+iop-coeus-proto = "0.0.13"
+iop-journal-proto = "0.0.13"
 iop-proto-wasm = "0.0.13"
-iop-vault = "0.0.13"
 json-digest-wasm = "0.0.13"
+iop-keyvault-wasm = "0.0.13"
 serde = { version="1.0.121", features = ["derive"] }
-serde_json = { version = "1.0.64", features = ["preserve_order"] }
+# Force `wasm-bindgen` feature in transitive dependency `uuid` needed by `valico` in `iop-coeus-node`
+uuid = { version = "0.8", features = ["v4", "wasm-bindgen"] }
 wasm-bindgen = { version = "0.2.73", features = ["serde-serialize"] }

@@ -1,15 +1,15 @@
 use super::*;
 
 #[wasm_bindgen(js_name = CoeusState)]
-pub struct JsState {
-    inner: State,
+pub struct JsCoeusState {
+    inner: CoeusState,
 }
 
 #[wasm_bindgen(js_class = CoeusState)]
-impl JsState {
+impl JsCoeusState {
     #[wasm_bindgen(constructor)]
-    pub fn new() -> Result<JsState, JsValue> {
-        let inner = State::new();
+    pub fn new() -> Result<JsCoeusState, JsValue> {
+        let inner = CoeusState::new();
         Ok(Self { inner })
     }
 
@@ -100,14 +100,14 @@ impl JsState {
     // }
 }
 
-impl From<State> for JsState {
-    fn from(inner: State) -> Self {
+impl From<CoeusState> for JsCoeusState {
+    fn from(inner: CoeusState) -> Self {
         Self { inner }
     }
 }
 
-impl Wraps<State> for JsState {
-    fn inner(&self) -> &State {
+impl Wraps<CoeusState> for JsCoeusState {
+    fn inner(&self) -> &CoeusState {
         &self.inner
     }
 }

@@ -1,18 +1,19 @@
 [workspace]
 members = [
     "coeus-node",
-    "coeus-core-wasm",
     "coeus-proto",
     "hydra-proto",
     "hydra-sdk",
     "journal-proto",
+    "json-digest-wasm",
     "json-digest",
     "keyvault",
     "keyvault-wasm",
     "morpheus-node",
-    "morpheus-core-wasm",
     "morpheus-proto",
     "morpheus-sdk",
+    "node-wasm",
+    "proto-wasm",
     "sdk",
     "sdk-ffi",
     "sdk-wasm",
@@ -26,7 +27,6 @@ opt-level = 's'
 
 [patch.crates-io]
 iop-coeus-node = { path="./coeus-node" }
-iop-coeus-core-wasm = { path = "./coeus-core-wasm" }
 iop-coeus-proto = { path="./coeus-proto" }
 iop-hydra-proto = { path="./hydra-proto" }
 iop-hydra-sdk = { path="./hydra-sdk" }
@@ -34,8 +34,10 @@ iop-journal-proto = { path="./journal-proto" }
 iop-keyvault = { path="./keyvault" }
 iop-keyvault-wasm = { path="./keyvault-wasm" }
 iop-morpheus-node = { path="./morpheus-node" }
-iop-morpheus-core-wasm = { path = "./morpheus-core-wasm" }
 iop-morpheus-proto = { path="./morpheus-proto" }
 iop-morpheus-sdk = { path="./morpheus-sdk" }
+iop-node-wasm = { path="./node-wasm" }
+iop-proto-wasm = { path="./proto-wasm" }
 iop-vault = { path="./vault" }
+json-digest-wasm = { path="./json-digest-wasm" }
 json-digest = { path="./json-digest" }

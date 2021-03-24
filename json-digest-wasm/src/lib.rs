@@ -1,4 +1,20 @@
-use super::*;
+use wasm_bindgen::prelude::*;
+
+use json_digest::*;
+
+pub fn err_to_js<E: ToString>(e: E) -> JsValue {
+    JsValue::from(e.to_string())
+}
+
+pub trait MapJsError<T> {
+    fn map_err_to_js(self) -> Result<T, JsValue>;
+}
+
+impl<T, E: ToString> MapJsError<T> for Result<T, E> {
+    fn map_err_to_js(self) -> Result<T, JsValue> {
+        self.map_err(err_to_js)
+    }
+}
 
 #[wasm_bindgen(js_name = selectiveDigestJson)]
 pub fn selective_digest(data: &JsValue, keep_properties_list: &str) -> Result<String, JsValue> {

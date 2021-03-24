@@ -12,7 +12,7 @@ iop-keyvault = "0.0.13"
 iop-vault = "0.0.13"
 parking_lot = { version = "0.11.1", features = ["serde", "wasm-bindgen"] }
 rand = "0.8.3"
-serde = "1.0.115"
+serde = { version="1.0.121", features = ["derive"] }
 serde_bytes = "0.11.5"
 typetag = "0.1.5"
 
@@ -21,7 +21,7 @@ typetag = "0.1.5"
 chrono = { version = "0.4.15", features = ["wasmbind"] }
 iop-morpheus-proto = "0.0.13"
 json-digest = "0.0.13"
-serde_json = "1.0.57"
+serde_json = { version = "1.0.64", features = ["preserve_order"] }
 
 
 [target.'cfg(target_os="android")'.dependencies]

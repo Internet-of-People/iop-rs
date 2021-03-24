@@ -25,11 +25,11 @@ secp = { version = "0.3.5", package = "libsecp256k1" }
 multibase = "0.9.1"
 orion = "0.16.0"
 ripemd160 = "0.9.1"
-serde = { version = "1.0.87", features = ["derive"] }
+serde = { version="1.0.121", features = ["derive"] }
 serde_bytes = "0.11.3"
 sha2 = "0.9.1"
 tiny-bip39 = { version = "0.8.0", features = [] }
 
 [dev-dependencies]
 rmp-serde = "0.15.3"
-serde_json = "1.0.56"
+serde_json = { version = "1.0.64", features = ["preserve_order"] }
