@@ -6,7 +6,7 @@ description = "A general-purpose hierarchical deterministic generator for asymme
 authors = ["IOP Ventures LLC <dev@iop-ventures.com>", "wigy <wigy_opensource_developer@yahoo.com>", "Rache Bartmoss <bartmoss@tutanota.com>"]
 license = "LGPL-3.0-or-later"
 repository = "https://github.com/Internet-of-People/iop-rs"
-homepage = "https://iop.global"
+homepage = "https://developer.iop.technology/glossary?id=multicipher"
 keywords = ["crypto", "wallet", "iop", "vault", "ssi"]
 categories = ["cryptography", "cryptography::cryptocurrencies"]
 
