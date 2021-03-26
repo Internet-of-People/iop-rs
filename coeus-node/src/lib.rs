@@ -19,4 +19,4 @@ use iop_coeus_proto::*;
 use iop_journal_proto::{BlockHeight, Nonce};
 use iop_keyvault::multicipher::MPublicKey;
 #[cfg(feature = "did")]
-use iop_morpheus_proto::data::did::Did;
+use iop_morpheus_proto::data::Did;

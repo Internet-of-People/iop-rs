@@ -31,12 +31,7 @@ use iop_keyvault::{
 use iop_keyvault_wasm::*;
 use iop_morpheus_proto::{
     crypto::sign::{PrivateKeySigner, Signable, Signed, SyncMorpheusSigner},
-    data::{
-        auth::Authentication,
-        claim::{WitnessRequest, WitnessStatement},
-        did::Did,
-        present::ClaimPresentation,
-    },
+    data::{Authentication, ClaimPresentation, Did, WitnessRequest, WitnessStatement},
 };
 use iop_morpheus_sdk::vault as hd_morpheus;
 use iop_vault::{BoundPlugin, Vault, VaultPlugin};

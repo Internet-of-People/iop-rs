@@ -1,5 +1,4 @@
 use super::*;
-use data::did::Did;
 
 #[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", tag = "operation")]
@@ -28,14 +27,15 @@ impl SignableOperation {
 
     // TODO signing should use a dedicated sign_morpheus_transaction() operation,
     //      consider how this connects to that or this can be removed on the long run
-    fn to_signable_bytes(&self) -> Result<Vec<u8>> {
-        let asset_val = serde_json::to_value(&self.signables)?;
+    pub fn to_signable_bytes(signables: &[SignableOperationAttempt]) -> Result<Vec<u8>> {
+        let asset_val = serde_json::to_value(signables)?;
         let asset_json = canonical_json(&asset_val)?;
         Ok(serializer::frame_bytes(asset_json.as_bytes())?)
     }
 
     pub fn sign(self, signer: &dyn SyncMorpheusSigner) -> Result<SignedOperation> {
-        let (signed_with_pubkey, signature) = signer.sign(&self.to_signable_bytes()?)?;
+        let (signed_with_pubkey, signature) =
+            signer.sign(&Self::to_signable_bytes(&self.signables)?)?;
         Ok(SignedOperation {
             signables: self.signables,
             signer_public_key: signed_with_pubkey.to_string(),
@@ -48,9 +48,25 @@ impl SignableOperation {
 #[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SignedOperation {
-    pub signables: Vec<SignableOperationAttempt>,
+    signables: Vec<SignableOperationAttempt>,
     pub signer_public_key: String,
     pub signature: String,
+}
+
+impl SignedOperation {
+    pub fn attempts_unsafe_without_signature_checking(
+        &self,
+    ) -> std::slice::Iter<'_, SignableOperationAttempt> {
+        self.signables.iter()
+    }
+
+    pub fn attempts(&self) -> Result<std::slice::Iter<'_, SignableOperationAttempt>> {
+        let bytes = SignableOperation::to_signable_bytes(&self.signables)?;
+        let signer: MPublicKey = self.signer_public_key.parse()?;
+        let signature: MSignature = self.signature.parse()?;
+        ensure!(signer.verify(&bytes, &signature), "Invalid signature");
+        Ok(self.attempts_unsafe_without_signature_checking())
+    }
 }
 
 // TODO Did probably should be strongly typed, but that complicates serialization as well.

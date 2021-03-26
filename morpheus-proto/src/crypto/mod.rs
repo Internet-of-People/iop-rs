@@ -2,6 +2,8 @@ pub mod hash;
 pub mod jwt;
 pub mod sign;
 
-pub use sign::PrivateKeySigner;
+pub use hash::*;
+pub use jwt::*;
+pub use sign::*;
 
 use super::*;

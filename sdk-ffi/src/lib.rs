@@ -22,6 +22,7 @@ use anyhow::{ensure, Result};
 use iop_hydra_proto::txtype::{
     Aip29Transaction, CommonTransactionFields, OptionalTransactionFields,
 };
+use iop_journal_proto::BlockHeight;
 use iop_keyvault::{
     ed25519::{MorpheusPrivateKey, MorpheusPublicKey},
     multicipher::*,
@@ -31,7 +32,7 @@ use iop_keyvault::{
 };
 use iop_morpheus_proto::{
     crypto::{jwt::*, sign::*},
-    data::{claim::*, did::*, diddoc::*, present::*, validation::*},
+    data::*,
 };
 use iop_morpheus_sdk::vault::{Plugin, Private, PrivateKind, Public, PublicKind};
 use iop_vault::{BoundPlugin, Vault};

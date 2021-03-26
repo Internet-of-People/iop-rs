@@ -60,7 +60,7 @@ mod test {
     };
     use iop_morpheus_proto::{
         crypto::sign::PrivateKeySigner,
-        data::{auth::Authentication, did::Did, diddoc::Right},
+        data::{Authentication, Did, Right},
         txtype as morpheus_proto,
         txtype::OperationAttempt,
     };

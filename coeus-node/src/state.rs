@@ -68,7 +68,7 @@ impl State {
 
     pub fn block_applying(&mut self, height: BlockHeight) -> Result<()> {
         self.ensure_not_corrupted()?;
-        self.apply_operations(vec![SystemOperation::start_block(height)]).map(|_| ())
+        self.apply_operations(vec![SystemOperation::start_block(height)]).map(|_version| ())
     }
 
     pub fn block_reverted(&mut self, height: BlockHeight) -> Result<()> {

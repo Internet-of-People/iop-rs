@@ -19,7 +19,7 @@ mod test {
     use super::*;
 
     use iop_keyvault::{PublicKey, Seed};
-    use iop_morpheus_proto::data::did::Did;
+    use iop_morpheus_proto::data::Did;
     use iop_vault::Vault;
 
     #[test]

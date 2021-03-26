@@ -9,11 +9,13 @@ license = "LGPL-3.0-or-later"
 [dependencies]
 anyhow = "1.0.32"
 chrono = { version = "0.4.15", features = ["wasmbind"] }
-iop-keyvault = "0.0.13"
 iop-hydra-proto = "0.0.13"
+iop-journal-proto = "0.0.13"
+iop-keyvault = "0.0.13"
+iop-morpheus-proto = "0.0.13"
 json-digest = "0.0.13"
 jwt-compact = { version = "0.2.0", default-features = false }
-rand = "0.8.3"
+rand = { version = "0.8.3", features = ["getrandom"] }
 serde = { version="1.0.121", features = ["derive"] }
 serde_json = { version = "1.0.64", features = ["preserve_order"] }
 serde_str = "0.1.0"

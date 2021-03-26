@@ -19,10 +19,13 @@ normal = ["uuid"]
 iop-coeus-node = "0.0.13"
 iop-coeus-proto = "0.0.13"
 iop-journal-proto = "0.0.13"
+iop-keyvault-wasm = "0.0.13"
+iop-morpheus-node = "0.0.13"
+iop-morpheus-proto = "0.0.13"
 iop-proto-wasm = "0.0.13"
 json-digest-wasm = "0.0.13"
-iop-keyvault-wasm = "0.0.13"
 serde = { version="1.0.121", features = ["derive"] }
+serde_json = { version = "1.0.64", features = ["preserve_order"] }
 # Force `wasm-bindgen` feature in transitive dependency `uuid` needed by `valico` in `iop-coeus-node`
 uuid = { version = "0.8", features = ["v4", "wasm-bindgen"] }
 wasm-bindgen = { version = "0.2.73", features = ["serde-serialize"] }

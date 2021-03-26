@@ -2,13 +2,7 @@ use super::*;
 
 use crate::{
     crypto::hash::{Content, ContentId},
-    data::{
-        auth::Authentication,
-        claim::{WitnessRequest, WitnessStatement},
-        diddoc::{BlockHeight, DidDocument, Right},
-        present::ClaimPresentation,
-        validation::{ValidationIssueSeverity, ValidationResult},
-    },
+    data::*,
 };
 use iop_keyvault::{
     multicipher::{MKeyId, MPrivateKey, MPublicKey, MSignature},

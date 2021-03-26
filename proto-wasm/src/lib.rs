@@ -26,11 +26,7 @@ use iop_morpheus_proto::{
         jwt::{JwtBuilder, JwtParser},
         sign::{Signable, Signed},
     },
-    data::{
-        did::Did,
-        diddoc::BlockHeight,
-        validation::{ValidationIssue, ValidationResult},
-    },
+    data::{Did, ValidationIssue, ValidationResult},
 };
 
 pub use iop_keyvault_wasm::*;

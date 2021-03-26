@@ -21,7 +21,7 @@ iop-morpheus-proto = "0.0.13"
 iop-morpheus-sdk = "0.0.13"
 iop-vault = "0.0.13"
 json-digest = "0.0.13"
-rand = "0.8.3"
+rand = { version = "0.8.3", features = ["getrandom"] }
 serde = { version="1.0.121", features = ["derive"] }
 serde_bytes = "0.11.5"
 serde_json = { version = "1.0.64", features = ["preserve_order"] }

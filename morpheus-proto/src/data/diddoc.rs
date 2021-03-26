@@ -32,8 +32,11 @@ impl FromStr for Right {
     }
 }
 
-// TODO move all blockchain-related types to hydra-proto after adding typetags to Asset and TransactionType.
-pub type BlockHeight = u32;
+impl Right {
+    pub fn map_all<T>(f: impl Fn(&Right) -> T) -> HashMap<Right, T> {
+        vec![Self::Update, Self::Impersonation].drain(..).map(|r| (r, f(&r))).collect()
+    }
+}
 
 pub fn is_in_opt_range(
     height: BlockHeight, from_inc: Option<BlockHeight>, until_exc: Option<BlockHeight>,
@@ -56,44 +59,70 @@ pub fn is_between(height: BlockHeight, after: BlockHeight, until_exc: BlockHeigh
 }
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
-pub struct KeyData {
+pub struct KeyState {
     #[serde(rename = "auth")]
-    pub(crate) authentication: Authentication,
+    pub authentication: Authentication,
     #[serde(rename = "validFromHeight")]
-    pub(crate) valid_from_block: Option<BlockHeight>, // TODO should be timestamp on the long term
+    pub valid_from_block: Option<BlockHeight>, // TODO should be timestamp on the long term
     #[serde(rename = "validUntilHeight")]
-    pub(crate) valid_until_block: Option<BlockHeight>, // TODO should be timestamp on the long term
-    pub(crate) valid: bool,
+    pub valid_until_block: Option<BlockHeight>, // TODO should be timestamp on the long term
+}
+
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+pub struct KeyDataDerived {
+    pub valid: bool,
+}
+
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+pub struct KeyData {
+    #[serde(flatten)]
+    pub state: KeyState,
+    #[serde(flatten)]
+    pub derived: KeyDataDerived,
 }
 
 impl KeyData {
     fn from_auth(authentication: Authentication) -> Self {
-        Self { authentication, valid_from_block: None, valid_until_block: None, valid: true }
+        let state = KeyState { authentication, valid_from_block: None, valid_until_block: None };
+        let derived = KeyDataDerived { valid: true };
+        Self { state, derived }
     }
 
     fn is_valid_at(&self, height: BlockHeight) -> bool {
-        is_in_opt_range(height, self.valid_from_block, self.valid_until_block)
+        is_in_opt_range(height, self.state.valid_from_block, self.state.valid_until_block)
     }
 }
 
 #[derive(Clone, Debug, Deserialize, Eq, Hash, PartialEq, PartialOrd, Serialize)]
 pub struct KeyRightHistoryItem {
-    pub(crate) height: Option<BlockHeight>,
-    pub(crate) valid: bool,
+    pub height: Option<BlockHeight>,
+    pub valid: bool,
+}
+
+#[derive(Clone, Debug, Deserialize, Eq, Hash, PartialEq, PartialOrd, Serialize)]
+pub struct KeyRightState {
+    pub history: Vec<KeyRightHistoryItem>,
+}
+
+#[derive(Clone, Debug, Deserialize, Eq, Hash, PartialEq, PartialOrd, Serialize)]
+pub struct KeyRightDerived {
+    #[serde(rename = "keyLink")]
+    pub key_link: String, // TODO should be more strictly typed
+    pub valid: bool,
 }
 
 #[derive(Clone, Debug, Deserialize, Eq, Hash, PartialEq, PartialOrd, Serialize)]
 pub struct KeyRightHistory {
-    #[serde(rename = "keyLink")]
-    pub(crate) key_link: String, // TODO should be more strictly typed
-    pub(crate) history: Vec<KeyRightHistoryItem>,
-    pub(crate) valid: bool,
+    #[serde(flatten)]
+    pub state: KeyRightState,
+    #[serde(flatten)]
+    pub derived: KeyRightDerived,
 }
 
 impl KeyRightHistory {
     fn ensure_valid_history(&self) -> Result<()> {
         let heights: Vec<_> =
-            self.history.iter().map(|item| item.height.unwrap_or_default()).collect();
+            self.state.history.iter().map(|item| item.height.unwrap_or_default()).collect();
         let mut sorted = heights.clone();
         sorted.sort();
         ensure!(heights == sorted, "Height of key history items must be strictly increasing");
@@ -105,7 +134,7 @@ impl KeyRightHistory {
         self.ensure_valid_history()?;
 
         let last_state_before_height =
-            self.history.iter().rev().find(|item| item.height.unwrap_or_default() <= height);
+            self.state.history.iter().rev().find(|item| item.height.unwrap_or_default() <= height);
         let valid = match last_state_before_height {
             None => false,
             Some(item) => item.valid,
@@ -122,25 +151,25 @@ pub enum ServiceType {
 #[derive(Clone, Debug, Deserialize, Eq, Hash, PartialEq, PartialOrd, Serialize)]
 pub struct Service {
     #[serde(rename = "type")]
-    pub(crate) type_: ServiceType,
-    pub(crate) name: String,
-    pub(crate) service_endpoint: String, // TODO should we use multiaddr::Multiaddr here and thus add CID-dependency?
+    pub type_: ServiceType,
+    pub name: String,
+    pub service_endpoint: String, // TODO should we use multiaddr::Multiaddr here and thus add CID-dependency?
 }
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
 pub struct DidDocument {
     #[serde(with = "serde_str")]
-    pub(crate) did: Did,
-    pub(crate) keys: Vec<KeyData>,
+    pub did: Did,
+    pub keys: Vec<KeyData>,
     #[serde(skip_serializing_if = "HashMap::is_empty", default)]
-    pub(crate) rights: HashMap<Right, Vec<KeyRightHistory>>,
+    pub rights: HashMap<Right, Vec<KeyRightHistory>>,
     #[serde(skip_serializing_if = "Vec::is_empty", default)]
-    pub(crate) services: Vec<Service>,
+    pub services: Vec<Service>,
     #[serde(rename = "tombstonedAtHeight")]
-    pub(crate) tombstoned_at_height: Option<BlockHeight>,
-    pub(crate) tombstoned: bool,
+    pub tombstoned_at_height: Option<BlockHeight>,
+    pub tombstoned: bool,
     #[serde(rename = "queriedAtHeight")]
-    pub(crate) queried_at_height: BlockHeight,
+    pub queried_at_height: BlockHeight,
 }
 
 impl DidDocument {
@@ -189,11 +218,11 @@ impl DidDocument {
         };
 
         for key_right in keys_with_right.iter() {
-            let key = self.key(&key_right.key_link)?;
+            let key = self.key(&key_right.derived.key_link)?;
             if !key.is_valid_at(height) {
                 continue;
             }
-            if key.authentication != *auth {
+            if key.state.authentication != *auth {
                 continue;
             }
 
@@ -242,7 +271,7 @@ impl DidDocument {
         };
 
         let key_history_opt = keys_with_right.iter().find_map(|right_entry| {
-            let key_data = match self.key(&right_entry.key_link) {
+            let key_data = match self.key(&right_entry.derived.key_link) {
                 Ok(key_entry) => key_entry,
                 Err(e) => {
                     // TODO ideally detected earlier during parsing and should never happen here
@@ -250,7 +279,7 @@ impl DidDocument {
                     return None;
                 }
             };
-            if key_data.authentication != *auth {
+            if key_data.state.authentication != *auth {
                 return None;
             }
             Some((key_data, right_entry))
@@ -264,7 +293,7 @@ impl DidDocument {
             }
         };
 
-        if let Some(key_valid_from) = key_data.valid_from_block {
+        if let Some(key_valid_from) = key_data.state.valid_from_block {
             if until < key_valid_from {
                 result.add_issue(Severity::Error, "Key was enabled only after given period");
             }
@@ -273,7 +302,7 @@ impl DidDocument {
             }
         }
 
-        if let Some(key_valid_until) = key_data.valid_until_block {
+        if let Some(key_valid_until) = key_data.state.valid_until_block {
             if key_valid_until < from {
                 result.add_issue(Severity::Error, "Key expired before given period");
             }
@@ -282,7 +311,7 @@ impl DidDocument {
             }
         }
 
-        let history = &key_right.history;
+        let history = &key_right.state.history;
         ensure!(! history.is_empty(), "Implementation error: key related to rights were already filtered, right must be present here");
 
         let right_changes_in_range = history
@@ -395,8 +424,8 @@ mod test {
         assert_eq!(doc.queried_at_height, 126);
         assert_eq!(doc.tombstoned, false);
 
-        let first_key = &doc.keys[0].authentication;
-        let second_key = &doc.keys[1].authentication;
+        let first_key = &doc.keys[0].state.authentication;
+        let second_key = &doc.keys[1].state.authentication;
 
         assert!(doc.has_right_at(first_key, Right::Impersonation, 1)?);
         assert!(doc.has_right_at(first_key, Right::Impersonation, 2)?);
@@ -491,8 +520,8 @@ mod test {
         assert_eq!(doc.queried_at_height, 200);
         assert_eq!(doc.tombstoned, true);
 
-        let first_key = &doc.keys[0].authentication;
-        let second_key = &doc.keys[1].authentication;
+        let first_key = &doc.keys[0].state.authentication;
+        let second_key = &doc.keys[1].state.authentication;
         assert_eq!(*first_key, Authentication::KeyId("iezbeWGSY2dqcUBqT8K7R14xr".parse()?));
         assert_eq!(*second_key, Authentication::KeyId("iez25N5WZ1Q6TQpgpyYgiu9gTX".parse()?));
 
