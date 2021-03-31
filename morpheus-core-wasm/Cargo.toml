@@ -24,7 +24,6 @@ serde = "1.0.115"
 serde_json = "1.0.57"
 # Force "wasm-bindgen" feature in uuid dependency needed by valico in coeus-core
 uuid = { version = "0.8", features = ["v4", "wasm-bindgen"] }
-# TODO latest 0.2.66/67 does not work with recent wasm-opt
-wasm-bindgen = { version = "=0.2.65", features = ["serde-serialize"] }
+wasm-bindgen = { version = "0.2.65", features = ["serde-serialize"] }
 
 # wasm-bindgen-futures = "*"

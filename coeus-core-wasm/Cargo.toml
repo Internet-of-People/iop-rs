@@ -20,4 +20,4 @@ serde = { version="1.0.116", features = ["derive"] }
 serde_json = { version = "1.0.57", features = ["preserve_order"] }
 # Force "wasm-bindgen" feature in uuid dependency needed by valico in coeus-core
 uuid = { version = "0.8", features = ["v4", "wasm-bindgen"] }
-wasm-bindgen = { version = "=0.2.65", features = ["serde-serialize"] }
+wasm-bindgen = { version = "0.2.65", features = ["serde-serialize"] }

@@ -11,7 +11,7 @@ anyhow = "1.0.32"
 iop-keyvault = "0.0.13"
 iop-vault = "0.0.13"
 parking_lot = { version = "0.11.1", features = ["serde", "wasm-bindgen"] }
-rand = "0.7.3"
+rand = "0.8.3"
 serde = "1.0.115"
 serde_bytes = "0.11.5"
 typetag = "0.1.5"

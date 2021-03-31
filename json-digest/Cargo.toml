@@ -14,7 +14,7 @@ categories = ["cryptography", "algorithms"]
 [dependencies]
 anyhow = "1.0.32"
 multibase = "0.9.1"
-rand = "0.7.3"
+rand = "0.8.3"
 serde = { version = "1.0.115", features = ["derive"] }
 serde_json = { version = "1.0.57", features = ["preserve_order"] }
 tiny-keccak = "1"
