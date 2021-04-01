@@ -16,4 +16,4 @@ use iop_coeus_proto::*;
 use iop_journal_proto::*;
 use iop_keyvault_wasm::MapJsError;
 use iop_morpheus_node::StateHolder as MorpheusState;
-use iop_morpheus_proto::{data::OperationError, txtype::MorpheusAsset};
+use iop_morpheus_proto::txtype::MorpheusAsset;

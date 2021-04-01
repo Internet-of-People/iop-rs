@@ -41,22 +41,26 @@ jobs:
           path: |
             target/${{matrix.triple.target}}/release/libiop_sdk_ffi.so
   wasm:
-    name: Compile WASM package
+    name: Compile npm package ${{matrix.package}}
     runs-on: ubuntu-latest
     needs: build
+    strategy:
+      matrix:
+        package:
+          - node-wasm
+          - sdk-wasm
     steps:
       - uses: actions/checkout@v2
       - name: Install prerequisites
-        # Add binaryen adding wasm-opt after github finally upgrades to 20.04
-        run: sudo apt install libssh-dev clang jq
+        run: sudo apt install libssh-dev clang jq binaryen
       - name: Install wasm-pack
         run: cargo install wasm-pack
       - name: Run wasm-pack
         run: ./build.sh
-        working-directory: ./sdk-wasm
+        working-directory: ./${{matrix.package}}
       - uses: actions/upload-artifact@v2
         with:
-          name: sdk-wasm
+          name: ${{matrix.package}}
           path: |
-            sdk-wasm/pkg/
+            ${{matrix.package}}/pkg/
           if-no-files-found: error
