@@ -6,7 +6,7 @@ edition = "2018"
 description = "Allow selective masking of JSON subdocuments for privacy, preserving the digest of the whole document."
 license = "LGPL-3.0-or-later"
 repository = "https://github.com/Internet-of-People/iop-rs"
-homepage = "https://developer.iop.global/#/glossary?id=json-masking"
+homepage = "https://developer.iop.technology/glossary?id=json-masking"
 keywords = ["crypto", "iop", "privacy", "json", "digest"]
 categories = ["cryptography", "algorithms"]
 

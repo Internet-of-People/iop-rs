@@ -12,16 +12,10 @@ chrono = { version = "0.4.15", features = ["wasmbind"] }
 iop-keyvault = "0.0.13"
 json-digest = "0.0.13"
 jwt-compact = { version = "0.2.0", default-features = false }
-#multibase = "0.9.1"
 rand = "0.8.3"
 serde = { version = "1.0.115", features = ["derive", "rc"] }
 serde_json = { version = "1.0.57", features = ["preserve_order"] }
 serde_str = "0.1.0"
-
-# --- Hydra dependencies
-byteorder = "1.3.4"
-hex = "0.4.2"
-sha2 = "0.9.1"
 
 
 [target.'cfg(target_os="android")'.dependencies]

@@ -4,7 +4,7 @@
 //! cryptographic libraries to make it easier on the integrator.
 //! For more information on this crate and potential usage, see the [IOP developer site].
 //!
-//! [IOP developer site]: https://developer.iop.global
+//! [IOP developer site]: https://developer.iop.technology
 
 mod bip32;
 mod bip39;

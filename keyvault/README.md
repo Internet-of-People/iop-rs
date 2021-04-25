@@ -17,7 +17,7 @@ Keyvault can
 - use the same seed to derive keys with multiple cipher suites, currently `ed25519` and `secp256k1`
 - use any purpose field and account hierarchy, not only Bip43 and Bip44
 - handle several purposes (i.e. attached subhierarchies) at the same time
-- be used from other platforms via its WebAssembly bindings
+- be used from other platforms via its C and WebAssembly bindings
 
 Keyvault was originally created as part of the
 [Mercury communication protocol](https://github.com/Internet-of-People/mercury-rust)

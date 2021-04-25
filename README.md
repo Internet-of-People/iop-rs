@@ -1,66 +1,28 @@
-# Morpheus
+# Internet of People
 
-Morpheus is a framework for decentralized identities (DID), key and right management and cryptographically verifiable
-claims (VC) about such identities based on a web of trust.
+Internet of People (IoP) is a software project creating a decentralized software stack that provides the building blocks and tools to support a decentralized society.
 
-## Overview
-
-Morpheus DIDs were based on the [W3C DID specification](https://w3c.github.io/did-core/) and
-VCs on the [W3C VC specification](https://www.w3.org/TR/vc-data-model/).
-Morpheus key management is basically a decentralized version of a Public Key Infrastructure (PKI).
-Adding Morpheus right management on top is close to a decentralized version of Active Directory.
-Morpheus VCs provide a privacy-by-design system and enable self sovereignty over your user data.
-
-Morpheus was built on the KeyVault and elaborates some concepts originally conceived under
-[Mercury](https://github.com/Internet-of-People/mercury-rust)
-that turned out to deserve their own project.
-
-## Development
-
-Having a Rust environment installed (e.g. by using [rustup](https://rustup.rs/)),
-you can simply use `cargo` to build and test everything, e.g. `cargo build`.
-
-### SDK and Bindings
-
-This repository contains no standalone binary.
-Instead, it aims to provide an SDK to be used by developers building decentralized applications.
-Our reference implementation is built in Rust. However, to enable bindings for other languages,
-we provide a C API and sample Dart bindings on top used in
-[our sample UI](https://github.com/Internet-of-People/morpheus-kyc-ui).
-
-## Key concepts
-
-Morpheus can generate safe identities for one-time use without requiring any network connectivity.
-Any key or right management and further optional features requiring public verification like
-timestamping of content ids and signatures need a public ledger.
-
-The current implementation uses the [Hydra blockchain](https://github.com/Internet-of-People/hydra-core),
-but is ledger-agnostic in general. Hydra was built as a bridge-chain of the Ark ecosystem and Morpheus adds a
-[layer 2 plugin](https://github.com/Internet-of-People/morpheus-ts) on top to define custom transactions
-managing DIDs and rights.
-
-Anything else that does not need public verification is not stored on the ledger or
-anywhere publicly, with special emphasis on any user data, e.g. verifiable claims.
-Instead, user data is shared explicitly on demand with only a specific peer.
-Shared data contains a license describing who might use it for what purpose and when the license expires.
-
-Before sharing user data, the user can mask out any details not meant for sharing
-without losing cryptographic verifiability of witness signatures.
-E.g. you have a digital ID signed by some authority.
-Ordering pizza, you can give your name and address without exposing any other details
-that are irrelevant for delivering your meal like your birthday and mother's name. 
-Despite those details were masked out, the restaurant can still verify that data was witnessed by the authority.
-This is achieved by signing a Merkle-proof instead of the data directly.
-We use [JSON digests](https://json-digest.rocks/) for our proofs for easy implementation and portability.
-
-## Reporting Vulnerabilities
-
-Please contact the package authors.
+This repository contains our Rust codebase that serves as common implementation and used with different bindings (WebAssembly, C FFI) in SDKs for other languages like Typescript or Dart as well.
 
 ## Usage
 
-See the [IOP developer page](https://developer.iop.global).
+After installing Rust using [rustup](https://rustup.rs/), use the `iop-sdk` crate with the latest version as a dependency with `cargo` in file `Cargo.toml` of your project.
 
-## Contributing
+## Overview
 
-Please contact the package authors.
+You can read a  overview and descriptions of different components on our
+[developer portal](https://developer.iop.technology). We especially suggest reading [glossary page](https://developer.iop.technology/glossary) for a detailed explanation of terms, concept and design principles of different software stack components.
+
+## Components
+
+- `json-digest` provides a canonical Json format, derived content IDs and
+  selectively building [Merkle trees](https://en.wikipedia.org/wiki/Merkle_tree)
+  from parts of a Json document
+- `keyvault` implements a "generic cryptographic calculator": starting from a list of words
+  it can deterministically derive an enormous number of private keys for any purpose
+  like cryptocurrency addresses, DIDs, device keys, etc.
+- `vault` adds encryption support, pluggability with state handling and persistence to the pure calculator features of the `keyvault`
+- `morpheus` supports Self-Sovereign Identity (SSI) with Decentralized Identifiers (DIDs) and Verifiable Claims/Credentials (VCs). It defines a state machine for keeping a queriable history of DIDs, their keys and rights with atomic transactions to change the state.
+- `coeus` implements a generic decentralized naming system (DDNS). It defines a state machine for managing resolvable names with atomic transactions to change the state.
+- `hydra` supports using the Hydra blockchain by building transactions for cryptocurrency operations (transfer, delegate voting, etc), or custom transactions with SSI and DNS operations.
+- `sdk` exports features of libraries above for clients in a single crate
