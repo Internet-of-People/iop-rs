@@ -2,9 +2,19 @@
 
 ## 0.0.13 (TODO)
 
+### Added
+
+- You can now set the vendor field (aka. smart bridge field) and set a manual fee on Hydra core transactions using the 2 new optional arguments TypeScript SDK HydraTxBuilder factory methods got.
+
 ### Changed
 
 - Merged morpheus-rust and keyvault-rust repositories as iop-rs
+
+## 0.0.12-hotfix1 (2021-05-06)
+
+### Added
+
+- You can now set the vendor field (aka. smart bridge field) and set a manual fee on Hydra core transactions using the 2 new optional arguments TypeScript SDK HydraTxBuilder factory methods got.
 
 ## 0.0.12 (2021-03-17)
 

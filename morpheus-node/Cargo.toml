@@ -15,8 +15,9 @@ iop-keyvault = "0.0.13"
 iop-morpheus-proto = "0.0.13"
 json-digest = "0.0.13"
 jwt-compact = { version = "0.2.0", default-features = false }
+#multibase = "0.9.1"
 rand = { version = "0.8.3", features = ["getrandom"] }
-serde = { version="1.0.121", features = ["derive"] }
+serde = { version="1.0.121", features = ["derive", "rc"] }
 serde_json = { version = "1.0.64", features = ["preserve_order"] }
 serde_str = "0.1.0"
 

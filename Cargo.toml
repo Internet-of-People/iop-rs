@@ -41,3 +41,11 @@ iop-proto-wasm = { path="./proto-wasm" }
 iop-vault = { path="./vault" }
 json-digest-wasm = { path="./json-digest-wasm" }
 json-digest = { path="./json-digest" }
+
+# Local clone at parent folder
+#iop-keyvault = { path="../keyvault-rs/keyvault" }
+#iop-keyvault-wasm = { path="../keyvault-rs/keyvault-wasm" }
+
+# Github branch
+#iop-keyvault = { git="https://github.com/Internet-of-People/keyvault-rust", branch="develop" }
+#iop-keyvault-wasm = { git="https://github.com/Internet-of-People/keyvault-rust", branch="develop" }
