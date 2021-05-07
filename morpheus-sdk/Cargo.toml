@@ -1,6 +1,6 @@
 [package]
 name = "iop-morpheus-sdk"
-version = "0.0.12"
+version = "0.0.12-hotfix1"
 authors = ["IOP Ventures LLC <dev@iop-ventures.com>", "Rache Bartmoss <bartmoss@tutanota.com>", "wigy <wigy_opensource_developer@yahoo.com>"]
 license = "LGPL-3.0-or-later"
 edition = "2018"
@@ -8,20 +8,20 @@ edition = "2018"
 
 [dependencies]
 anyhow = "1.0.32"
-iop-keyvault = "0.0.12"
-iop-vault = "0.0.12"
+iop-keyvault = "=0.0.12-hotfix1"
+iop-vault = "0.0.12-hotfix1"
 parking_lot = { version = "0.11.1", features = ["serde", "wasm-bindgen"] }
-rand = "0.7.3"
-serde = "1.0.115"
+rand = { version = "0.8.3", features = ["getrandom"] }
+serde = { version="1.0.121", features = ["derive"] }
 serde_bytes = "0.11.5"
 typetag = "0.1.5"
 
 
 [dev-dependencies]
 chrono = { version = "0.4.15", features = ["wasmbind"] }
-iop-morpheus-core = "0.0.12"
-json-digest = "0.0.12"
-serde_json = "1.0.57"
+iop-morpheus-core = "0.0.12-hotfix1"
+json-digest = "0.0.12-hotfix1"
+serde_json = { version = "1.0.64", features = ["preserve_order"] }
 
 
 [target.'cfg(target_os="android")'.dependencies]

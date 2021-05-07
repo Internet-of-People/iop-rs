@@ -1,6 +1,6 @@
 [package]
 name = "iop-sdk-wasm"
-version = "0.0.12"
+version = "0.0.12-hotfix1"
 authors = [
     "IOP Ventures LLC <dev@iop-ventures.com>",
     "Rache Bartmoss <bartmoss@tutanota.com>",
@@ -12,5 +12,11 @@ edition = "2018"
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
-iop-coeus-core-wasm = "0.0.12"
-iop-morpheus-core-wasm = "0.0.12"
+# There are still some transitive dependencies on this old version
+getrandom01 = { version="0.1", package="getrandom", features=["wasm-bindgen"] }
+getrandom = { version="0.2", features=["js"] }
+iop-coeus-core-wasm = "0.0.12-hotfix1"
+iop-morpheus-core-wasm = "0.0.12-hotfix1"
+# There are still some transitive dependencies on this old version
+rand07 = { version="0.7", package="rand", features=["getrandom"] }
+rand = { version="0.8", features=["getrandom"] }

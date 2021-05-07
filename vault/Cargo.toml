@@ -1,16 +1,16 @@
 [package]
 name = "iop-vault"
-version = "0.0.12"
+version = "0.0.12-hotfix1"
 authors = ["IOP Ventures LLC <dev@iop-ventures.com>", "Rache Bartmoss <bartmoss@tutanota.com>", "wigy <wigy_opensource_developer@yahoo.com>"]
 edition = "2018"
 
 
 [dependencies]
 anyhow = "1.0.32"
-iop-keyvault = "0.0.12"
+iop-keyvault = "=0.0.12-hotfix1"
 multibase = "0.9.1"
 parking_lot = { version = "0.11.1", features = ["serde", "wasm-bindgen"] }
-serde = { version = "1.0.115", features = ["rc"] }
+serde = { version="1.0.121", features = ["derive", "rc"] }
 typetag = "0.1.5"
 
 # --- Hydra dependencies

@@ -1,6 +1,6 @@
 [package]
 name = "iop-morpheus-core"
-version = "0.0.12"
+version = "0.0.12-hotfix1"
 authors = ["IOP Ventures LLC <dev@iop-ventures.com>", "Rache Bartmoss <bartmoss@tutanota.com>", "wigy <wigy_opensource_developer@yahoo.com>"]
 edition = "2018"
 
@@ -8,13 +8,13 @@ edition = "2018"
 [dependencies]
 anyhow = "1.0.32"
 chrono = { version = "0.4.15", features = ["wasmbind"] }
-iop-keyvault = "0.0.12"
-json-digest = "0.0.12"
+iop-keyvault = "=0.0.12-hotfix1"
+json-digest = "0.0.12-hotfix1"
 jwt-compact = { version = "0.2.0", default-features = false }
 #multibase = "0.9.1"
-rand = "0.7.3"
-serde = { version = "1.0.115", features = ["derive", "rc"] }
-serde_json = { version = "1.0.57", features = ["preserve_order"] }
+rand = { version = "0.8.3", features = ["getrandom"] }
+serde = { version="1.0.121", features = ["derive", "rc"] }
+serde_json = { version = "1.0.64", features = ["preserve_order"] }
 serde_str = "0.1.0"
 
 # --- Hydra dependencies

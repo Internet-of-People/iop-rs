@@ -1,19 +1,25 @@
 # Changelog
 
+## 0.0.12-hotfix1 (2021-05-06)
+
+### Added
+
+- You can now set the vendor field (aka. smart bridge field) and set a manual fee on Hydra core transactions using the 2 new optional arguments TypeScript SDK HydraTxBuilder factory methods got.
+
 ## 0.0.12 (2021-03-17)
 
-Added
+### Added
 
 - Crate `iop-sdk` now exports important types and is generally usable as an early draft in clients. Note that it currently does not follow any conventions of the Dart and Typescript SDKs but exposes some internal implementation details.
 - Hydra and Morpheus vault plugins are now thread-safe and thus easily usable in async environments as well.
 
-Changed
+### Changed
 
 - BREAKING: renamed Hydra and Morpheus `vault::Plugin` function `rewind()` to `init()` for clarity. Naming changes also affect FFI and WASM interfaces.
 - BREAKING: suffixed functions that mutate Hydra and Morpheus vaults (by generating keys into them) with `_mut`. This does not affect FFI and WASM though.
 - updated dependencies
 
-Fixed
+### Fixed
 
 - cleaned up dependencies
 - removed legacy SDK codebase

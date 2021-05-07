@@ -1,6 +1,6 @@
 [package]
 name = "iop-coeus-core-wasm"
-version = "0.0.12"
+version = "0.0.12-hotfix1"
 authors = ["IOP Ventures LLC <dev@iop-ventures.com>", "Rache Bartmoss <bartmoss@tutanota.com>", "wigy <wigy_opensource_developer@yahoo.com>"]
 edition = "2018"
 license = "LGPL-3.0-or-later"
@@ -12,12 +12,12 @@ crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 anyhow = "1.0.32"
-iop-coeus-core = "0.0.12"
-iop-hydra-proto = "0.0.12"
-iop-keyvault = "0.0.12"
-iop-keyvault-wasm = "0.0.12"
-serde = { version="1.0.116", features = ["derive"] }
-serde_json = { version = "1.0.57", features = ["preserve_order"] }
+iop-coeus-core = "0.0.12-hotfix1"
+iop-hydra-proto = "0.0.12-hotfix1"
+iop-keyvault = "=0.0.12-hotfix1"
+iop-keyvault-wasm = "=0.0.12-hotfix1"
+serde = { version="1.0.121", features = ["derive"] }
+serde_json = { version = "1.0.64", features = ["preserve_order"] }
 # Force "wasm-bindgen" feature in uuid dependency needed by valico in coeus-core
 uuid = { version = "0.8", features = ["v4", "wasm-bindgen"] }
-wasm-bindgen = { version = "=0.2.65", features = ["serde-serialize"] }
+wasm-bindgen = { version = "0.2.73", features = ["serde-serialize"] }
