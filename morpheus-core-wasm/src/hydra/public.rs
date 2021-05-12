@@ -13,7 +13,7 @@ impl JsHydraPublic {
     }
 
     pub fn key(&mut self, idx: i32) -> Result<JsBip44PublicKey, JsValue> {
-        let inner = self.inner.key(idx).map_err_to_js()?;
+        let inner = self.inner.key_mut(idx).map_err_to_js()?;
         Ok(JsBip44PublicKey::from(inner))
     }
 
