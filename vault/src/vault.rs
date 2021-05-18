@@ -83,7 +83,7 @@ impl Vault {
     }
 
     pub fn to_modifiable(&self) -> Box<dyn State<bool>> {
-        State::map(&self.inner, |v| &v.is_dirty, |v| &mut v.is_dirty)
+        <dyn State<_>>::map(&self.inner, |v| &v.is_dirty, |v| &mut v.is_dirty)
     }
 
     fn encrypt_seed(seed: &Seed, unlock_password: &str) -> Result<String> {

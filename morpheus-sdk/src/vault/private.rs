@@ -16,7 +16,7 @@ impl PluginPrivate<Plugin> for Private {
 
 impl Private {
     pub fn personas(&self) -> Result<PrivateKind> {
-        let state = State::map(self.state.as_ref(), |s| &s.personas, |s| &mut s.personas);
+        let state = <dyn State<_>>::map(self.state.as_ref(), |s| &s.personas, |s| &mut s.personas);
         let kind = self.root.personas()?;
         let vault_dirty = self.vault_dirty.clone();
         Ok(PrivateKind::new(state, kind, vault_dirty))

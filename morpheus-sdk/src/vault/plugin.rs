@@ -67,6 +67,6 @@ impl Plugin {
     }
 
     pub(super) fn to_state(&self) -> Box<dyn State<PublicState>> {
-        State::map(&self.inner, |s| &s.public_state, |s| &mut s.public_state)
+        <dyn State<_>>::map(&self.inner, |s| &s.public_state, |s| &mut s.public_state)
     }
 }

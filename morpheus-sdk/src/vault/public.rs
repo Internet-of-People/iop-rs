@@ -16,7 +16,7 @@ impl Public {
     }
 
     pub fn personas(&self) -> Result<PublicKind> {
-        let state = State::map(self.state.as_ref(), |s| &s.personas, |s| &mut s.personas);
+        let state = <dyn State<_>>::map(self.state.as_ref(), |s| &s.personas, |s| &mut s.personas);
         Ok(PublicKind::new(state, DidKind::Persona))
     }
 
