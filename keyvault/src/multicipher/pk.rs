@@ -1,28 +1,31 @@
 use super::*;
 
-erased_type! {
-    /// Type-erased [`PublicKey`]
+/// Multicipher [`PublicKey`]
+///
+/// [`PublicKey`]: ../trait.AsymmetricCrypto.html#associatedtype.PublicKey
+#[derive(Clone, Eq, Hash, Ord, PartialEq, PartialOrd)]
+pub enum MPublicKey {
+    /// The public key tagged with this variant belongs to the [`ed25519`] module
     ///
-    /// [`PublicKey`]: ../trait.AsymmetricCrypto.html#associatedtype.PublicKey
-    pub struct MPublicKey {}
-}
-
-macro_rules! key_id {
-    ($suite:ident, $self_:tt) => {{
-        let result = reify!($suite, pk, $self_).key_id();
-        erase!($suite, MKeyId, result)
-    }};
-}
-
-macro_rules! verify {
-    ($suite:ident, $self_:tt, $data:ident, $sig:ident) => {
-        reify!($suite, pk, $self_).verify($data, reify!($suite, sig, $sig))
-    };
+    /// [`ed25519`]: ../ed25519/index.html
+    Ed25519(EdPublicKey),
+    /// The public key tagged with this variant belongs to the [`secp256k1`] module
+    ///
+    /// [`secp256k1`]: ../secp256k1/index.html
+    Secp256k1(SecpPublicKey),
 }
 
 impl MPublicKey {
     /// All multicipher public keys start with this prefix
     pub const PREFIX: char = 'p';
+
+    /// The ciphersuite that this public key belongs to
+    pub fn suite(&self) -> CipherSuite {
+        match self {
+            Self::Ed25519(_) => CipherSuite::Ed25519,
+            Self::Secp256k1(_) => CipherSuite::Secp256k1,
+        }
+    }
 
     /// Even the binary representation of a multicipher public key is readable with this.
     // TODO Should we really keep it like this?
@@ -32,31 +35,67 @@ impl MPublicKey {
 
     /// Even the binary representation of a multicipher public key is readable with this.
     // TODO Should we really keep it like this?
-    pub fn from_bytes(bytes: &[u8]) -> Result<Self> {
-        let string = String::from_utf8(bytes.to_owned())?;
+    pub fn from_bytes<B: AsRef<[u8]>>(bytes: B) -> Result<Self> {
+        let string = String::from_utf8(bytes.as_ref().to_owned())?;
         string.parse()
+    }
+
+    fn to_inner_bytes(&self) -> Vec<u8> {
+        match self {
+            Self::Ed25519(edpk) => edpk.to_bytes(),
+            Self::Secp256k1(secppk) => secppk.to_bytes(),
+        }
+    }
+
+    fn from_inner_bytes<B: AsRef<[u8]>>(suite: char, inner_bytes: B) -> Result<Self> {
+        match CipherSuite::from_char(suite)? {
+            CipherSuite::Ed25519 => Ok(Self::Ed25519(EdPublicKey::from_bytes(inner_bytes)?)),
+            CipherSuite::Secp256k1 => Ok(Self::Secp256k1(SecpPublicKey::from_bytes(inner_bytes)?)),
+        }
     }
 }
 
 impl PublicKey<MultiCipher> for MPublicKey {
     fn key_id(&self) -> MKeyId {
-        visit!(key_id(self))
-    }
-    fn validate_id(&self, key_id: &MKeyId) -> bool {
-        &self.key_id() == key_id
-    }
-    fn verify<D: AsRef<[u8]>>(&self, data: D, sig: &MSignature) -> bool {
-        if self.suite != sig.suite {
-            return false;
+        match self {
+            Self::Ed25519(edpk) => MKeyId::from(edpk.key_id()),
+            Self::Secp256k1(secppk) => MKeyId::from(secppk.key_id()),
         }
-        visit!(verify(self, data, sig))
     }
-}
 
-macro_rules! to_bytes_tuple {
-    ($suite:ident, $self_:expr) => {
-        (stringify!($suite), reify!($suite, pk, $self_).to_bytes())
-    };
+    fn validate_id(&self, key_id: &MKeyId) -> bool {
+        match self {
+            Self::Ed25519(edpk) => {
+                if let MKeyId::Ed25519(edid) = key_id {
+                    return edpk.validate_id(edid);
+                }
+            }
+            Self::Secp256k1(secppk) => {
+                if let MKeyId::Secp256k1(secpid) = key_id {
+                    return secppk.validate_id(secpid);
+                }
+            }
+        };
+
+        false
+    }
+
+    fn verify<D: AsRef<[u8]>>(&self, data: D, sig: &MSignature) -> bool {
+        match self {
+            Self::Ed25519(edpk) => {
+                if let MSignature::Ed25519(edsig) = sig {
+                    return edpk.verify(data, edsig);
+                }
+            }
+            Self::Secp256k1(secppk) => {
+                if let MSignature::Secp256k1(secpsig) = sig {
+                    return secppk.verify(data, secpsig);
+                }
+            }
+        };
+
+        false
+    }
 }
 
 impl Serialize for MPublicKey {
@@ -64,27 +103,13 @@ impl Serialize for MPublicKey {
     where
         S: Serializer,
     {
-        let (suite, bytes) = visit!(to_bytes_tuple(self));
-
-        let erased = ErasedBytes { suite: suite.as_bytes()[0], value: bytes };
+        let erased = ErasedBytes { suite: self.suite().as_byte(), value: self.to_inner_bytes() };
         erased.serialize(serializer)
     }
 }
 
-macro_rules! from_bytes {
-    ($suite:ident, $data:expr) => {
-        erase!($suite, MPublicKey, <$suite!(pk)>::from_bytes($data)?)
-    };
-}
-
 fn deser(erased: ErasedBytes) -> Result<MPublicKey> {
-    let suite = erased.suite as char;
-    let data = &erased.value;
-    let value = visit_fac!(
-        stringify(suite.to_string().as_str()) =>
-            from_bytes(data)
-    );
-    Ok(value)
+    MPublicKey::from_inner_bytes(erased.suite as char, &erased.value)
 }
 
 impl<'de> Deserialize<'de> for MPublicKey {
@@ -97,76 +122,10 @@ impl<'de> Deserialize<'de> for MPublicKey {
     }
 }
 
-macro_rules! clone {
-    ($suite:ident, $self_:expr) => {{
-        let result = reify!($suite, pk, $self_).clone();
-        erase!($suite, MPublicKey, result)
-    }};
-}
-
-impl Clone for MPublicKey {
-    fn clone(&self) -> Self {
-        visit!(clone(self))
-    }
-}
-
-macro_rules! eq {
-    ($suite:ident, $self_:tt, $other:ident) => {
-        reify!($suite, pk, $self_).eq(reify!($suite, pk, $other))
-    };
-}
-
-impl PartialEq<MPublicKey> for MPublicKey {
-    fn eq(&self, other: &Self) -> bool {
-        if self.suite != other.suite {
-            return false;
-        }
-        visit!(eq(self, other))
-    }
-}
-
-impl Eq for MPublicKey {}
-
-macro_rules! cmp {
-    ($suite:ident, $self_:tt, $other:expr) => {
-        reify!($suite, pk, $self_).cmp(reify!($suite, pk, $other))
-    };
-}
-
-impl PartialOrd<Self> for MPublicKey {
-    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        Some(self.cmp(other))
-    }
-}
-
-impl Ord for MPublicKey {
-    fn cmp(&self, other: &Self) -> Ordering {
-        let suite_order = self.suite.cmp(&other.suite);
-        match suite_order {
-            Ordering::Equal => visit!(cmp(self, other)),
-            _ => suite_order,
-        }
-    }
-}
-
-macro_rules! hash {
-    ($suite:ident, $self_:tt, $state:expr) => {
-        reify!($suite, pk, $self_).hash($state)
-    };
-}
-
-impl Hash for MPublicKey {
-    fn hash<H: Hasher>(&self, state: &mut H) {
-        self.suite.hash(state);
-        visit!(hash(self, state));
-    }
-}
-
 impl From<&MPublicKey> for String {
     fn from(src: &MPublicKey) -> Self {
-        let (suite, bytes) = visit!(to_bytes_tuple(src));
-        let mut output = multibase::encode(multibase::Base::Base58Btc, &bytes);
-        output.insert_str(0, suite);
+        let mut output = multibase::encode(multibase::Base::Base58Btc, src.to_inner_bytes());
+        output.insert(0, src.suite().as_char());
         output.insert(0, MPublicKey::PREFIX);
         output
     }
@@ -201,26 +160,22 @@ impl std::str::FromStr for MPublicKey {
         );
         if let Some(suite) = chars.next() {
             let (_base, binary) = multibase::decode(chars.as_str())?;
-            let ret = visit_fac!(
-                stringify(suite.to_string().as_str()) =>
-                    from_bytes(binary)
-            );
-            Ok(ret)
+            Self::from_inner_bytes(suite, &binary)
         } else {
-            Err(anyhow!("No crypto suite suite found"))
+            Err(anyhow!("No crypto suite found"))
         }
     }
 }
 
 impl From<EdPublicKey> for MPublicKey {
     fn from(src: EdPublicKey) -> Self {
-        erase!(e, MPublicKey, src)
+        Self::Ed25519(src)
     }
 }
 
 impl From<SecpPublicKey> for MPublicKey {
     fn from(src: SecpPublicKey) -> Self {
-        erase!(s, MPublicKey, src)
+        Self::Secp256k1(src)
     }
 }
 
@@ -285,6 +240,8 @@ mod test {
         fn ed_suite() {
             let pk = "pez11111111111111111111111111111111".parse::<MPublicKey>().unwrap();
             assert_eq!(pk.suite(), CipherSuite::Ed25519);
+            assert!(matches!(&pk, MPublicKey::Ed25519(_)));
+            assert!(!matches!(&pk, MPublicKey::Secp256k1(_)));
         }
 
         #[test]
@@ -292,17 +249,19 @@ mod test {
             let pk =
                 "psz291QGsvwafGPkKMu6MUsXThWRcBRzRf6pcVPM1Pst6WgW".parse::<MPublicKey>().unwrap();
             assert_eq!(pk.suite(), CipherSuite::Secp256k1);
+            assert!(!matches!(&pk, MPublicKey::Ed25519(_)));
+            assert!(matches!(&pk, MPublicKey::Secp256k1(_)));
         }
 
         #[test]
-        #[should_panic(expected = "Unknown crypto suite suite 'g'")]
+        #[should_panic(expected = "Unknown crypto suite 'g'")]
         fn invalid_suite() {
             let _pk =
                 "pgzAgmjPHe5Qs4VakvXHGnd6NsYjaxt4suMUtf39TayrSfb".parse::<MPublicKey>().unwrap();
         }
 
         #[test]
-        #[should_panic(expected = "No crypto suite suite found")]
+        #[should_panic(expected = "No crypto suite found")]
         fn missing_suite() {
             let _pk = "p".parse::<MPublicKey>().unwrap();
         }

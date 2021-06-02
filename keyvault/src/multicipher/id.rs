@@ -1,21 +1,58 @@
 use super::*;
 
-erased_type! {
-    /// Type-erased [`KeyId`]
+/// Multicipher [`KeyId`]
+///
+/// [`KeyId`]: ../trait.AsymmetricCrypto.html#associatedtype.KeyId
+#[derive(Clone, Eq, Hash, Ord, PartialEq, PartialOrd)]
+pub enum MKeyId {
+    /// The key id tagged with this variant belongs to the [`ed25519`] module
     ///
-    /// [`KeyId`]: ../trait.AsymmetricCrypto.html#associatedtype.KeyId
-    pub struct MKeyId {}
+    /// [`ed25519`]: ../ed25519/index.html
+    Ed25519(EdKeyId),
+    /// The key id tagged with this variant belongs to the [`secp256k1`] module
+    ///
+    /// [`secp256k1`]: ../secp256k1/index.html
+    Secp256k1(SecpKeyId),
 }
 
 impl MKeyId {
     /// All multicipher keyids start with this prefix
     pub const PREFIX: char = 'i';
-}
 
-macro_rules! to_bytes_tuple {
-    ($suite:ident, $self_:expr) => {
-        (stringify!($suite), reify!($suite, id, $self_).to_bytes())
-    };
+    /// The ciphersuite that this key id belongs to
+    pub fn suite(&self) -> CipherSuite {
+        match self {
+            Self::Ed25519(_) => CipherSuite::Ed25519,
+            Self::Secp256k1(_) => CipherSuite::Secp256k1,
+        }
+    }
+
+    /// Even the binary representation of a multicipher keyid is readable with this.
+    // TODO Should we really keep it like this?
+    pub fn to_bytes(&self) -> Vec<u8> {
+        String::from(self).as_bytes().to_vec()
+    }
+
+    /// Even the binary representation of a multicipher keyid is readable with this.
+    // TODO Should we really keep it like this?
+    pub fn from_bytes<B: AsRef<[u8]>>(bytes: B) -> Result<Self> {
+        let string = String::from_utf8(bytes.as_ref().to_owned())?;
+        string.parse()
+    }
+
+    fn to_inner_bytes(&self) -> Vec<u8> {
+        match self {
+            Self::Ed25519(edid) => edid.to_bytes(),
+            Self::Secp256k1(secpid) => secpid.to_bytes(),
+        }
+    }
+
+    fn from_inner_bytes<B: AsRef<[u8]>>(suite: char, inner_bytes: B) -> Result<Self> {
+        match CipherSuite::from_char(suite)? {
+            CipherSuite::Ed25519 => Ok(Self::Ed25519(EdKeyId::from_bytes(inner_bytes)?)),
+            CipherSuite::Secp256k1 => Ok(Self::Secp256k1(SecpKeyId::from_bytes(inner_bytes)?)),
+        }
+    }
 }
 
 impl Serialize for MKeyId {
@@ -23,28 +60,17 @@ impl Serialize for MKeyId {
     where
         S: Serializer,
     {
-        let (suite, bytes) = visit!(to_bytes_tuple(self));
-        let mut out = bytes;
-        out.insert(0, suite.as_bytes()[0]);
-        serde_bytes::serialize(out.as_slice(), serializer)
+        let mut bytes_out = self.to_inner_bytes();
+        bytes_out.insert(0, self.suite().as_byte());
+        serde_bytes::serialize(bytes_out.as_slice(), serializer)
     }
 }
 
-macro_rules! from_bytes {
-    ($suite:ident, $data:expr) => {
-        erase!($suite, MKeyId, <$suite!(id)>::from_bytes($data)?)
-    };
-}
-
 fn deser(bytes: Vec<u8>) -> Result<MKeyId> {
-    ensure!(!bytes.is_empty(), "No crypto suite suite found");
+    ensure!(!bytes.is_empty(), "No crypto suite found");
     let suite = bytes[0] as char;
     let data = &bytes[1..];
-    let value = visit_fac!(
-        stringify(suite.to_string().as_str()) =>
-            from_bytes(data)
-    );
-    Ok(value)
+    MKeyId::from_inner_bytes(suite, data)
 }
 
 impl<'de> Deserialize<'de> for MKeyId {
@@ -57,76 +83,10 @@ impl<'de> Deserialize<'de> for MKeyId {
     }
 }
 
-macro_rules! clone {
-    ($suite:ident, $self_:expr) => {{
-        let result = reify!($suite, id, $self_).clone();
-        erase!($suite, MKeyId, result)
-    }};
-}
-
-impl Clone for MKeyId {
-    fn clone(&self) -> Self {
-        visit!(clone(self))
-    }
-}
-
-macro_rules! eq {
-    ($suite:ident, $self_:tt, $other:ident) => {
-        reify!($suite, id, $self_).eq(reify!($suite, id, $other))
-    };
-}
-
-impl PartialEq<MKeyId> for MKeyId {
-    fn eq(&self, other: &Self) -> bool {
-        if self.suite != other.suite {
-            return false;
-        }
-        visit!(eq(self, other))
-    }
-}
-
-impl Eq for MKeyId {}
-
-macro_rules! cmp {
-    ($suite:ident, $self_:tt, $other:expr) => {
-        reify!($suite, id, $self_).cmp(reify!($suite, id, $other))
-    };
-}
-
-impl PartialOrd<Self> for MKeyId {
-    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        Some(self.cmp(other))
-    }
-}
-
-impl Ord for MKeyId {
-    fn cmp(&self, other: &Self) -> Ordering {
-        let suite_order = self.suite.cmp(&other.suite);
-        match suite_order {
-            Ordering::Equal => visit!(cmp(self, other)),
-            _ => suite_order,
-        }
-    }
-}
-
-macro_rules! hash {
-    ($suite:ident, $self_:tt, $state:expr) => {
-        reify!($suite, id, $self_).hash($state)
-    };
-}
-
-impl Hash for MKeyId {
-    fn hash<H: Hasher>(&self, state: &mut H) {
-        self.suite.hash(state);
-        visit!(hash(self, state));
-    }
-}
-
 impl From<&MKeyId> for String {
     fn from(src: &MKeyId) -> Self {
-        let (suite, bytes) = visit!(to_bytes_tuple(src));
-        let mut output = multibase::encode(multibase::Base::Base58Btc, &bytes);
-        output.insert_str(0, suite);
+        let mut output = multibase::encode(multibase::Base::Base58Btc, src.to_inner_bytes());
+        output.insert(0, src.suite().as_char());
         output.insert(0, MKeyId::PREFIX);
         output
     }
@@ -161,40 +121,22 @@ impl std::str::FromStr for MKeyId {
         );
         if let Some(suite) = chars.next() {
             let (_base, binary) = multibase::decode(chars.as_str())?;
-            let ret = visit_fac!(
-                stringify(suite.to_string().as_str()) =>
-                    from_bytes(binary)
-            );
-            Ok(ret)
+            Self::from_inner_bytes(suite, &binary)
         } else {
-            Err(anyhow!("No crypto suite suite found"))
+            Err(anyhow!("No crypto suite found"))
         }
     }
 }
 
 impl From<EdKeyId> for MKeyId {
     fn from(src: EdKeyId) -> Self {
-        erase!(e, MKeyId, src)
+        Self::Ed25519(src)
     }
 }
 
 impl From<SecpKeyId> for MKeyId {
     fn from(src: SecpKeyId) -> Self {
-        erase!(s, MKeyId, src)
-    }
-}
-
-impl MKeyId {
-    /// Even the binary representation of a multicipher keyid is readable with this.
-    // TODO Should we really keep it like this?
-    pub fn to_bytes(&self) -> Vec<u8> {
-        String::from(self).as_bytes().to_vec()
-    }
-    /// Even the binary representation of a multicipher keyid is readable with this.
-    // TODO Should we really keep it like this?
-    pub fn from_bytes(bytes: &[u8]) -> Result<Self> {
-        let string = String::from_utf8(bytes.to_owned())?;
-        string.parse()
+        Self::Secp256k1(src)
     }
 }
 
@@ -229,22 +171,26 @@ mod test {
         fn ed_suite() {
             let id = "iez21JXEtMzXjbCK6BAYFU9ewX".parse::<MKeyId>().unwrap();
             assert_eq!(id.suite(), CipherSuite::Ed25519);
+            assert!(matches!(&id, MKeyId::Ed25519(_)));
+            assert!(!matches!(&id, MKeyId::Secp256k1(_)));
         }
 
         #[test]
         fn secp_suite() {
             let id = "isz7un9h2Ddua9rfHefJMKiPLxSy2pX".parse::<MKeyId>().unwrap();
             assert_eq!(id.suite(), CipherSuite::Secp256k1);
+            assert!(!matches!(&id, MKeyId::Ed25519(_)));
+            assert!(matches!(&id, MKeyId::Secp256k1(_)));
         }
 
         #[test]
-        #[should_panic(expected = "Unknown crypto suite suite 'g'")]
+        #[should_panic(expected = "Unknown crypto suite 'g'")]
         fn invalid_suite() {
             let _id = "igz21JXEtMzXjbCK6BAYFU9ewX".parse::<MKeyId>().unwrap();
         }
 
         #[test]
-        #[should_panic(expected = "No crypto suite suite found")]
+        #[should_panic(expected = "No crypto suite found")]
         fn missing_suite() {
             let _id = "i".parse::<MKeyId>().unwrap();
         }

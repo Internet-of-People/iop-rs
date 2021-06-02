@@ -1,16 +1,31 @@
 use super::*;
 
-erased_type! {
-    /// Type-erased [`Signature`]
+/// Multicipher [`Signature`]
+///
+/// [`Signature`]: ../trait.AsymmetricCrypto.html#associatedtype.Signature
+#[derive(Clone, Eq, PartialEq)]
+pub enum MSignature {
+    /// The signature tagged with this variant belongs to the [`ed25519`] module
     ///
-    /// [`Signature`]: ../trait.AsymmetricCrypto.html#associatedtype.Signature
-    pub struct MSignature {}
+    /// [`ed25519`]: ../ed25519/index.html
+    Ed25519(EdSignature),
+    /// The signature tagged with this variant belongs to the [`secp256k1`] module
+    ///
+    /// [`secp256k1`]: ../secp256k1/index.html
+    Secp256k1(SecpSignature),
 }
 
-// TODO this should not be based on the String conversions
 impl MSignature {
     /// All multicipher signatures start with this prefix
     pub const PREFIX: char = 's';
+
+    /// The ciphersuite that this signature belongs to
+    pub fn suite(&self) -> CipherSuite {
+        match self {
+            Self::Ed25519(_) => CipherSuite::Ed25519,
+            Self::Secp256k1(_) => CipherSuite::Secp256k1,
+        }
+    }
 
     /// Even the binary representation of a multicipher signature is readable with this.
     // TODO Should we really keep it like this?
@@ -20,16 +35,24 @@ impl MSignature {
 
     /// Even the binary representation of a multicipher signature is readable with this.
     // TODO Should we really keep it like this?
-    pub fn from_bytes(bytes: &[u8]) -> Result<Self> {
-        let string = String::from_utf8(bytes.to_owned())?;
+    pub fn from_bytes<B: AsRef<[u8]>>(bytes: B) -> Result<Self> {
+        let string = String::from_utf8(bytes.as_ref().to_owned())?;
         string.parse()
     }
-}
 
-macro_rules! to_bytes_tuple {
-    ($suite:ident, $self_:expr) => {
-        (stringify!($suite), reify!($suite, sig, $self_).to_bytes())
-    };
+    fn to_inner_bytes(&self) -> Vec<u8> {
+        match self {
+            Self::Ed25519(edsig) => edsig.to_bytes(),
+            Self::Secp256k1(secpsig) => secpsig.to_bytes(),
+        }
+    }
+
+    fn from_inner_bytes<B: AsRef<[u8]>>(suite: char, inner_bytes: B) -> Result<Self> {
+        match CipherSuite::from_char(suite)? {
+            CipherSuite::Ed25519 => Ok(Self::Ed25519(EdSignature::from_bytes(inner_bytes)?)),
+            CipherSuite::Secp256k1 => Ok(Self::Secp256k1(SecpSignature::from_bytes(inner_bytes)?)),
+        }
+    }
 }
 
 impl Serialize for MSignature {
@@ -37,27 +60,13 @@ impl Serialize for MSignature {
     where
         S: Serializer,
     {
-        let (suite, bytes) = visit!(to_bytes_tuple(self));
-
-        let erased = ErasedBytes { suite: suite.as_bytes()[0], value: bytes };
+        let erased = ErasedBytes { suite: self.suite().as_byte(), value: self.to_inner_bytes() };
         erased.serialize(serializer)
     }
 }
 
-macro_rules! from_bytes {
-    ($suite:ident, $data:expr) => {
-        erase!($suite, MSignature, <$suite!(sig)>::from_bytes($data)?)
-    };
-}
-
 fn deser(erased: ErasedBytes) -> Result<MSignature> {
-    let suite = erased.suite as char;
-    let data = &erased.value;
-    let value = visit_fac!(
-        stringify(suite.to_string().as_str()) =>
-            from_bytes(data)
-    );
-    Ok(value)
+    MSignature::from_inner_bytes(erased.suite as char, &erased.value)
 }
 
 impl<'de> Deserialize<'de> for MSignature {
@@ -70,41 +79,10 @@ impl<'de> Deserialize<'de> for MSignature {
     }
 }
 
-macro_rules! clone {
-    ($suite:ident, $self_:expr) => {{
-        let result = reify!($suite, sig, $self_).clone();
-        erase!($suite, MSignature, result)
-    }};
-}
-
-impl Clone for MSignature {
-    fn clone(&self) -> Self {
-        visit!(clone(self))
-    }
-}
-
-macro_rules! eq {
-    ($suite:ident, $self_:tt, $other:ident) => {
-        reify!($suite, sig, $self_).eq(reify!($suite, sig, $other))
-    };
-}
-
-impl PartialEq<MSignature> for MSignature {
-    fn eq(&self, other: &Self) -> bool {
-        if self.suite != other.suite {
-            return false;
-        }
-        visit!(eq(self, other))
-    }
-}
-
-impl Eq for MSignature {}
-
 impl From<&MSignature> for String {
     fn from(src: &MSignature) -> Self {
-        let (suite, bytes) = visit!(to_bytes_tuple(src));
-        let mut output = multibase::encode(multibase::Base::Base58Btc, &bytes);
-        output.insert_str(0, suite);
+        let mut output = multibase::encode(multibase::Base::Base58Btc, src.to_inner_bytes());
+        output.insert(0, src.suite().as_char());
         output.insert(0, MSignature::PREFIX);
         output
     }
@@ -139,26 +117,22 @@ impl std::str::FromStr for MSignature {
         );
         if let Some(suite) = chars.next() {
             let (_base, binary) = multibase::decode(chars.as_str())?;
-            let ret = visit_fac!(
-                stringify(suite.to_string().as_str()) =>
-                    from_bytes(binary)
-            );
-            Ok(ret)
+            Self::from_inner_bytes(suite, &binary)
         } else {
-            Err(anyhow!("No crypto suite suite found"))
+            Err(anyhow!("No crypto suite found"))
         }
     }
 }
 
 impl From<EdSignature> for MSignature {
     fn from(src: EdSignature) -> Self {
-        erase!(e, MSignature, src)
+        Self::Ed25519(src)
     }
 }
 
 impl From<SecpSignature> for MSignature {
     fn from(src: SecpSignature) -> Self {
-        erase!(s, MSignature, src)
+        Self::Secp256k1(src)
     }
 }
 
@@ -210,23 +184,27 @@ mod test {
         fn ed_suite() {
             let sig = "sezAhoNep8B9HTRCAYaJFPL1hNgqxfjM72UD4B75s258aF6pPCtDf5trXm7mppZVzT6ynpC3jyH6h3Li7r9Rw4yjeG2".parse::<MSignature>().unwrap();
             assert_eq!(sig.suite(), CipherSuite::Ed25519);
+            assert!(matches!(&sig, MSignature::Ed25519(_)));
+            assert!(!matches!(&sig, MSignature::Secp256k1(_)));
         }
 
         #[test]
         fn secp_suite() {
             let sig = "ssz8XFYUjuSro2dzq4mkMMCMJkPH2SEEc6CVJ9VCG9AUXVvRP9QHKY78BnSvpb9zyz5yZf8Pzcq82DzZwLC7xSeGNgq".parse::<MSignature>().unwrap();
             assert_eq!(sig.suite(), CipherSuite::Secp256k1);
+            assert!(!matches!(&sig, MSignature::Ed25519(_)));
+            assert!(matches!(&sig, MSignature::Secp256k1(_)));
         }
 
         #[test]
-        #[should_panic(expected = "Unknown crypto suite suite 'g'")]
+        #[should_panic(expected = "Unknown crypto suite 'g'")]
         fn invalid_suite() {
             let _sig =
                 "sgzAhoNep8B9HTRCAYaJFPL1hNgqxfjM72UD4B75s258aF6pPCtDf5trXm7mppZVzT6ynpC3jyH6h3Li7r9Rw4yjeG2".parse::<MSignature>().unwrap();
         }
 
         #[test]
-        #[should_panic(expected = "No crypto suite suite found")]
+        #[should_panic(expected = "No crypto suite found")]
         fn missing_suite() {
             let _sig = "s".parse::<MSignature>().unwrap();
         }

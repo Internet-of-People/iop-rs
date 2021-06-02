@@ -19,111 +19,6 @@
 //! [`ExtendedPrivateKey`]: ../trait.ExtendedPrivateKey.html
 //! [`ExtendedPublicKey`]: ../trait.ExtendedPublicKey.html
 
-macro_rules! e {
-    (variant) => {
-        CipherSuite::Ed25519
-    };
-    (id) => {
-        EdKeyId
-    };
-    (pk) => {
-        EdPublicKey
-    };
-    (sk) => {
-        EdPrivateKey
-    };
-    (sig) => {
-        EdSignature
-    };
-}
-
-macro_rules! s {
-    (variant) => {
-        CipherSuite::Secp256k1
-    };
-    (id) => {
-        SecpKeyId
-    };
-    (pk) => {
-        SecpPublicKey
-    };
-    (sk) => {
-        SecpPrivateKey
-    };
-    (sig) => {
-        SecpSignature
-    };
-}
-
-macro_rules! erased_type {
-    ($(#[$meta:meta])* $v:vis struct $type:ident {}) => {
-        $(#[$meta])*
-        $v struct $type {
-            #[allow(dead_code)]
-            pub(super) suite: CipherSuite,
-            #[allow(dead_code)]
-            pub(super) erased: Box<dyn Any + Send + Sync>,
-        }
-
-        impl $type {
-            /// Returns the cipher suite of the multicipher object
-            pub fn suite(&self) -> CipherSuite {
-                self.suite
-            }
-        }
-    };
-}
-
-macro_rules! reify {
-    ($suite:ident, $type:tt, $x:expr) => {{
-        assert!($x.suite == $suite!(variant));
-        $x.erased.downcast_ref::<$suite!($type)>().unwrap()
-    }};
-}
-
-macro_rules! erase {
-    ($suite:ident, $type:ident, $result:expr) => {
-        $type { suite: $suite!(variant), erased: Box::new($result) as Box<dyn Any + Send + Sync> }
-    };
-}
-
-macro_rules! visit_fac {
-    ($left:ident($suite:expr) => $callback:ident($self_:tt)) => {
-        visit_fac!($left($suite) => $callback($self_,))
-    };
-    ($left:ident($suite:expr) => $callback:ident($self_:tt, $($args:tt)*)) => {
-        match $suite {
-            $left!(e) => visit_fac!(@case e $callback $self_ [ $($args),* ]),
-            $left!(s) => visit_fac!(@case s $callback $self_ [ $($args),* ]),
-            _ => bail!("Unknown crypto suite suite '{}'", $suite),
-        }
-    };
-    (@case $suite:ident $callback:ident $self_:tt [ ]) => {
-        $callback!($suite, $self_)
-    };
-    (@case $suite:ident $callback:ident $self_:tt [ $($args:tt),* ]) => {
-        $callback!($suite, $self_, $($args)*)
-    };
-}
-
-macro_rules! visit {
-    ($callback:ident($self_:tt)) => {
-        visit!($callback($self_,))
-    };
-    ($callback:ident($self_:tt, $($args:tt)*) ) => {
-        match $self_.suite {
-            e!(variant) => visit!(@case e $callback $self_ [ $($args),* ]),
-            s!(variant) => visit!(@case s $callback $self_ [ $($args),* ]),
-        }
-    };
-    (@case $suite:ident $callback:ident $self_:tt [ ]) => {
-        $callback!($suite, $self_)
-    };
-    (@case $suite:ident $callback:ident $self_:tt [ $($args:tt),* ]) => {
-        $callback!($suite, $self_, $($args)*)
-    };
-}
-
 mod id;
 mod pk;
 mod sig;
@@ -131,9 +26,7 @@ mod sk;
 
 use super::*;
 
-use std::any::Any;
 use std::hash::Hash;
-use std::hash::Hasher;
 
 use crate::ed25519::{EdKeyId, EdPrivateKey, EdPublicKey, EdSignature};
 use crate::secp256k1::{SecpKeyId, SecpPrivateKey, SecpPublicKey, SecpSignature};
@@ -157,6 +50,27 @@ pub enum CipherSuite {
     ///
     /// [`secp256k1`]: ../secp256k1/index.html
     Secp256k1,
+}
+
+impl CipherSuite {
+    fn as_byte(&self) -> u8 {
+        match self {
+            Self::Ed25519 => b'e',
+            Self::Secp256k1 => b's',
+        }
+    }
+
+    fn as_char(&self) -> char {
+        self.as_byte() as char
+    }
+
+    fn from_char(c: char) -> Result<Self> {
+        match c {
+            'e' => Ok(Self::Ed25519),
+            's' => Ok(Self::Secp256k1),
+            _ => bail!("Unknown crypto suite '{}'", c),
+        }
+    }
 }
 
 #[derive(Clone, Debug)]

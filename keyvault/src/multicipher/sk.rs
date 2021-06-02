@@ -1,57 +1,56 @@
 use super::*;
 
-erased_type! {
-    /// Type-erased [`PrivateKey`]
+/// Multicipher [`PrivateKey`]
+///
+/// [`PrivateKey`]: ../trait.AsymmetricCrypto.html#associatedtype.PrivateKey
+#[derive(Clone)]
+pub enum MPrivateKey {
+    /// The private key tagged with this variant belongs to the [`ed25519`] module
     ///
-    /// [`PrivateKey`]: ../trait.AsymmetricCrypto.html#associatedtype.PrivateKey
-    #[derive(Debug)]
-    pub struct MPrivateKey {}
-}
-
-macro_rules! public_key {
-    ($suite:ident, $self_:tt) => {{
-        let result = reify!($suite, sk, $self_).public_key();
-        erase!($suite, MPublicKey, result)
-    }};
-}
-
-macro_rules! sign {
-    ($suite:ident, $self_:tt, $data:ident) => {{
-        let result = reify!($suite, sk, $self_).sign($data);
-        erase!($suite, MSignature, result)
-    }};
+    /// [`ed25519`]: ../ed25519/index.html
+    Ed25519(EdPrivateKey),
+    /// The private key tagged with this variant belongs to the [`secp256k1`] module
+    ///
+    /// [`secp256k1`]: ../secp256k1/index.html
+    Secp256k1(SecpPrivateKey),
 }
 
 impl PrivateKey<MultiCipher> for MPrivateKey {
     fn public_key(&self) -> MPublicKey {
-        visit!(public_key(self))
+        match self {
+            Self::Ed25519(edsk) => MPublicKey::from(edsk.public_key()),
+            Self::Secp256k1(secpsk) => MPublicKey::from(secpsk.public_key()),
+        }
     }
     fn sign<D: AsRef<[u8]>>(&self, data: D) -> MSignature {
-        visit!(sign(self, data))
+        match self {
+            Self::Ed25519(edsk) => MSignature::from(edsk.sign(data)),
+            Self::Secp256k1(secpsk) => MSignature::from(secpsk.sign(data)),
+        }
     }
 }
 
 impl From<EdPrivateKey> for MPrivateKey {
     fn from(src: EdPrivateKey) -> Self {
-        erase!(e, MPrivateKey, src)
+        Self::Ed25519(src)
     }
 }
 
 impl From<SecpPrivateKey> for MPrivateKey {
     fn from(src: SecpPrivateKey) -> Self {
-        erase!(s, MPrivateKey, src)
+        Self::Secp256k1(src)
     }
 }
 
-macro_rules! clone {
-    ($suite:ident, $self_:expr) => {{
-        let result = reify!($suite, sk, $self_).clone();
-        erase!($suite, MPrivateKey, result)
-    }};
+// TODO display/debug
+impl std::fmt::Display for MPrivateKey {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "{}", "TODO")
+    }
 }
 
-impl Clone for MPrivateKey {
-    fn clone(&self) -> Self {
-        visit!(clone(self))
+impl std::fmt::Debug for MPrivateKey {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        (self as &dyn std::fmt::Display).fmt(f)
     }
 }

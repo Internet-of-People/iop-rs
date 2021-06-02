@@ -2,6 +2,7 @@ use blake2::VarBlake2b;
 use digest::{Update, VariableOutput};
 
 use super::*;
+use crate::multicipher::MKeyId;
 
 /// This constant is used for keyed hashing of public keys. This does not improve the security
 /// of the hash algorithm, but allows for domain separation if some use-case requires a different
@@ -55,5 +56,12 @@ impl From<&EdPublicKey> for EdKeyId {
         hash.push(KEY_ID_VERSION1);
         hasher.finalize_variable(|h| hash.extend_from_slice(h));
         EdKeyId(hash)
+    }
+}
+
+impl fmt::Debug for EdKeyId {
+    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> Result<(), fmt::Error> {
+        let id = MKeyId::from(self.clone());
+        id.fmt(formatter)
     }
 }
