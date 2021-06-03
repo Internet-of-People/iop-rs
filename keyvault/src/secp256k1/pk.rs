@@ -122,6 +122,18 @@ impl fmt::Debug for SecpPublicKey {
     }
 }
 
+impl From<secp::PublicKey> for SecpPublicKey {
+    fn from(pk: secp::PublicKey) -> Self {
+        Self(pk)
+    }
+}
+
+impl From<SecpPublicKey> for secp::PublicKey {
+    fn from(pk: SecpPublicKey) -> secp::PublicKey {
+        pk.0
+    }
+}
+
 #[cfg(test)]
 mod test {
     use super::*;

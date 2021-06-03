@@ -97,3 +97,15 @@ impl PrivateKey<Secp256k1> for SecpPrivateKey {
         SecpSignature(sig)
     }
 }
+
+impl From<secp::SecretKey> for SecpPrivateKey {
+    fn from(sk: secp::SecretKey) -> Self {
+        Self(sk)
+    }
+}
+
+impl From<SecpPrivateKey> for secp::SecretKey {
+    fn from(sk: SecpPrivateKey) -> secp::SecretKey {
+        sk.0
+    }
+}

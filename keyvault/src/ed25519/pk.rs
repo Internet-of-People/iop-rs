@@ -40,6 +40,12 @@ impl From<ed::PublicKey> for EdPublicKey {
     }
 }
 
+impl<'a> From<&'a EdPublicKey> for &'a ed::PublicKey {
+    fn from(pk: &'a EdPublicKey) -> &'a ed::PublicKey {
+        &pk.0
+    }
+}
+
 impl PublicKey<Ed25519> for EdPublicKey {
     fn key_id(&self) -> EdKeyId {
         EdKeyId::from(self)

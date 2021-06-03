@@ -75,6 +75,18 @@ impl fmt::Debug for SecpSignature {
     }
 }
 
+impl From<secp::Signature> for SecpSignature {
+    fn from(sig: secp::Signature) -> Self {
+        Self(sig)
+    }
+}
+
+impl From<SecpSignature> for secp::Signature {
+    fn from(sig: SecpSignature) -> secp::Signature {
+        sig.0
+    }
+}
+
 #[cfg(test)]
 mod test {
     use super::*;

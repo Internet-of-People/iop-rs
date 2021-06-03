@@ -56,7 +56,13 @@ impl PrivateKey<Ed25519> for EdPrivateKey {
 }
 
 impl From<ed::Keypair> for EdPrivateKey {
-    fn from(kp: ed::Keypair) -> Self {
-        Self(kp)
+    fn from(sk: ed::Keypair) -> Self {
+        Self(sk)
+    }
+}
+
+impl From<EdPrivateKey> for ed::Keypair {
+    fn from(sk: EdPrivateKey) -> ed::Keypair {
+        sk.0
     }
 }
