@@ -1,5 +1,3 @@
-use json_digest_wasm::MapJsError;
-
 use super::*;
 
 #[wasm_bindgen(js_name = MorpheusState)]
@@ -34,10 +32,13 @@ impl JsMorpheusState {
 
     #[wasm_bindgen(js_name = beforeProofExistsAt)]
     pub fn before_proof_exists_at(
-        &self, content_id: &str, height: Option<BlockHeight>,
+        &self, content_id: &str, height_opt: Option<BlockHeight>,
     ) -> Result<bool, JsValue> {
+        if let Some(height) = height_opt {
+            Self::check_height(height)?;
+        }
         let state = self.inner.state().map_err_to_js()?;
-        Ok(state.before_proof_exists_at(content_id, height))
+        Ok(state.before_proof_exists_at(content_id, height_opt))
     }
 
     #[wasm_bindgen(js_name = beforeProofHistory)]
@@ -51,13 +52,16 @@ impl JsMorpheusState {
     #[wasm_bindgen(js_name = getTransactionHistory)]
     pub fn get_tx_ids(
         &self, did: &str, include_attempts: bool, from_height_inc: BlockHeight,
-        until_height_inc: Option<u32>,
+        until_height_inc: Option<BlockHeight>,
     ) -> Result<JsValue, JsValue> {
+        if let Some(height) = until_height_inc {
+            Self::check_height(height)?;
+        }
         let state = self.inner.state().map_err_to_js()?;
         let js_vec_opt = state
             .get_tx_ids(did, include_attempts, from_height_inc, until_height_inc)
             .map(|a| JsValue::from_serde(&a.collect::<Vec<_>>()))
-            .unwrap_or_else(|| Ok(JsValue::null()));
+            .unwrap_or_else(|| JsValue::from_serde(&([] as [TransactionIdWithHeight; 0])));
         js_vec_opt.map_err_to_js()
     }
 
@@ -66,6 +70,19 @@ impl JsMorpheusState {
         let state = self.inner.state().map_err_to_js()?;
         let height_opt = state.last_tx_id(did).map(|t| t.transaction_id.clone());
         Ok(height_opt)
+    }
+
+    #[wasm_bindgen(js_name = getDidDocumentAt)]
+    pub fn get_doc_at(
+        &self, did_data: &str, height_opt: Option<BlockHeight>,
+    ) -> Result<JsValue, JsValue> {
+        if let Some(height) = height_opt {
+            Self::check_height(height)?;
+        }
+        let state = self.inner.state().map_err_to_js()?;
+        let doc = state.get_doc_at(did_data, height_opt).map_err_to_js()?;
+        let js_doc = JsValue::from_serde(&doc).map_err_to_js()?;
+        Ok(js_doc)
     }
 
     #[wasm_bindgen(js_name = dryRun)]
@@ -85,8 +102,16 @@ impl JsMorpheusState {
         Ok(js_errs)
     }
 
+    fn check_height(height: BlockHeight) -> Result<(), JsValue> {
+        if height > i32::MAX as u32 {
+            return Err(JsValue::from(format!("Blockheight cannot be negative: {}", height)));
+        }
+        Ok(())
+    }
+
     #[wasm_bindgen(js_name = blockApplying)]
     pub fn block_applying(&mut self, height: BlockHeight) -> Result<(), JsValue> {
+        Self::check_height(height)?;
         self.inner.block_applying(height).map_err_to_js()
     }
 
@@ -98,6 +123,7 @@ impl JsMorpheusState {
 
     #[wasm_bindgen(js_name = blockReverting)]
     pub fn block_reverting(&mut self, height: BlockHeight) -> Result<(), JsValue> {
+        Self::check_height(height)?;
         self.inner.block_reverting(height).map_err_to_js()
     }
 

@@ -1,6 +1,8 @@
 mod docs;
 mod state;
 mod state_holder;
+#[cfg(test)]
+mod test;
 mod time_series;
 mod txns;
 mod util;

@@ -63,7 +63,7 @@ impl StateHolder {
 
     pub fn block_applying(&mut self, height: BlockHeight) -> Result<()> {
         self.ensure_not_corrupted()?;
-        self.inner.apply(Mutation::SetBlockHeight { height })
+        self.may_corrupt_state(|inner| inner.apply(Mutation::SetBlockHeight { height }))
     }
 
     pub fn apply_transaction(&mut self, txid: &str, asset: &MorpheusAsset) -> Result<()> {
@@ -94,14 +94,13 @@ impl StateHolder {
 
     pub fn block_reverting(&mut self, height: BlockHeight) -> Result<()> {
         self.ensure_not_corrupted()?;
-        self.inner.revert(Mutation::SetBlockHeight { height })
+        self.may_corrupt_state(|inner| inner.revert(Mutation::SetBlockHeight { height }))
     }
 
     pub fn revert_transaction(&mut self, txid: &str, asset: &MorpheusAsset) -> Result<()> {
         self.ensure_not_corrupted()?;
-
-        let mut should_not_fail = || -> Result<()> {
-            let confirmed_opt = self.inner.is_confirmed(txid);
+        self.may_corrupt_state(|inner| {
+            let confirmed_opt = inner.is_confirmed(txid);
             ensure!(
                 confirmed_opt.is_some(),
                 "Transaction {} has not been applied, cannot revert.",
@@ -110,21 +109,24 @@ impl StateHolder {
 
             // Option::unwrap is panic-free after handling None above
             if confirmed_opt.unwrap() {
-                self.inner.revert(Mutation::ConfirmTxn { txid })?;
+                inner.revert(Mutation::ConfirmTxn { txid })?;
                 asset.operation_attempts.iter().rev().try_for_each(|op| -> Result<()> {
-                    self.inner.revert(Mutation::DoAttempt { op })?;
+                    inner.revert(Mutation::DoAttempt { op })?;
                     Ok(())
                 })?;
             } else {
-                self.inner.revert(Mutation::RejectTxn { txid })?;
+                inner.revert(Mutation::RejectTxn { txid })?;
             }
             asset.operation_attempts.iter().rev().try_for_each(|op| -> Result<()> {
-                self.inner.revert(Mutation::RegisterAttempt { txid, op })?;
+                inner.revert(Mutation::RegisterAttempt { txid, op })?;
                 Ok(())
             })?;
             Ok(())
-        };
-        if let Err(e) = should_not_fail() {
+        })
+    }
+
+    fn may_corrupt_state(&mut self, action: impl FnOnce(&mut State) -> Result<()>) -> Result<()> {
+        if let Err(e) = action(&mut self.inner) {
             self.corrupted = true;
             Err(e)
         } else {

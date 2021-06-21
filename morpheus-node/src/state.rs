@@ -59,8 +59,19 @@ impl State {
         self.get_tx_ids(did, false, 0, None).and_then(|mut i| i.next())
     }
 
+    pub fn get_doc_at(
+        &self, did_data: &str, height_opt: Option<BlockHeight>,
+    ) -> Result<DidDocument> {
+        let height = height_opt.unwrap_or(self.last_seen_height);
+        let did: Did = did_data.parse()?;
+        let default_state = DidDocumentState::new(&did);
+        let state = self.did_states.get(did_data).unwrap_or(&default_state);
+        let doc = state.at_height(&did, height)?;
+        Ok(doc)
+    }
+
     fn did_state_mut(
-        &mut self, did: &Did, last_tx_id: &Option<String>, signer: &Authentication,
+        &mut self, did: &Did, last_tx_id: &Option<String>,
     ) -> Result<&mut DidDocumentState> {
         let height = self.last_seen_height;
         let did_data = did.to_string();
@@ -91,20 +102,6 @@ impl State {
 
         let state =
             self.did_states.entry(did_data.clone()).or_insert_with(|| DidDocumentState::new(&did));
-
-        let doc = state.at_height(did, height)?;
-        let tombstoned = doc.is_tombstoned_at(height)?;
-        let can_update = doc.has_right_at(signer, Right::Update, height)?;
-
-        ensure!(
-            !tombstoned,
-            "{} cannot update {} at height {}. The DID is tombstoned",
-            signer,
-            &did_data,
-            height
-        );
-
-        ensure!(can_update, "{} has no right to update {} at height {}", signer, &did_data, height);
 
         Ok(state)
     }
@@ -141,11 +138,40 @@ impl State {
             Ok(())
         }
 
+        fn check_state(
+            state: &mut DidDocumentState, did: &Did, height: u32, signer: &Authentication,
+        ) -> Result<()> {
+            let did_data = did.to_string();
+
+            let doc = state.at_height(did, height)?;
+            let tombstoned = doc.is_tombstoned_at(height)?;
+            let can_update = doc.has_right_at(signer, Right::Update, height)?;
+
+            ensure!(
+                !tombstoned,
+                "{} cannot update {} at height {}. The DID is tombstoned",
+                signer,
+                &did_data,
+                height
+            );
+
+            ensure!(
+                can_update,
+                "{} has no right to update {} at height {}",
+                signer,
+                &did_data,
+                height
+            );
+
+            Ok(())
+        }
+
         fn apply_signed_op(this: &mut State, op: &SignedOperation) -> Result<()> {
             op.attempts()?.try_for_each(|a| -> Result<()> {
                 let signer = Authentication::PublicKey(op.signer_public_key.parse()?);
                 let height = this.last_seen_height;
-                let state = this.did_state_mut(&a.did, &a.last_tx_id, &signer)?;
+                let state = this.did_state_mut(&a.did, &a.last_tx_id)?;
+                check_state(state, &a.did, height, &signer)?;
                 state.apply(&a.did, height, &signer, &a.operation)
             })
         }
@@ -232,7 +258,7 @@ impl State {
             op.attempts()?.rev().try_for_each(|a| -> Result<()> {
                 let signer = Authentication::PublicKey(op.signer_public_key.parse()?);
                 let height = this.last_seen_height;
-                let state = this.did_state_mut(&a.did, &a.last_tx_id, &signer)?;
+                let state = this.did_state_mut(&a.did, &a.last_tx_id)?;
                 state.revert(&a.did, height, &signer, &a.operation)
             })
         }
@@ -241,7 +267,7 @@ impl State {
         match mutation {
             SetBlockHeight { height } => {
                 ensure!(
-                    self.last_seen_height <= height,
+                    self.last_seen_height >= height,
                     "The reverted height ({}) is > last seen height ({})",
                     height,
                     self.last_seen_height

@@ -16,7 +16,7 @@ crate-type = ["cdylib", "rlib"]
 anyhow = "1.0.32"
 # There are still some transitive dependencies on this old version
 getrandom01 = { version="0.1", package="getrandom", features=["wasm-bindgen"] }
-getrandom = { version="0.2", features=["js"] }
+getrandom = { version="0.2.3", features=["wasm-bindgen"] }
 iop-hydra-proto = "0.0.13"
 iop-hydra-sdk = "0.0.13"
 iop-keyvault = "0.0.13"
@@ -28,7 +28,7 @@ iop-vault = "0.0.13"
 json-digest-wasm = "0.0.13"
 # There are still some transitive dependencies on this old version
 rand07 = { version="0.7", package="rand", features=["getrandom"] }
-rand = { version="0.8", features=["getrandom"] }
+rand = { version="0.8.3", features=["getrandom"] }
 serde = { version="1.0.121", features = ["derive"] }
 serde_json = { version = "1.0.64", features = ["preserve_order"] }
 wasm-bindgen = { version = "0.2.73", features = ["serde-serialize"] }

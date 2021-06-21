@@ -18,11 +18,8 @@ impl<T: fmt::Display + PartialEq<T>> TimeSeries<T> {
     }
 
     pub fn iter(&self) -> impl Iterator<Item = (Option<BlockHeight>, &T)> {
-        self.points
-            .iter()
-            .rev()
-            .map(|p| (Some(p.height), &p.value))
-            .chain(std::iter::once((None, &self.initial_value)))
+        std::iter::once((None, &self.initial_value))
+            .chain(self.points.iter().map(|p| (Some(p.height), &p.value)))
     }
 
     pub fn get(&self, height: BlockHeight) -> &T {

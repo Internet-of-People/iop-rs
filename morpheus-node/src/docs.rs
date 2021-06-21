@@ -57,7 +57,7 @@ impl DidDocumentState {
         let keys_at_height: Vec<&KeyEntry> = self
             .key_entries
             .iter()
-            .filter(|k| k.added_at_height.map(|h| h > height).unwrap_or(true))
+            .filter(|k| k.added_at_height.map(|h| h <= height).unwrap_or(true))
             .collect();
 
         let keys: Vec<KeyData> =

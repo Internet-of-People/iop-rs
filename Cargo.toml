@@ -42,6 +42,8 @@ iop-vault = { path="./vault" }
 json-digest-wasm = { path="./json-digest-wasm" }
 json-digest = { path="./json-digest" }
 
+tiny-bip39 = { git="https://github.com/wigy-opensource-developer/bip39-rs", branch="wasm_bindgen" }
+
 # Local clone at parent folder
 #iop-keyvault = { path="../keyvault-rs/keyvault" }
 #iop-keyvault-wasm = { path="../keyvault-rs/keyvault-wasm" }
