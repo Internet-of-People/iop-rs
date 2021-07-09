@@ -6,7 +6,7 @@ pub extern "C" fn delete_SecpPublicKey(secp_pk: *mut SecpPublicKey) {
 }
 
 #[no_mangle]
-pub extern "C" fn SecpPublicKey_fromString(hex: *mut raw::c_char) -> CPtrResult<SecpPublicKey> {
+pub extern "C" fn SecpPublicKey_fromString(hex: *const raw::c_char) -> CPtrResult<SecpPublicKey> {
     let fun = || {
         let hex = unsafe { convert::str_in(hex) }?;
         let secp_pk = SecpPublicKey::from_str(hex)?;
@@ -16,7 +16,9 @@ pub extern "C" fn SecpPublicKey_fromString(hex: *mut raw::c_char) -> CPtrResult<
 }
 
 #[no_mangle]
-pub extern "C" fn SecpPublicKey_to_string(secp_pk: *mut SecpPublicKey) -> CPtrResult<raw::c_char> {
+pub extern "C" fn SecpPublicKey_to_string(
+    secp_pk: *const SecpPublicKey,
+) -> CPtrResult<raw::c_char> {
     let secp_pk = unsafe { convert::borrow_in(secp_pk) };
     let fun = || {
         let hex = secp_pk.to_string();
@@ -26,13 +28,13 @@ pub extern "C" fn SecpPublicKey_to_string(secp_pk: *mut SecpPublicKey) -> CPtrRe
 }
 
 #[no_mangle]
-pub extern "C" fn SecpPublicKey_key_id(secp_pk: *mut SecpPublicKey) -> *mut SecpKeyId {
+pub extern "C" fn SecpPublicKey_key_id(secp_pk: *const SecpPublicKey) -> *mut SecpKeyId {
     let secp_pk = unsafe { convert::borrow_in(secp_pk) };
     convert::move_out(secp_pk.key_id())
 }
 
 #[no_mangle]
-pub extern "C" fn SecpPublicKey_ark_key_id(secp_pk: *mut SecpPublicKey) -> *mut SecpKeyId {
+pub extern "C" fn SecpPublicKey_ark_key_id(secp_pk: *const SecpPublicKey) -> *mut SecpKeyId {
     let secp_pk = unsafe { convert::borrow_in(secp_pk) };
     convert::move_out(secp_pk.ark_key_id())
 }

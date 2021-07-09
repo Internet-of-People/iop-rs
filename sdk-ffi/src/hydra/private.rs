@@ -75,7 +75,7 @@ pub extern "C" fn HydraPrivate_key(
 ) -> CPtrResult<Bip44Key<Secp256k1>> {
     let fun = || {
         let private = unsafe { convert::borrow_mut_in(private) };
-        let key = private.key(idx)?;
+        let key = private.key_mut(idx)?;
         Ok(convert::move_out(key))
     };
     cresult(fun())

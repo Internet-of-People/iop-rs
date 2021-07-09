@@ -58,6 +58,12 @@ impl JsSecpKeyId {
         let inner = SecpKeyId::from_p2pkh_addr(address, network).map_err_to_js()?;
         Ok(inner.into())
     }
+
+    #[wasm_bindgen(js_name=toAddress)]
+    pub fn to_p2pkh_addr(&self, network: &str) -> Result<String, JsValue> {
+        let network = Networks::by_name(network).map_err_to_js()?;
+        Ok(self.inner.to_p2pkh_addr(network.p2pkh_addr()))
+    }
 }
 
 impl From<SecpKeyId> for JsSecpKeyId {
