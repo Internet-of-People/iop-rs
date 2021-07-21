@@ -1,12 +1,14 @@
 use super::*;
 
 #[no_mangle]
-pub extern "C" fn delete_MorpheusPrivate(private: *mut Private) {
+pub extern "C" fn delete_MorpheusPrivate(private: *mut MorpheusPrivate) {
     delete(private)
 }
 
 #[no_mangle]
-pub extern "C" fn MorpheusPrivate_personas_get(private: *mut Private) -> CPtrResult<PrivateKind> {
+pub extern "C" fn MorpheusPrivate_personas_get(
+    private: *mut MorpheusPrivate,
+) -> CPtrResult<MorpheusPrivateKind> {
     let private = unsafe { convert::borrow_in(private) };
     let fun = || {
         let kind = private.personas()?;
@@ -16,14 +18,14 @@ pub extern "C" fn MorpheusPrivate_personas_get(private: *mut Private) -> CPtrRes
 }
 
 #[no_mangle]
-pub extern "C" fn MorpheusPrivate_public_get(private: *mut Private) -> *mut Public {
+pub extern "C" fn MorpheusPrivate_public_get(private: *mut MorpheusPrivate) -> *mut MorpheusPublic {
     let private = unsafe { convert::borrow_in(private) };
     convert::move_out(private.public())
 }
 
 #[no_mangle]
 pub extern "C" fn MorpheusPrivate_key_by_pk(
-    private: *mut Private, pk: *mut MPublicKey,
+    private: *mut MorpheusPrivate, pk: *mut MPublicKey,
 ) -> CPtrResult<MorpheusPrivateKey> {
     let private = unsafe { convert::borrow_in(private) };
     let pk = unsafe { convert::borrow_in(pk) };
@@ -36,7 +38,7 @@ pub extern "C" fn MorpheusPrivate_key_by_pk(
 
 #[no_mangle]
 pub extern "C" fn MorpheusPrivate_sign_did_operations(
-    private: *mut Private, id: *mut MKeyId, message: *mut CSlice<u8>,
+    private: *mut MorpheusPrivate, id: *mut MKeyId, message: *mut CSlice<u8>,
 ) -> CPtrResult<Signed<Box<[u8]>>> {
     let private = unsafe { convert::borrow_in(private) };
     let id = unsafe { convert::borrow_in(id) };
@@ -53,7 +55,7 @@ pub extern "C" fn MorpheusPrivate_sign_did_operations(
 
 #[no_mangle]
 pub extern "C" fn MorpheusPrivate_sign_witness_request(
-    private: *mut Private, id: *mut MKeyId, request: *mut raw::c_char,
+    private: *mut MorpheusPrivate, id: *mut MKeyId, request: *mut raw::c_char,
 ) -> CPtrResult<Signed<serde_json::Value>> {
     let private = unsafe { convert::borrow_in(private) };
     let id = unsafe { convert::borrow_in(id) };
@@ -70,7 +72,7 @@ pub extern "C" fn MorpheusPrivate_sign_witness_request(
 
 #[no_mangle]
 pub extern "C" fn MorpheusPrivate_sign_witness_statement(
-    private: *mut Private, id: *mut MKeyId, statement: *mut raw::c_char,
+    private: *mut MorpheusPrivate, id: *mut MKeyId, statement: *mut raw::c_char,
 ) -> CPtrResult<Signed<serde_json::Value>> {
     let private = unsafe { convert::borrow_in(private) };
     let id = unsafe { convert::borrow_in(id) };
@@ -87,7 +89,7 @@ pub extern "C" fn MorpheusPrivate_sign_witness_statement(
 
 #[no_mangle]
 pub extern "C" fn MorpheusPrivate_sign_claim_presentation(
-    private: *mut Private, id: *mut MKeyId, presentation: *mut raw::c_char,
+    private: *mut MorpheusPrivate, id: *mut MKeyId, presentation: *mut raw::c_char,
 ) -> CPtrResult<Signed<serde_json::Value>> {
     let private = unsafe { convert::borrow_in(private) };
     let id = unsafe { convert::borrow_in(id) };
@@ -102,12 +104,12 @@ pub extern "C" fn MorpheusPrivate_sign_claim_presentation(
     cresult(fun())
 }
 
-fn create_signer(private: &Private, id: &MKeyId) -> Result<PrivateKeySigner> {
+fn create_signer(private: &MorpheusPrivate, id: &MKeyId) -> Result<PrivateKeySigner> {
     let sk: MPrivateKey = key_by_id(private, id)?.private_key();
     Ok(PrivateKeySigner::new(sk))
 }
 
-fn key_by_id(private: &Private, id: &MKeyId) -> Result<MorpheusPrivateKey> {
+fn key_by_id(private: &MorpheusPrivate, id: &MKeyId) -> Result<MorpheusPrivateKey> {
     let pk = private.public().key_by_id(id)?;
     let morpheus_sk = private.key_by_pk(&pk)?;
     Ok(morpheus_sk)

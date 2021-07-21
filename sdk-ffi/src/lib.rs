@@ -34,7 +34,10 @@ use iop_morpheus_proto::{
     crypto::{jwt::*, sign::*},
     data::*,
 };
-use iop_morpheus_sdk::vault::{Plugin, Private, PrivateKind, Public, PublicKind};
+use iop_morpheus_sdk::vault::{
+    Plugin as MorpheusPlugin, Private as MorpheusPrivate, PrivateKind as MorpheusPrivateKind,
+    Public as MorpheusPublic, PublicKind as MorpheusPublicKind,
+};
 use iop_vault::{BoundPlugin, Vault};
 use json_digest::*;
 

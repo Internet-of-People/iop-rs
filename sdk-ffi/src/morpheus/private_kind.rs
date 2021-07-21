@@ -1,21 +1,21 @@
 use super::*;
 
 #[no_mangle]
-pub extern "C" fn delete_MorpheusPrivateKind(kind: *mut PrivateKind) {
+pub extern "C" fn delete_MorpheusPrivateKind(kind: *mut MorpheusPrivateKind) {
     delete(kind)
 }
 
 // TODO MorpheusPrivateKind_bip32_path_get and MorpheusPrivateKind_network_get
 
 #[no_mangle]
-pub extern "C" fn MorpheusPrivateKind_kind_get(kind: *mut PrivateKind) -> *mut raw::c_char {
+pub extern "C" fn MorpheusPrivateKind_kind_get(kind: *mut MorpheusPrivateKind) -> *mut raw::c_char {
     let kind = unsafe { convert::borrow_in(kind) };
     let res = format!("{:?}", kind.path());
     convert::string_out(res)
 }
 
 #[no_mangle]
-pub extern "C" fn MorpheusPrivateKind_len_get(kind: *mut PrivateKind) -> CPtrResult<usize> {
+pub extern "C" fn MorpheusPrivateKind_len_get(kind: *mut MorpheusPrivateKind) -> CPtrResult<usize> {
     let kind = unsafe { convert::borrow_in(kind) };
     let fun = || {
         let len = kind.len()?;
@@ -25,7 +25,9 @@ pub extern "C" fn MorpheusPrivateKind_len_get(kind: *mut PrivateKind) -> CPtrRes
 }
 
 #[no_mangle]
-pub extern "C" fn MorpheusPrivateKind_is_empty_get(kind: *mut PrivateKind) -> CPtrResult<u8> {
+pub extern "C" fn MorpheusPrivateKind_is_empty_get(
+    kind: *mut MorpheusPrivateKind,
+) -> CPtrResult<u8> {
     let kind = unsafe { convert::borrow_in(kind) };
     let fun = || {
         let is_empty = kind.is_empty()?;
@@ -35,14 +37,16 @@ pub extern "C" fn MorpheusPrivateKind_is_empty_get(kind: *mut PrivateKind) -> CP
 }
 
 #[no_mangle]
-pub extern "C" fn MorpheusPrivateKind_neuter(kind: *mut PrivateKind) -> *mut PublicKind {
+pub extern "C" fn MorpheusPrivateKind_neuter(
+    kind: *mut MorpheusPrivateKind,
+) -> *mut MorpheusPublicKind {
     let kind = unsafe { convert::borrow_in(kind) };
     convert::move_out(kind.neuter())
 }
 
 #[no_mangle]
 pub extern "C" fn MorpheusPrivateKind_key(
-    kind: *mut PrivateKind, idx: i32,
+    kind: *mut MorpheusPrivateKind, idx: i32,
 ) -> CPtrResult<MorpheusPrivateKey> {
     let kind = unsafe { convert::borrow_mut_in(kind) };
     let mut fun = || {
@@ -53,7 +57,9 @@ pub extern "C" fn MorpheusPrivateKind_key(
 }
 
 #[no_mangle]
-pub extern "C" fn MorpheusPrivateKind_did(kind: *mut PrivateKind, idx: i32) -> CPtrResult<Did> {
+pub extern "C" fn MorpheusPrivateKind_did(
+    kind: *mut MorpheusPrivateKind, idx: i32,
+) -> CPtrResult<Did> {
     let kind = unsafe { convert::borrow_mut_in(kind) };
     let mut fun = || {
         let sk = kind.key_mut(idx)?;

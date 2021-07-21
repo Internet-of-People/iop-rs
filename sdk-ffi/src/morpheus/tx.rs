@@ -140,18 +140,39 @@ pub extern "C" fn MorpheusOperationSigner_add(
 }
 
 #[no_mangle]
-pub extern "C" fn MorpheusOperationSigner_sign(
+pub extern "C" fn MorpheusOperationSigner_sign_with_key(
     signer: *mut MorpheusOperationSigner, private_key: *const MPrivateKey,
 ) -> CPtrResult<SignedOperation> {
     let fun = || {
-        let signer = unsafe { convert::borrow_in(signer) };
         let private_key = unsafe { convert::borrow_in(private_key) };
-        let signable_ops = SignableOperation::new(signer.operations.to_owned());
-        let signer = PrivateKeySigner::new(private_key.to_owned());
-        let signed_ops = signable_ops.sign(&signer)?;
+        let signed_ops = MorpheusOperationSigner_sign_inner(signer, private_key.to_owned())?;
         Ok(convert::move_out(signed_ops))
     };
     cresult(fun())
+}
+
+#[no_mangle]
+pub extern "C" fn MorpheusOperationSigner_sign(
+    signer: *mut MorpheusOperationSigner, public_key: *const MPublicKey,
+    morpheus_private: *const MorpheusPrivate,
+) -> CPtrResult<SignedOperation> {
+    let fun = || {
+        let morpheus_private = unsafe { convert::borrow_in(morpheus_private) };
+        let public_key = unsafe { convert::borrow_in(public_key) };
+        let private_key = morpheus_private.key_by_pk(public_key)?.private_key();
+        let signed_ops = MorpheusOperationSigner_sign_inner(signer, private_key)?;
+        Ok(convert::move_out(signed_ops))
+    };
+    cresult(fun())
+}
+
+fn MorpheusOperationSigner_sign_inner(
+    signer: *mut MorpheusOperationSigner, private_key: MPrivateKey,
+) -> Result<SignedOperation> {
+    let signer = unsafe { convert::borrow_in(signer) };
+    let signable_ops = SignableOperation::new(signer.operations.to_owned());
+    let signer = PrivateKeySigner::new(private_key);
+    signable_ops.sign(&signer)
 }
 
 #[no_mangle]

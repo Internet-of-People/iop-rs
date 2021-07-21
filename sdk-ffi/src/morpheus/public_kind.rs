@@ -1,12 +1,12 @@
 use super::*;
 
 #[no_mangle]
-pub extern "C" fn delete_MorpheusPublicKind(kind: *mut PublicKind) {
+pub extern "C" fn delete_MorpheusPublicKind(kind: *mut MorpheusPublicKind) {
     delete(kind)
 }
 
 #[no_mangle]
-pub extern "C" fn MorpheusPublicKind_len_get(kind: *mut PublicKind) -> CPtrResult<usize> {
+pub extern "C" fn MorpheusPublicKind_len_get(kind: *mut MorpheusPublicKind) -> CPtrResult<usize> {
     let kind = unsafe { convert::borrow_in(kind) };
     let fun = || {
         let len = kind.len()?;
@@ -16,7 +16,7 @@ pub extern "C" fn MorpheusPublicKind_len_get(kind: *mut PublicKind) -> CPtrResul
 }
 
 #[no_mangle]
-pub extern "C" fn MorpheusPublicKind_is_empty_get(kind: *mut PublicKind) -> CPtrResult<u8> {
+pub extern "C" fn MorpheusPublicKind_is_empty_get(kind: *mut MorpheusPublicKind) -> CPtrResult<u8> {
     let kind = unsafe { convert::borrow_in(kind) };
     let fun = || {
         let is_empty = kind.is_empty()?;
@@ -27,7 +27,7 @@ pub extern "C" fn MorpheusPublicKind_is_empty_get(kind: *mut PublicKind) -> CPtr
 
 #[no_mangle]
 pub extern "C" fn MorpheusPublicKind_key(
-    kind: *mut PublicKind, idx: i32,
+    kind: *mut MorpheusPublicKind, idx: i32,
 ) -> CPtrResult<MPublicKey> {
     let kind = unsafe { convert::borrow_mut_in(kind) };
     let fun = || {
@@ -38,7 +38,9 @@ pub extern "C" fn MorpheusPublicKind_key(
 }
 
 #[no_mangle]
-pub extern "C" fn MorpheusPublicKind_did(kind: *const PublicKind, idx: i32) -> CPtrResult<Did> {
+pub extern "C" fn MorpheusPublicKind_did(
+    kind: *const MorpheusPublicKind, idx: i32,
+) -> CPtrResult<Did> {
     let kind = unsafe { convert::borrow_in(kind) };
     let fun = || {
         let pk = kind.key(idx)?;

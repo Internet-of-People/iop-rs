@@ -166,9 +166,24 @@ impl JsMorpheusOperationSigner {
         self.signables.push(signable.inner().to_owned())
     }
 
-    pub fn sign(&self, private_key: &JsMPrivateKey) -> Result<JsMorpheusSignedOperation, JsValue> {
+    #[wasm_bindgen(js_name=signWithKey)]
+    pub fn sign_with_key(
+        &self, private_key: &JsMPrivateKey,
+    ) -> Result<JsMorpheusSignedOperation, JsValue> {
+        self.sign_inner(private_key.inner().to_owned())
+    }
+
+    pub fn sign(
+        &self, public_key: JsMPublicKey, morpheus_private: &JsMorpheusPrivate,
+    ) -> Result<JsMorpheusSignedOperation, JsValue> {
+        let private_key =
+            morpheus_private.inner().key_by_pk(&public_key.inner()).map_err_to_js()?;
+        self.sign_inner(private_key.private_key())
+    }
+
+    fn sign_inner(&self, private_key: MPrivateKey) -> Result<JsMorpheusSignedOperation, JsValue> {
         let signable_ops = SignableOperation::new(self.signables.to_owned());
-        let signer = PrivateKeySigner::new(private_key.inner().to_owned());
+        let signer = PrivateKeySigner::new(private_key);
         let signed = signable_ops.sign(&signer).map_err_to_js()?;
         Ok(signed.into())
     }
