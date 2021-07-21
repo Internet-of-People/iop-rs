@@ -1,13 +1,26 @@
 # Changelog
 
-## 0.0.13 (TODO)
+## 0.0.14 (2021-07-21)
+
+### Fixed
+
+- DID documents generated were missing the `index` property in the objects in the `keys` list.
+
+### Changed
+
+- Separated `sign` and `signWithKey` methods on `MorpheusOperationSigner` both in WASM and FFI
+
+## 0.0.13 (2021-07-09)
 
 ### Added
 
 - You can now set the vendor field (aka. smart bridge field) and set a manual fee on Hydra core transactions using the 2 new optional arguments TypeScript SDK HydraTxBuilder factory methods got.
+- Added some missing bindings to WASM and FFI, `SecpKeyId.toAddress` being the most important one.
+- Multicipher objects (`MPrivateKey`, `MPublicKey` and `MKeyId`) can be safely downcasted in Rust to secp256p1 and ed25519 cipher objects. Not supported in WASM and FFI yet.
 
 ### Changed
 
+- Separated node-wasm and sdk-wasm, so hydra-core plugins can have code that does not bloat the SDK
 - Merged morpheus-rust and keyvault-rust repositories as iop-rs
 
 ## 0.0.12-hotfix1 (2021-05-06)

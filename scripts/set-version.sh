@@ -6,7 +6,7 @@ function replace_toml() {
     toml_file=$1
     sed -i -E 's#^(\s*version\s*=\s*)".+"$#\1"'"$version"'"#g' "$toml_file"
     sed -i -E 's#(iop-.*=.*)".+"#\1"'"$version"'"#g' "$toml_file"
-    sed -i -E 's#(json-digest\s*=.*)".+"#\1"'"$version"'"#g' "$toml_file"
+    sed -i -E 's#(json-digest.*=.*)".+"#\1"'"$version"'"#g' "$toml_file"
 }
 
 function replace_json() {
@@ -14,8 +14,27 @@ function replace_json() {
     sed -i -E 's#^(\s*"version"\s*:\s*)".+",$#\1"'"$version"'",#g' "$json_file"
 }
 
-declare -a crates=("coeus-core" "coeus-core-wasm" "hydra-proto" "hydra-sdk" "json-digest" "keyvault" "morpheus-core" "morpheus-core-wasm" "morpheus-sdk" "sdk" "sdk-ffi" "sdk-wasm" "vault")
-declare -a wasm_packages=("coeus-core-wasm" "keyvault-wasm" "morpheus-core-wasm" "sdk-wasm")
+declare -a crates=(
+    "coeus-node"
+    "coeus-proto"
+    "hydra-proto"
+    "hydra-sdk"
+    "journal-proto"
+    "json-digest"
+    "json-digest-wasm"
+    "keyvault"
+    "keyvault-wasm"
+    "morpheus-node"
+    "morpheus-proto"
+    "morpheus-sdk"
+    "node-wasm"
+    "proto-wasm"
+    "sdk"
+    "sdk-ffi"
+    "sdk-wasm"
+    "vault"
+)
+declare -a wasm_packages=("node-wasm" "sdk-wasm")
 
 for crate in "${crates[@]}"; do
     replace_toml "$crate/Cargo.toml"

@@ -1,6 +1,6 @@
 [package]
 name = "iop-morpheus-sdk"
-version = "0.0.13"
+version = "0.0.14"
 authors = ["IOP Ventures LLC <dev@iop-ventures.com>", "Rache Bartmoss <bartmoss@tutanota.com>", "wigy <wigy_opensource_developer@yahoo.com>"]
 license = "LGPL-3.0-or-later"
 edition = "2018"
@@ -8,8 +8,8 @@ edition = "2018"
 
 [dependencies]
 anyhow = "1.0.32"
-iop-keyvault = "0.0.13"
-iop-vault = "0.0.13"
+iop-keyvault = "0.0.14"
+iop-vault = "0.0.14"
 parking_lot = { version = "0.11.1", features = ["serde", "wasm-bindgen"] }
 rand = { version = "0.8.3", features = ["getrandom"] }
 serde = { version="1.0.121", features = ["derive"] }
@@ -19,8 +19,8 @@ typetag = "0.1.5"
 
 [dev-dependencies]
 chrono = { version = "0.4.15", features = ["wasmbind"] }
-iop-morpheus-proto = "0.0.13"
-json-digest = "0.0.13"
+iop-morpheus-proto = "0.0.14"
+json-digest = "0.0.14"
 serde_json = { version = "1.0.64", features = ["preserve_order"] }
 
 

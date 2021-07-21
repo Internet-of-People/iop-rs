@@ -1,6 +1,6 @@
 [package]
 name = "iop-proto-wasm"
-version = "0.0.13"
+version = "0.0.14"
 authors = [
     "IOP Ventures LLC <dev@iop-ventures.com>",
     "Rache Bartmoss <bartmoss@tutanota.com>",
@@ -17,12 +17,12 @@ normal = ["uuid"]
 
 [dependencies]
 anyhow = "1.0.32"
-iop-coeus-proto = "0.0.13"
-iop-hydra-proto = "0.0.13"
-iop-journal-proto = "0.0.13"
-iop-keyvault = "0.0.13"
-iop-keyvault-wasm = "0.0.13"
-iop-morpheus-proto = "0.0.13"
+iop-coeus-proto = "0.0.14"
+iop-hydra-proto = "0.0.14"
+iop-journal-proto = "0.0.14"
+iop-keyvault = "0.0.14"
+iop-keyvault-wasm = "0.0.14"
+iop-morpheus-proto = "0.0.14"
 serde = { version="1.0.121", features = ["derive"] }
 serde_json = { version = "1.0.64", features = ["preserve_order"] }
 serde_str = "0.1.0"

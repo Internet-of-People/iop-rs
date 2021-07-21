@@ -2,7 +2,7 @@
 
 Morpheus is a framework for decentralized identifiers (DID), key and right management and
 cryptographically verifiable claims and credentials (VC) about such identities
-based on a web of trust. For an in-depth description, please check our [developer portal](https://developer.iop.technology/). 
+based on a web of trust. For an in-depth description, please check our [developer portal](https://developer.iop.technology/).
 
 Morpheus DIDs were based on the [W3C DID specification](https://w3c.github.io/did-core/) and
 VCs on the [W3C VC specification](https://www.w3.org/TR/vc-data-model/).
