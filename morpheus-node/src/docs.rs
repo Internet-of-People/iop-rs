@@ -60,8 +60,11 @@ impl DidDocumentState {
             .filter(|k| k.added_at_height.map(|h| h <= height).unwrap_or(true))
             .collect();
 
-        let keys: Vec<KeyData> =
-            keys_at_height.iter().map(|k| self.key_entry_to_data(*k, height)).collect();
+        let keys: Vec<KeyData> = keys_at_height
+            .iter()
+            .enumerate()
+            .map(|(i, k)| self.key_entry_to_data(*k, i, height))
+            .collect();
 
         let rights: HashMap<Right, Vec<KeyRightHistory>> = Right::map_all(|r| {
             keys_at_height
@@ -105,14 +108,18 @@ impl DidDocumentState {
         KeyRightHistory { state, derived }
     }
 
-    fn key_entry_to_data(&self, key_entry: &KeyEntry, height: BlockHeight) -> KeyData {
+    fn key_entry_to_data(
+        &self, key_entry: &KeyEntry, index: usize, height: BlockHeight,
+    ) -> KeyData {
         let state = KeyState {
             authentication: key_entry.auth.to_owned(),
             valid_from_block: key_entry.added_at_height,
             valid_until_block: key_entry.valid_until(self.tombstoned_at_height),
         };
-        let derived =
-            KeyDataDerived { valid: key_entry.is_valid_at(self.tombstoned_at_height, height) };
+        let derived = KeyDataDerived {
+            index,
+            valid: key_entry.is_valid_at(self.tombstoned_at_height, height),
+        };
         KeyData { state, derived }
     }
 

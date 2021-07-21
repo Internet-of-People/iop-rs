@@ -70,6 +70,7 @@ pub struct KeyState {
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
 pub struct KeyDataDerived {
+    pub index: usize,
     pub valid: bool,
 }
 
@@ -84,7 +85,7 @@ pub struct KeyData {
 impl KeyData {
     fn from_auth(authentication: Authentication) -> Self {
         let state = KeyState { authentication, valid_from_block: None, valid_until_block: None };
-        let derived = KeyDataDerived { valid: true };
+        let derived = KeyDataDerived { index: 0, valid: true };
         Self { state, derived }
     }
 
@@ -343,10 +344,12 @@ mod test {
             "did": "did:morpheus:ezbeWGSY2dqcUBqT8K7R14xr",
             "keys": [
               {
+                "index": 0,
                 "auth": "iezbeWGSY2dqcUBqT8K7R14xr",
                 "valid": true
               },
               {
+                "index": 1,
                 "auth": "iez25N5WZ1Q6TQpgpyYgiu9gTX",
                 "valid": true,
                 "validFromHeight": 120
@@ -461,10 +464,12 @@ mod test {
             "did": "did:morpheus:ezbeWGSY2dqcUBqT8K7R14xr",
             "keys": [
               {
+                "index": 0,
                 "auth": "iezbeWGSY2dqcUBqT8K7R14xr",
                 "valid": true
               },
               {
+                "index": 1,
                 "auth": "iez25N5WZ1Q6TQpgpyYgiu9gTX",
                 "valid": true,
                 "validFromHeight": 10,
