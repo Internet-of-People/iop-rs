@@ -23,7 +23,7 @@ timestamping of content ids and signatures need a public ledger.
 
 The current implementation uses the [Hydra blockchain](https://github.com/Internet-of-People/hydra-core),
 but is ledger-agnostic in general. Hydra was built as a bridge-chain of the Ark ecosystem and Morpheus adds a
-[layer 2 plugin](https://github.com/Internet-of-People/morpheus-ts) on top to define custom transactions
+[layer 2 plugin](https://github.com/Internet-of-People/iop-ts) on top to define custom transactions
 managing DIDs and rights.
 
 Anything else that does not need public verification is not stored on the ledger or
