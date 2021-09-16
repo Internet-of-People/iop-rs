@@ -5,5 +5,6 @@ use super::*;
 pub struct BeforeProofHistory {
     pub content_id: String,
     pub exists_from_height: Option<BlockHeight>,
+    pub txid: Option<String>,
     pub queried_at_height: BlockHeight,
 }

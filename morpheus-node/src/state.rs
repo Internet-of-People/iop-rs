@@ -5,16 +5,22 @@ use super::*;
 pub(super) enum Mutation<'a> {
     SetBlockHeight { height: BlockHeight },
     RegisterAttempt { txid: &'a str, op: &'a OperationAttempt },
-    DoAttempt { op: &'a OperationAttempt },
+    DoAttempt { txid: &'a str, op: &'a OperationAttempt },
     ConfirmTxn { txid: &'a str },
     RejectTxn { txid: &'a str },
+}
+
+#[derive(Debug, Default, Clone)]
+pub struct BeforeProofState {
+    height: BlockHeight,
+    txid: String,
 }
 
 #[derive(Debug, Default, Clone)]
 pub struct State {
     last_seen_height: BlockHeight,
     txn_status: HashMap<String, bool>,
-    before_proofs: HashMap<String, BlockHeight>,
+    before_proofs: HashMap<String, BeforeProofState>,
     did_states: HashMap<String, DidDocumentState>,
     did_txns: DidTransactionsState,
 }
@@ -31,15 +37,16 @@ impl State {
     pub fn before_proof_exists_at(&self, content_id: &str, height: Option<BlockHeight>) -> bool {
         self.before_proofs
             .get(content_id)
-            .map(|registered_at| height.map(|h| h >= *registered_at).unwrap_or(true))
+            .map(|state| height.map(|h| h >= state.height).unwrap_or(true))
             .unwrap_or(false)
     }
 
     pub fn before_proof_history(&self, content_id: &str) -> BeforeProofHistory {
-        let exists_from_height = self.before_proofs.get(content_id).cloned();
+        let state = self.before_proofs.get(content_id);
         BeforeProofHistory {
             content_id: content_id.to_owned(),
-            exists_from_height,
+            exists_from_height: state.map(|s| s.height),
+            txid: state.map(|s| s.txid.clone()),
             queried_at_height: self.last_seen_height,
         }
     }
@@ -129,11 +136,17 @@ impl State {
         }
 
         fn insert_before_proof(
-            this: &mut State, content_id: &str, height: BlockHeight,
+            this: &mut State, txid: &str, content_id: &str, height: BlockHeight,
         ) -> Result<()> {
+            let state = BeforeProofState { height, txid: txid.to_owned() };
             // We can change the state fearlessly even if we Err, because the caller will throw away changed state on error
-            if let Some(old_height) = this.before_proofs.insert(content_id.to_owned(), height) {
-                bail!("Before proof {} is already registered at {}", content_id, old_height)
+            if let Some(old_state) = this.before_proofs.insert(content_id.to_owned(), state) {
+                bail!(
+                    "Before proof {} is already registered at {} by txn {}",
+                    content_id,
+                    old_state.height,
+                    old_state.txid
+                )
             }
             Ok(())
         }
@@ -192,9 +205,9 @@ impl State {
                     insert_did_txns(self, txid, signed_op);
                 }
             }
-            DoAttempt { op } => match op {
+            DoAttempt { txid, op } => match op {
                 OperationAttempt::RegisterBeforeProof { content_id } => {
-                    insert_before_proof(self, content_id, self.last_seen_height)?
+                    insert_before_proof(self, txid, content_id, self.last_seen_height)?
                 }
                 OperationAttempt::Signed(op) => apply_signed_op(self, op)?,
             },
@@ -235,15 +248,24 @@ impl State {
             })
         }
 
-        fn remove_before_proof(this: &mut State, content_id: &str) -> Result<()> {
+        fn remove_before_proof(this: &mut State, txid: &str, content_id: &str) -> Result<()> {
             let height = this.last_seen_height;
-            if let Some(old_height) = this.before_proofs.remove(content_id) {
+            if let Some(old_state) = this.before_proofs.remove(content_id) {
+                let old_height = old_state.height;
+                let old_txid = old_state.txid;
                 ensure!(
                     height == old_height,
                     "Before proof {} was registered at {}, cannot be reverted at {}",
                     content_id,
                     old_height,
                     height
+                );
+                ensure!(
+                    txid == old_txid,
+                    "Before proof {} was registered by txn {}, cannot be reverted by txn {}",
+                    content_id,
+                    old_txid,
+                    txid
                 );
                 Ok(())
             } else {
@@ -279,9 +301,9 @@ impl State {
                     remove_did_txns(self, txid, signed_op);
                 }
             }
-            DoAttempt { op } => match op {
+            DoAttempt { txid, op } => match op {
                 OperationAttempt::RegisterBeforeProof { content_id } => {
-                    remove_before_proof(self, content_id)?
+                    remove_before_proof(self, txid, content_id)?
                 }
                 OperationAttempt::Signed(op) => revert_signed_op(self, op)?,
             },

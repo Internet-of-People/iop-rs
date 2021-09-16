@@ -46,14 +46,16 @@ impl StateHolder {
         let res = asset.operation_attempts.iter().try_fold(
             temp,
             |mut inner, op| -> Result<Box<State>, OperationError> {
-                inner.apply(Mutation::DoAttempt { op }).map_err(|e| OperationError {
-                    invalid_operation_attempt: Some(op.clone()),
-                    message: e.to_string(),
+                inner.apply(Mutation::DoAttempt { txid: "dry_run", op }).map_err(|e| {
+                    OperationError {
+                        invalid_operation_attempt: Some(op.clone()),
+                        message: e.to_string(),
+                    }
                 })?;
                 Ok(inner)
             },
         );
-        // TODO The TS code just stopped on the 1st error, should we collect all?
+        // TODO The TS code just stopped on the 1st error, should we collect them all?
         let errors = match res {
             Ok(_) => vec![],
             Err(e) => vec![e],
@@ -75,7 +77,7 @@ impl StateHolder {
         let inner_res = asset.operation_attempts.iter().try_fold(
             self.inner.clone(),
             |mut inner, op| -> Result<Box<State>> {
-                inner.apply(Mutation::DoAttempt { op })?;
+                inner.apply(Mutation::DoAttempt { txid, op })?;
                 Ok(inner)
             },
         );
@@ -111,7 +113,7 @@ impl StateHolder {
             if confirmed_opt.unwrap() {
                 inner.revert(Mutation::ConfirmTxn { txid })?;
                 asset.operation_attempts.iter().rev().try_for_each(|op| -> Result<()> {
-                    inner.revert(Mutation::DoAttempt { op })?;
+                    inner.revert(Mutation::DoAttempt { txid, op })?;
                     Ok(())
                 })?;
             } else {
