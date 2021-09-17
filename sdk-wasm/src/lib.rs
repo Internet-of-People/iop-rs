@@ -24,6 +24,7 @@ use iop_hydra_proto::{
 };
 use iop_hydra_sdk::vault as hd_hydra;
 use iop_keyvault::{
+    ed25519::DidKind,
     multicipher::*,
     secp256k1::{Secp256k1, SecpPublicKey},
     Network, Networks, PublicKey as _,

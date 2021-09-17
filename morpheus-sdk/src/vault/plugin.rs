@@ -8,8 +8,10 @@ struct Inner {
 }
 
 impl Inner {
-    fn new(personas: Vec<String>) -> Self {
-        let public_state = PublicState { personas };
+    fn new(
+        personas: Vec<String>, devices: Vec<String>, groups: Vec<String>, resources: Vec<String>,
+    ) -> Self {
+        let public_state = PublicState { personas, devices, groups, resources };
         Self { parameters: Default::default(), public_state }
     }
 }
@@ -38,21 +40,23 @@ impl VaultPlugin for Plugin {
 }
 
 impl Plugin {
-    pub fn new(personas: Vec<String>) -> Self {
-        let imp = Inner::new(personas);
+    pub fn new(
+        personas: Vec<String>, devices: Vec<String>, groups: Vec<String>, resources: Vec<String>,
+    ) -> Self {
+        let imp = Inner::new(personas, devices, groups, resources);
         let inner = Arc::new(RwLock::new(imp));
         Self { inner }
     }
 
     pub fn create(vault: &mut Vault) -> Result<()> {
-        let plugin = Self::new(vec![]);
+        let plugin = Self::new(vec![], vec![], vec![], vec![]);
         vault.add(Box::new(plugin))
     }
 
     pub fn init(vault: &mut Vault, unlock_password: impl AsRef<str>) -> Result<()> {
         let seed = vault.unlock(unlock_password.as_ref())?;
         let persona0 = Morpheus.root(&seed)?.personas()?.key(0)?.neuter();
-        let plugin = Self::new(vec![persona0.public_key().to_string()]);
+        let plugin = Self::new(vec![persona0.public_key().to_string()], vec![], vec![], vec![]);
         vault.add(Box::new(plugin))
     }
 

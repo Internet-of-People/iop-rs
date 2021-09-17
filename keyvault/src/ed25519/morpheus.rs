@@ -16,12 +16,34 @@ pub enum DidKind {
     /// An identifier intrinsically handled by multiple personas.
     /// E.g. legal entities, organizations, families, etc.
     Group = 2,
+    /// An identifier that represents some resource or property in the real world.
+    /// E.g. smart lock, real estate, NFT, etc.
+    Resource = 3,
 }
 
 impl DidKind {
     /// The canonical BIP32 derivation path of the node that stores all identifiers of the given kind.
     pub fn bip32_path(self) -> bip32::Path {
         Morpheus.bip32_path().append(ChildIndex::Hardened(self as i32))
+    }
+
+    /// All variants of the enumeration
+    pub fn all() -> &'static [DidKind] {
+        &[DidKind::Persona, DidKind::Device, DidKind::Group, DidKind::Resource]
+    }
+}
+
+impl FromStr for DidKind {
+    type Err = anyhow::Error;
+
+    fn from_str(input: &str) -> Result<Self> {
+        match input.to_lowercase().as_ref() {
+            "persona" => Ok(DidKind::Persona),
+            "device" => Ok(DidKind::Device),
+            "group" => Ok(DidKind::Group),
+            "resource" => Ok(DidKind::Resource),
+            _ => bail!("Unknown DID kind {}", input),
+        }
     }
 }
 
@@ -86,19 +108,24 @@ impl MorpheusRoot {
         MorpheusVaultAdmin { parent: self.clone() }
     }
 
-    /// Alias for kind(Device).
-    pub fn devices(&self) -> Result<MorpheusKind> {
-        self.kind(DidKind::Device)
-    }
-
     /// Alias for kind(Persona).
     pub fn personas(&self) -> Result<MorpheusKind> {
         self.kind(DidKind::Persona)
     }
 
+    /// Alias for kind(Device).
+    pub fn devices(&self) -> Result<MorpheusKind> {
+        self.kind(DidKind::Device)
+    }
+
     /// Alias for kind(Group).
     pub fn groups(&self) -> Result<MorpheusKind> {
         self.kind(DidKind::Group)
+    }
+
+    /// Alias for kind(Resource).
+    pub fn resources(&self) -> Result<MorpheusKind> {
+        self.kind(DidKind::Resource)
     }
 
     /// Derive a separate HD wallet subtree of the given kind.

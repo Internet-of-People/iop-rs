@@ -41,6 +41,7 @@ pub use seed::*;
 use std::cmp::Ordering;
 use std::fmt;
 use std::hash::{Hash, Hasher};
+use std::str::FromStr;
 
 use anyhow::{anyhow, bail, ensure};
 use serde::{Deserialize, Deserializer, Serialize, Serializer};

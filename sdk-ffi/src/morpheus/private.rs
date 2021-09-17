@@ -6,12 +6,62 @@ pub extern "C" fn delete_MorpheusPrivate(private: *mut MorpheusPrivate) {
 }
 
 #[no_mangle]
+pub extern "C" fn MorpheusPrivate_kind(
+    private: *mut MorpheusPrivate, did_kind: *const raw::c_char,
+) -> CPtrResult<MorpheusPrivateKind> {
+    let private = unsafe { convert::borrow_in(private) };
+    let fun = || {
+        let did_kind = unsafe { convert::str_in(did_kind)? };
+        let did_kind: DidKind = did_kind.parse()?;
+        let kind = private.kind(did_kind)?;
+        Ok(convert::move_out(kind))
+    };
+    cresult(fun())
+}
+
+#[no_mangle]
 pub extern "C" fn MorpheusPrivate_personas_get(
     private: *mut MorpheusPrivate,
 ) -> CPtrResult<MorpheusPrivateKind> {
     let private = unsafe { convert::borrow_in(private) };
     let fun = || {
         let kind = private.personas()?;
+        Ok(convert::move_out(kind))
+    };
+    cresult(fun())
+}
+
+#[no_mangle]
+pub extern "C" fn MorpheusPrivate_devices_get(
+    private: *mut MorpheusPrivate,
+) -> CPtrResult<MorpheusPrivateKind> {
+    let private = unsafe { convert::borrow_in(private) };
+    let fun = || {
+        let kind = private.devices()?;
+        Ok(convert::move_out(kind))
+    };
+    cresult(fun())
+}
+
+#[no_mangle]
+pub extern "C" fn MorpheusPrivate_groups_get(
+    private: *mut MorpheusPrivate,
+) -> CPtrResult<MorpheusPrivateKind> {
+    let private = unsafe { convert::borrow_in(private) };
+    let fun = || {
+        let kind = private.groups()?;
+        Ok(convert::move_out(kind))
+    };
+    cresult(fun())
+}
+
+#[no_mangle]
+pub extern "C" fn MorpheusPrivate_resources_get(
+    private: *mut MorpheusPrivate,
+) -> CPtrResult<MorpheusPrivateKind> {
+    let private = unsafe { convert::borrow_in(private) };
+    let fun = || {
+        let kind = private.resources()?;
         Ok(convert::move_out(kind))
     };
     cresult(fun())

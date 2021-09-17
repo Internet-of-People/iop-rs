@@ -24,7 +24,7 @@ use iop_hydra_proto::txtype::{
 };
 use iop_journal_proto::BlockHeight;
 use iop_keyvault::{
-    ed25519::{MorpheusPrivateKey, MorpheusPublicKey},
+    ed25519::{DidKind, MorpheusPrivateKey, MorpheusPublicKey},
     multicipher::*,
     secp256k1::*,
     Bip32Node, Bip32PublicNode, Bip44Key, Bip44PublicKey, Network, Networks, PrivateKey as _,

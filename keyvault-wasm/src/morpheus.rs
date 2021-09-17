@@ -25,8 +25,29 @@ impl JsMorpheusRoot {
         self.inner.node().path().to_string()
     }
 
+    pub fn kind(&self, did_kind: &str) -> Result<JsMorpheusKind, JsValue> {
+        let did_kind = did_kind.parse().map_err_to_js()?;
+        self.kind_impl(did_kind)
+    }
+
     pub fn personas(&self) -> Result<JsMorpheusKind, JsValue> {
-        let inner = self.inner.personas().map_err_to_js()?;
+        self.kind_impl(DidKind::Persona)
+    }
+
+    pub fn devices(&self) -> Result<JsMorpheusKind, JsValue> {
+        self.kind_impl(DidKind::Device)
+    }
+
+    pub fn groups(&self) -> Result<JsMorpheusKind, JsValue> {
+        self.kind_impl(DidKind::Group)
+    }
+
+    pub fn resources(&self) -> Result<JsMorpheusKind, JsValue> {
+        self.kind_impl(DidKind::Resource)
+    }
+
+    fn kind_impl(&self, did_kind: DidKind) -> Result<JsMorpheusKind, JsValue> {
+        let inner = self.inner.kind(did_kind).map_err_to_js()?;
         Ok(JsMorpheusKind::from(inner))
     }
 }

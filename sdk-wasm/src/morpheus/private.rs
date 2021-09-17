@@ -13,10 +13,29 @@ impl JsMorpheusPrivate {
         JsMorpheusPublic::from(inner)
     }
 
+    pub fn kind(&self, did_kind: &str) -> Result<JsMorpheusPrivateKind, JsValue> {
+        let did_kind: DidKind = did_kind.parse().map_err_to_js()?;
+        self.kind_impl(did_kind)
+    }
+
     #[wasm_bindgen(getter)]
     pub fn personas(&self) -> Result<JsMorpheusPrivateKind, JsValue> {
-        let inner = self.inner.personas().map_err_to_js()?;
-        Ok(JsMorpheusPrivateKind::from(inner))
+        self.kind_impl(DidKind::Persona)
+    }
+
+    #[wasm_bindgen(getter)]
+    pub fn devices(&self) -> Result<JsMorpheusPrivateKind, JsValue> {
+        self.kind_impl(DidKind::Device)
+    }
+
+    #[wasm_bindgen(getter)]
+    pub fn groups(&self) -> Result<JsMorpheusPrivateKind, JsValue> {
+        self.kind_impl(DidKind::Group)
+    }
+
+    #[wasm_bindgen(getter)]
+    pub fn resources(&self) -> Result<JsMorpheusPrivateKind, JsValue> {
+        self.kind_impl(DidKind::Resource)
     }
 
     #[wasm_bindgen(js_name = keyByPublicKey)]
@@ -76,6 +95,11 @@ impl JsMorpheusPrivate {
             signer.sign_claim_presentation(presentation).map_err(err_to_js)?;
 
         into_signed_json(signed_presentation)
+    }
+
+    fn kind_impl(&self, did_kind: DidKind) -> Result<JsMorpheusPrivateKind, JsValue> {
+        let inner = self.inner.kind(did_kind).map_err_to_js()?;
+        Ok(JsMorpheusPrivateKind::from(inner))
     }
 
     fn create_signer(&self, id: &JsMKeyId) -> Result<PrivateKeySigner, JsValue> {

@@ -406,13 +406,6 @@ impl<C: KeyDerivationCrypto + 'static> Bip44PublicKey<C> {
     }
 }
 
-// pub enum AccountType {
-//     Admin = 0,
-//     Device = 1,
-//     Persona = 2,
-//     Group = 3,
-// }
-
 #[cfg(test)]
 mod test {
     use super::{

@@ -15,11 +15,31 @@ impl PluginPrivate<Plugin> for Private {
 }
 
 impl Private {
-    pub fn personas(&self) -> Result<PrivateKind> {
-        let state = <dyn State<_>>::map(self.state.as_ref(), |s| &s.personas, |s| &mut s.personas);
-        let kind = self.root.personas()?;
+    pub fn kind(&self, did_kind: DidKind) -> Result<PrivateKind> {
+        let state = <dyn State<_>>::map(
+            self.state.as_ref(),
+            PublicState::field_ref(did_kind),
+            PublicState::field_mut(did_kind),
+        );
+        let kind = self.root.kind(did_kind)?;
         let vault_dirty = self.vault_dirty.clone();
         Ok(PrivateKind::new(state, kind, vault_dirty))
+    }
+
+    pub fn personas(&self) -> Result<PrivateKind> {
+        self.kind(DidKind::Persona)
+    }
+
+    pub fn devices(&self) -> Result<PrivateKind> {
+        self.kind(DidKind::Device)
+    }
+
+    pub fn groups(&self) -> Result<PrivateKind> {
+        self.kind(DidKind::Group)
+    }
+
+    pub fn resources(&self) -> Result<PrivateKind> {
+        self.kind(DidKind::Resource)
     }
 
     pub fn public(&self) -> Public {
@@ -27,8 +47,12 @@ impl Private {
     }
 
     pub fn key_by_pk(&self, pk: &MPublicKey) -> Result<MorpheusPrivateKey> {
-        self.personas()?
-            .key_by_pk(pk)
-            .or_else(|_| bail!("Could not find {} among Morpheus keys", pk))
+        for did_kind in DidKind::all() {
+            let key_res = self.kind(*did_kind)?.key_by_pk(pk);
+            if key_res.is_ok() {
+                return Ok(key_res.unwrap());
+            }
+        }
+        bail!("Could not find {} among Morpheus keys", pk);
     }
 }
