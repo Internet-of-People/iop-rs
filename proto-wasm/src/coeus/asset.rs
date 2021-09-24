@@ -26,7 +26,7 @@ impl JsCoeusAsset {
         self.inner.fee()
     }
 
-    #[wasm_bindgen(js_name = toJson)]
+    #[wasm_bindgen(js_name = toJSON)]
     pub fn to_json(&self) -> Result<JsValue, JsValue> {
         JsValue::from_serde(&self.inner).map_err_to_js()
     }

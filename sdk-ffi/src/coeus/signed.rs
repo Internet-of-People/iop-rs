@@ -23,7 +23,7 @@ pub extern "C" fn NoncedBundleBuilder_add(
 
 #[no_mangle]
 pub extern "C" fn NoncedBundleBuilder_build(
-    builder: *mut NoncedBundleBuilder, nonce: Nonce,
+    builder: *const NoncedBundleBuilder, nonce: Nonce,
 ) -> *mut NoncedBundle {
     let builder = unsafe { convert::borrow_in(builder) };
     let nonced_bundle = NoncedBundle::new(builder.to_owned(), nonce);

@@ -1,6 +1,6 @@
 use super::*;
 
-pub(crate) unsafe fn move_in<T>(t: *mut T) -> Option<Box<T>> {
+pub(crate) unsafe fn move_in_opt<T>(t: *mut T) -> Option<Box<T>> {
     if t.is_null() {
         return None;
     }

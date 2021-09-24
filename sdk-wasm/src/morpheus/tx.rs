@@ -63,7 +63,7 @@ pub struct JsMorpheusSignableOperation {
 
 #[wasm_bindgen(js_class = MorpheusSignableOperation)]
 impl JsMorpheusSignableOperation {
-    #[wasm_bindgen(js_name = toJson)]
+    #[wasm_bindgen(js_name = toJSON)]
     pub fn to_json(&self) -> Result<JsValue, JsValue> {
         JsValue::from_serde(&self.inner).map_err_to_js()
     }
@@ -196,7 +196,7 @@ pub struct JsMorpheusSignedOperation {
 
 #[wasm_bindgen(js_class = MorpheusSignedOperation)]
 impl JsMorpheusSignedOperation {
-    #[wasm_bindgen(js_name = toJson)]
+    #[wasm_bindgen(js_name = toJSON)]
     pub fn to_json(&self) -> Result<JsValue, JsValue> {
         JsValue::from_serde(&self.inner).map_err_to_js()
     }

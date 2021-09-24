@@ -116,16 +116,27 @@ impl JsSignedJson {
     ) -> Result<JsValue, JsValue> {
         validate_with_did_doc(&self.inner, did_doc_str, from_height_inc, until_height_exc)
     }
+
+    #[wasm_bindgen(js_name = toJSON)]
+    pub fn to_json(&self) -> Result<JsValue, JsValue> {
+        JsValue::from_serde(&self.inner).map_err_to_js()
+    }
+
+    #[wasm_bindgen(js_name = fromJSON)]
+    pub fn from_json(json: &JsValue) -> Result<JsSignedJson, JsValue> {
+        let parsed: Signed<serde_json::Value> = json.into_serde().map_err_to_js()?;
+        Ok(parsed.into())
+    }
 }
 
 impl From<Signed<serde_json::Value>> for JsSignedJson {
-    fn from(inner: Signed<Value>) -> Self {
+    fn from(inner: Signed<serde_json::Value>) -> Self {
         Self { inner }
     }
 }
 
 impl Wraps<Signed<serde_json::Value>> for JsSignedJson {
-    fn inner(&self) -> &Signed<Value> {
+    fn inner(&self) -> &Signed<serde_json::Value> {
         &self.inner
     }
 }
