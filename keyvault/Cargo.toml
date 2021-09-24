@@ -16,7 +16,7 @@ blake2 = "0.9.0"
 digest = "0.9.0"
 ed25519-dalek = "1.0.0"
 rand = { version = "0.8.3", features = ["getrandom"] }
-getrandom = { version = "0.2.3", features = ["wasm-bindgen"] }
+getrandom = { version = "0.2.3", features = ["wasm-bindgen", "js"] }
 hex = "0.4.2"
 hmac = "0.10.0"
 # Unfortunately the crate name of the libsecp256k1 collides with the perfect module name
@@ -28,7 +28,7 @@ ripemd160 = "0.9.1"
 serde = { version="1.0.121", features = ["derive"] }
 serde_bytes = "0.11.3"
 sha2 = "0.9.1"
-tiny-bip39 = { version = "0.8.0", features = [] }
+tiny-bip39 = { version = "0.8.1", features = [] }
 
 [dev-dependencies]
 rmp-serde = "0.15.3"

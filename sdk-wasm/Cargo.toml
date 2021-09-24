@@ -16,7 +16,7 @@ crate-type = ["cdylib", "rlib"]
 anyhow = "1.0.32"
 # There are still some transitive dependencies on this old version
 getrandom01 = { version="0.1", package="getrandom", features=["wasm-bindgen"] }
-getrandom = { version="0.2.3", features=["wasm-bindgen"] }
+getrandom = { version="0.2.3", features=["wasm-bindgen", "js"] }
 iop-hydra-proto = "0.0.14"
 iop-hydra-sdk = "0.0.14"
 iop-keyvault = "0.0.14"
