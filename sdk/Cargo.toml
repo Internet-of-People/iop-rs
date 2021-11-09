@@ -1,6 +1,6 @@
 [package]
 name = "iop-sdk"
-version = "0.0.14"
+version = "0.0.15"
 authors = [
   "IOP Ventures LLC <dev@iop-ventures.com>",
   "Rache Bartmoss <bartmoss@tutanota.com>",
@@ -17,15 +17,15 @@ crate-type = ["rlib", "cdylib"]
 
 [dependencies]
 anyhow = "1.0.32"
-iop-coeus-proto = "0.0.14"
-iop-hydra-proto = "0.0.14"
-iop-hydra-sdk = "0.0.14"
-iop-journal-proto = "0.0.14"
-iop-keyvault = "0.0.14"
-iop-morpheus-proto = "0.0.14"
-iop-morpheus-sdk = "0.0.14"
-iop-vault = "0.0.14"
-json-digest = "0.0.14"
+iop-coeus-proto = "0.0.15"
+iop-hydra-proto = "0.0.15"
+iop-hydra-sdk = "0.0.15"
+iop-journal-proto = "0.0.15"
+iop-keyvault = "0.0.15"
+iop-morpheus-proto = "0.0.15"
+iop-morpheus-sdk = "0.0.15"
+iop-vault = "0.0.15"
+json-digest = "0.0.15"
 rand = { version = "0.8.3", features = ["getrandom"] }
 serde = { version = "1.0.121", features = ["derive"] }
 serde_bytes = "0.11.5"

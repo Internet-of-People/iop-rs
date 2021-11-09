@@ -1,6 +1,6 @@
 [package]
 name = "iop-keyvault-wasm"
-version = "0.0.14"
+version = "0.0.15"
 edition = "2018"
 description = "WebAssembly wrappers for the iop-keyvault crate."
 authors = ["IOP Ventures LLC <dev@iop-ventures.com>", "wigy <wigy_opensource_developer@yahoo.com>", "Rache Bartmoss <bartmoss@tutanota.com>"]
@@ -14,6 +14,6 @@ categories = ["cryptography", "cryptography::cryptocurrencies", "wasm"]
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
-iop-keyvault = "0.0.14"
+iop-keyvault = "0.0.15"
 serde_json = { version = "1.0.64", features = ["preserve_order"] }
 wasm-bindgen = { version = "0.2.73", features = ["serde-serialize"] }

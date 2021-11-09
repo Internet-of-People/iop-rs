@@ -1,6 +1,6 @@
 [package]
 name = "iop-coeus-node"
-version = "0.0.14"
+version = "0.0.15"
 authors = ["IOP Ventures LLC <dev@iop-ventures.com>", "Rache Bartmoss <bartmoss@tutanota.com>", "wigy <wigy_opensource_developer@yahoo.com>"]
 edition = "2018"
 license = "LGPL-3.0-or-later"
@@ -8,11 +8,11 @@ license = "LGPL-3.0-or-later"
 
 [dependencies]
 anyhow = "1.0.32"
-iop-coeus-proto = "0.0.14"
-iop-journal-proto = "0.0.14"
-iop-keyvault = "0.0.14"
-iop-morpheus-proto = { version = "0.0.14", optional = true }
-json-digest = "0.0.14"
+iop-coeus-proto = "0.0.15"
+iop-journal-proto = "0.0.15"
+iop-keyvault = "0.0.15"
+iop-morpheus-proto = { version = "0.0.15", optional = true }
+json-digest = "0.0.15"
 serde = { version="1.0.121", features = ["derive"] }
 serde_json = { version = "1.0.64", features = ["preserve_order"] }
 serde_str = "0.1.0"

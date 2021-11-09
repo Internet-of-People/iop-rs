@@ -1,6 +1,6 @@
 [package]
 name = "iop-morpheus-node"
-version = "0.0.14"
+version = "0.0.15"
 authors = ["IOP Ventures LLC <dev@iop-ventures.com>", "Rache Bartmoss <bartmoss@tutanota.com>", "wigy <wigy_opensource_developer@yahoo.com>"]
 edition = "2018"
 license = "LGPL-3.0-or-later"
@@ -9,11 +9,11 @@ license = "LGPL-3.0-or-later"
 [dependencies]
 anyhow = "1.0.32"
 chrono = { version = "0.4.15", features = ["wasmbind"] }
-iop-hydra-proto = "0.0.14"
-iop-journal-proto = "0.0.14"
-iop-keyvault = "0.0.14"
-iop-morpheus-proto = "0.0.14"
-json-digest = "0.0.14"
+iop-hydra-proto = "0.0.15"
+iop-journal-proto = "0.0.15"
+iop-keyvault = "0.0.15"
+iop-morpheus-proto = "0.0.15"
+json-digest = "0.0.15"
 jwt-compact = { version = "0.2.0", default-features = false }
 #multibase = "0.9.1"
 rand = { version = "0.8.3", features = ["getrandom"] }

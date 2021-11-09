@@ -1,6 +1,6 @@
 [package]
 name = "iop-sdk-wasm"
-version = "0.0.14"
+version = "0.0.15"
 authors = [
     "IOP Ventures LLC <dev@iop-ventures.com>",
     "Rache Bartmoss <bartmoss@tutanota.com>",
@@ -17,15 +17,15 @@ anyhow = "1.0.32"
 # There are still some transitive dependencies on this old version
 getrandom01 = { version="0.1", package="getrandom", features=["wasm-bindgen"] }
 getrandom = { version="0.2.3", features=["wasm-bindgen", "js"] }
-iop-hydra-proto = "0.0.14"
-iop-hydra-sdk = "0.0.14"
-iop-keyvault = "0.0.14"
-iop-keyvault-wasm = "0.0.14"
-iop-morpheus-proto = "0.0.14"
-iop-morpheus-sdk = "0.0.14"
-iop-proto-wasm = "0.0.14"
-iop-vault = "0.0.14"
-json-digest-wasm = "0.0.14"
+iop-hydra-proto = "0.0.15"
+iop-hydra-sdk = "0.0.15"
+iop-keyvault = "0.0.15"
+iop-keyvault-wasm = "0.0.15"
+iop-morpheus-proto = "0.0.15"
+iop-morpheus-sdk = "0.0.15"
+iop-proto-wasm = "0.0.15"
+iop-vault = "0.0.15"
+json-digest-wasm = "0.0.15"
 # There are still some transitive dependencies on this old version
 rand07 = { version="0.7", package="rand", features=["getrandom"] }
 rand = { version="0.8.3", features=["getrandom"] }
