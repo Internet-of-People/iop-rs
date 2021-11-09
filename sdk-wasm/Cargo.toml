@@ -1,13 +1,16 @@
 [package]
 name = "iop-sdk-wasm"
+description = "WebAssembly bindings to the client SDK for the IOP Stack™"
 version = "0.0.15"
 authors = [
     "IOP Ventures LLC <dev@iop-ventures.com>",
     "Rache Bartmoss <bartmoss@tutanota.com>",
-    "wigy <wigy_opensource_developer@yahoo.com>"
+    "wigy <wigy_opensource_developer@yahoo.com>",
 ]
 edition = "2018"
 license = "LGPL-3.0-or-later"
+repository = "https://github.com/Internet-of-People/iop-rs"
+homepage = "https://developer.iop.technology/"
 
 [lib]
 crate-type = ["cdylib", "rlib"]
@@ -15,8 +18,10 @@ crate-type = ["cdylib", "rlib"]
 [dependencies]
 anyhow = "1.0.32"
 # There are still some transitive dependencies on this old version
-getrandom01 = { version="0.1", package="getrandom", features=["wasm-bindgen"] }
-getrandom = { version="0.2.3", features=["wasm-bindgen", "js"] }
+getrandom01 = { version = "0.1", package = "getrandom", features = [
+    "wasm-bindgen",
+] }
+getrandom = { version = "0.2.3", features = ["wasm-bindgen", "js"] }
 iop-hydra-proto = "0.0.15"
 iop-hydra-sdk = "0.0.15"
 iop-keyvault = "0.0.15"
@@ -27,8 +32,8 @@ iop-proto-wasm = "0.0.15"
 iop-vault = "0.0.15"
 json-digest-wasm = "0.0.15"
 # There are still some transitive dependencies on this old version
-rand07 = { version="0.7", package="rand", features=["getrandom"] }
-rand = { version="0.8.3", features=["getrandom"] }
-serde = { version="1.0.121", features = ["derive"] }
+rand07 = { version = "0.7", package = "rand", features = ["getrandom"] }
+rand = { version = "0.8.3", features = ["getrandom"] }
+serde = { version = "1.0.121", features = ["derive"] }
 serde_json = { version = "1.0.64", features = ["preserve_order"] }
 wasm-bindgen = { version = "0.2.73", features = ["serde-serialize"] }

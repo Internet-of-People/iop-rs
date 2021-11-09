@@ -1,5 +1,6 @@
 [package]
 name = "iop-sdk"
+description = "Client SDK for the IOP Stack™"
 version = "0.0.15"
 authors = [
   "IOP Ventures LLC <dev@iop-ventures.com>",
@@ -8,6 +9,8 @@ authors = [
 ]
 license = "LGPL-3.0-or-later"
 edition = "2018"
+repository = "https://github.com/Internet-of-People/iop-rs"
+homepage = "https://developer.iop.technology/"
 
 
 [lib]

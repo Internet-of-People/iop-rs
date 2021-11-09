@@ -1,9 +1,11 @@
 [package]
 name = "iop-morpheus-node"
+description = "Morpheus layer-2 plugin implementation for Hydraledger"
 version = "0.0.15"
 authors = ["IOP Ventures LLC <dev@iop-ventures.com>", "Rache Bartmoss <bartmoss@tutanota.com>", "wigy <wigy_opensource_developer@yahoo.com>"]
 edition = "2018"
 license = "LGPL-3.0-or-later"
+repository = "https://github.com/Internet-of-People/iop-rs"
 
 
 [dependencies]

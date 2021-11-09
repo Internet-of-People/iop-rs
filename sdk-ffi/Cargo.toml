@@ -1,9 +1,16 @@
 [package]
 name = "iop-sdk-ffi"
+description = "C ABI bindings to the client SDK for the IOP Stack™"
 version = "0.0.15"
-authors = ["IOP Ventures LLC <dev@iop-ventures.com>", "Rache Bartmoss <bartmoss@tutanota.com>", "wigy <wigy_opensource_developer@yahoo.com>"]
+authors = [
+  "IOP Ventures LLC <dev@iop-ventures.com>",
+  "Rache Bartmoss <bartmoss@tutanota.com>",
+  "wigy <wigy_opensource_developer@yahoo.com>",
+]
 edition = "2018"
 license = "LGPL-3.0-or-later"
+repository = "https://github.com/Internet-of-People/iop-rs"
+homepage = "https://developer.iop.technology/"
 
 
 [lib]
@@ -23,7 +30,7 @@ iop-morpheus-proto = "0.0.15"
 iop-morpheus-sdk = "0.0.15"
 iop-vault = "0.0.15"
 json-digest = "0.0.15"
-serde = { version="1.0.121", features = ["derive", "rc"] }
+serde = { version = "1.0.121", features = ["derive", "rc"] }
 serde_json = { version = "1.0.64", features = ["preserve_order"] }
 serde_repr = "0.1.6"
 

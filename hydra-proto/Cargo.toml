@@ -1,9 +1,16 @@
 [package]
 name = "iop-hydra-proto"
+description = "Hydra-core specific protocol definitions for the IOP Stack™"
 version = "0.0.15"
-authors = ["IOP Ventures LLC <dev@iop-ventures.com>", "Rache Bartmoss <bartmoss@tutanota.com>", "wigy <wigy_opensource_developer@yahoo.com>"]
+authors = [
+  "IOP Ventures LLC <dev@iop-ventures.com>",
+  "Rache Bartmoss <bartmoss@tutanota.com>",
+  "wigy <wigy_opensource_developer@yahoo.com>",
+]
 license = "LGPL-3.0-or-later"
 edition = "2018"
+repository = "https://github.com/Internet-of-People/iop-rs"
+homepage = "https://developer.iop.technology/"
 
 
 [dependencies]
@@ -18,7 +25,7 @@ json-digest = "0.0.15"
 num-derive = "0.3.2"
 num-traits = "0.2.12"
 rand = { version = "0.8.3", features = ["getrandom"] }
-serde = { version="1.0.121", features = ["derive"] }
+serde = { version = "1.0.121", features = ["derive"] }
 serde_bytes = "0.11.5"
 serde_json = { version = "1.0.64", features = ["preserve_order"] }
 serde_repr = "0.1.6"

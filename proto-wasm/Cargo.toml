@@ -4,10 +4,14 @@ version = "0.0.15"
 authors = [
     "IOP Ventures LLC <dev@iop-ventures.com>",
     "Rache Bartmoss <bartmoss@tutanota.com>",
-    "wigy <wigy_opensource_developer@yahoo.com>"
+    "wigy <wigy_opensource_developer@yahoo.com>",
 ]
 edition = "2018"
 license = "LGPL-3.0-or-later"
+description = "WebAssembly bindings shared between node and sdk in the IOP Stack™"
+repository = "https://github.com/Internet-of-People/iop-rs"
+homepage = "https://developer.iop.technology/glossary?id=json-masking"
+
 
 [lib]
 crate-type = ["cdylib", "rlib"]
@@ -23,7 +27,7 @@ iop-journal-proto = "0.0.15"
 iop-keyvault = "0.0.15"
 iop-keyvault-wasm = "0.0.15"
 iop-morpheus-proto = "0.0.15"
-serde = { version="1.0.121", features = ["derive"] }
+serde = { version = "1.0.121", features = ["derive"] }
 serde_json = { version = "1.0.64", features = ["preserve_order"] }
 serde_str = "0.1.0"
 # Force "wasm-bindgen" feature in uuid dependency needed by valico in coeus-core

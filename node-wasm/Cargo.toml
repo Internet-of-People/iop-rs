@@ -1,13 +1,16 @@
 [package]
 name = "iop-node-wasm"
+description = "WebAssembly bindings to the node implementation for Hydraledger"
 version = "0.0.15"
 authors = [
     "IOP Ventures LLC <dev@iop-ventures.com>",
     "Rache Bartmoss <bartmoss@tutanota.com>",
-    "wigy <wigy_opensource_developer@yahoo.com>"
+    "wigy <wigy_opensource_developer@yahoo.com>",
 ]
 edition = "2018"
 license = "LGPL-3.0-or-later"
+repository = "https://github.com/Internet-of-People/iop-rs"
+homepage = "https://developer.iop.technology/"
 
 [lib]
 crate-type = ["cdylib", "rlib"]
@@ -24,7 +27,7 @@ iop-morpheus-node = "0.0.15"
 iop-morpheus-proto = "0.0.15"
 iop-proto-wasm = "0.0.15"
 json-digest-wasm = "0.0.15"
-serde = { version="1.0.121", features = ["derive"] }
+serde = { version = "1.0.121", features = ["derive"] }
 serde_json = { version = "1.0.64", features = ["preserve_order"] }
 # Force `wasm-bindgen` feature in transitive dependency `uuid` needed by `valico` in `iop-coeus-node`
 uuid = { version = "0.8", features = ["v4", "wasm-bindgen"] }

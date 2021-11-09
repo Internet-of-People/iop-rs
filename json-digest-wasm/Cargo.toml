@@ -3,10 +3,14 @@ name = "json-digest-wasm"
 version = "0.0.15"
 edition = "2018"
 description = "WebAssembly wrappers for the json-digest crate."
-authors = ["IOP Ventures LLC <dev@iop-ventures.com>", "wigy <wigy_opensource_developer@yahoo.com>", "Rache Bartmoss <bartmoss@tutanota.com>"]
+authors = [
+  "IOP Ventures LLC <dev@iop-ventures.com>",
+  "wigy <wigy_opensource_developer@yahoo.com>",
+  "Rache Bartmoss <bartmoss@tutanota.com>",
+]
 license = "LGPL-3.0-or-later"
 repository = "https://github.com/Internet-of-People/iop-rs"
-homepage = "https://iop.global"
+homepage = "https://developer.iop.technology/glossary?id=json-masking"
 keywords = ["crypto", "wallet", "iop", "wasm", "ssi"]
 categories = ["cryptography", "cryptography::cryptocurrencies", "wasm"]
 
@@ -17,6 +21,6 @@ crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 json-digest = "0.0.15"
-serde = { version="1.0.121", features = ["derive"] }
+serde = { version = "1.0.121", features = ["derive"] }
 serde_json = { version = "1.0.64", features = ["preserve_order"] }
 wasm-bindgen = { version = "0.2.73", features = ["serde-serialize"] }
