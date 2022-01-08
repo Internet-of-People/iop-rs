@@ -13,13 +13,13 @@ impl JsSubtreePolicies {
     }
 
     #[wasm_bindgen(js_name = withSchema)]
-    pub fn with_schema(self, schema: &JsValue) -> Result<JsSubtreePolicies, JsValue> {
-        Ok(self.inner.with_schema(schema.into_serde().map_err_to_js()?).into())
+    pub fn with_schema(&self, schema: &JsValue) -> Result<JsSubtreePolicies, JsValue> {
+        Ok(self.inner.clone().with_schema(schema.into_serde().map_err_to_js()?).into())
     }
 
     #[wasm_bindgen(js_name = withExpiration)]
-    pub fn with_expiration(self, max_block_count: BlockCount) -> JsSubtreePolicies {
-        self.inner.with_expiration(max_block_count).into()
+    pub fn with_expiration(&self, max_block_count: BlockCount) -> JsSubtreePolicies {
+        self.inner.clone().with_expiration(max_block_count).into()
     }
 }
 
