@@ -164,7 +164,8 @@ impl DidDocumentState {
     fn ensure_not_tombstoned(&self) -> Result<()> {
         ensure!(
             self.tombstoned_at_height.is_none(),
-            "did is tombstoned at height {}, cannot be updated anymore"
+            "did is tombstoned at height {}, cannot be updated anymore",
+            self.tombstoned_at_height.unwrap(),
         );
         Ok(())
     }
