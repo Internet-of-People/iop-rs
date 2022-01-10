@@ -20,7 +20,13 @@ impl SignableOperation {
         Self { signables }
     }
 
-    pub fn add(mut self, attempt: SignableOperationAttempt) -> Self {
+    #[allow(clippy::should_implement_trait)]
+    #[deprecated = "Use push instead"]
+    pub fn add(self, attempt: SignableOperationAttempt) -> Self {
+        self.push(attempt)
+    }
+
+    pub fn push(mut self, attempt: SignableOperationAttempt) -> Self {
         self.signables.push(attempt);
         self
     }
@@ -30,7 +36,7 @@ impl SignableOperation {
     pub fn to_signable_bytes(signables: &[SignableOperationAttempt]) -> Result<Vec<u8>> {
         let asset_val = serde_json::to_value(signables)?;
         let asset_json = canonical_json(&asset_val)?;
-        Ok(serializer::frame_bytes(asset_json.as_bytes())?)
+        serializer::frame_bytes(asset_json.as_bytes())
     }
 
     pub fn sign(self, signer: &dyn SyncMorpheusSigner) -> Result<SignedOperation> {

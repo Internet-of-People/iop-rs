@@ -2,6 +2,8 @@ pub mod crypto;
 pub mod data;
 pub mod txtype;
 
+use std::ops::Deref;
+
 use anyhow::{anyhow, bail, ensure, Result};
 use serde::{Deserialize, Serialize};
 

@@ -108,7 +108,7 @@ impl State {
         }
 
         let state =
-            self.did_states.entry(did_data.clone()).or_insert_with(|| DidDocumentState::new(&did));
+            self.did_states.entry(did_data.clone()).or_insert_with(|| DidDocumentState::new(did));
 
         Ok(state)
     }

@@ -18,7 +18,7 @@ impl Bip32 {
         &self, seed: &Seed, subtree: &'static dyn Subtree<Suite = C>,
     ) -> Bip32Node<C> {
         let path = Default::default();
-        let xsk = subtree.master(&seed);
+        let xsk = subtree.master(seed);
         Bip32Node { path, xsk, subtree }
     }
 }

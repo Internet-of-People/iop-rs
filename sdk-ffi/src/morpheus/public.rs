@@ -74,7 +74,7 @@ pub extern "C" fn MorpheusPublic_key_by_id(
     let public = unsafe { convert::borrow_in(public) };
     let id = unsafe { convert::borrow_in(id) };
     let fun = || {
-        let pk = public.key_by_id(&id)?;
+        let pk = public.key_by_id(id)?;
         Ok(convert::move_out(pk))
     };
     cresult(fun())

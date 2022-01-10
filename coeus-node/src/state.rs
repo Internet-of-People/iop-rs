@@ -120,7 +120,7 @@ impl State {
                     "Number of operations in transaction do not match our previous records."
                 );
                 state.undo_operations(version_before_txn)?;
-                return Ok(());
+                Ok(())
             }
         })
     }

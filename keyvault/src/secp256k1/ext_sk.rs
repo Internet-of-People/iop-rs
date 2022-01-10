@@ -42,7 +42,7 @@ impl SecpExtPrivateKey {
     /// #Panics
     /// If the resulting private key is 0, we should have looped to fix that, but this implementation
     /// just panics then
-    pub(crate) fn cook_new<F: Fn(&mut HmacSha512) -> ()>(&self, idx: u32, recipe: F) -> Self {
+    pub(crate) fn cook_new<F: Fn(&mut HmacSha512)>(&self, idx: u32, recipe: F) -> Self {
         let parent = self;
         let salt = &parent.chain_code.to_bytes();
         // This unwrap would only panic if the digest algorithm had some inconsistent

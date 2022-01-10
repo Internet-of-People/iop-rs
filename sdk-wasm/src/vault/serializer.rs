@@ -10,10 +10,10 @@ enum VaultPluginSerializer {
     Morpheus(hd_morpheus::Plugin),
 }
 
-impl Into<Box<dyn VaultPlugin>> for VaultPluginSerializer {
-    fn into(self) -> Box<dyn VaultPlugin> {
+impl From<VaultPluginSerializer> for Box<dyn VaultPlugin> {
+    fn from(plugin: VaultPluginSerializer) -> Box<dyn VaultPlugin> {
         use VaultPluginSerializer::*;
-        match self {
+        match plugin {
             Hydra(x) => Box::new(x),
             Morpheus(x) => Box::new(x),
         }

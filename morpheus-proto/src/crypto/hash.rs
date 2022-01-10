@@ -13,7 +13,7 @@ pub trait Content: Serialize + Clone + Sized {
         digest_data(self)
     }
 
-    fn validate_id(&self, content_id: &ContentId) -> Result<bool> {
+    fn validate_id(&self, content_id: impl Deref<Target = ContentId>) -> Result<bool> {
         let calculated_hash = self.content_id()?;
         Ok(calculated_hash == *content_id)
     }

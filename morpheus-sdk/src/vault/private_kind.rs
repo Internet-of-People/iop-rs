@@ -18,7 +18,7 @@ impl PrivateKind {
     }
 
     pub fn node(&self) -> &Bip32Node<Ed25519> {
-        &self.kind.node()
+        self.kind.node()
     }
 
     pub fn len(&self) -> Result<u32> {

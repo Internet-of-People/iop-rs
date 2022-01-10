@@ -185,8 +185,8 @@ pub fn selective_digest_json(
 ) -> Result<String> {
     let keep_paths_vec = json_path::split_alternatives(keep_paths_str);
     let digest_json = match &json_value {
-        serde_json::Value::Object(_obj) => mask_json_subtree(&json_value, keep_paths_vec),
-        serde_json::Value::Array(_arr) => mask_json_subtree(&json_value, keep_paths_vec),
+        serde_json::Value::Object(_obj) => mask_json_subtree(json_value, keep_paths_vec),
+        serde_json::Value::Array(_arr) => mask_json_subtree(json_value, keep_paths_vec),
         serde_json::Value::String(_s) => Ok(json_value.to_owned()),
         _ => bail!("Json digest is currently implemented only for composite types"),
     }?;

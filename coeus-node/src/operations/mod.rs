@@ -73,6 +73,7 @@ impl Command for SystemOperation {
 
 #[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
 #[serde(untagged)]
+#[allow(clippy::large_enum_variant)] // We do not expect places where we store different variants together
 pub enum Operation {
     System(SystemOperation),
     User(UserOperation),
@@ -103,11 +104,11 @@ impl From<UserOperation> for Operation {
 #[serde(tag = "type", rename_all = "camelCase")]
 pub enum UndoOperation {
     StartBlock(UndoStartBlock),
-    Register(Box<UndoRegister>),
+    Register(Box<UndoRegister>), // This variant is big
     Update(UndoUpdate),
     Renew(UndoRenew),
     Transfer(UndoTransfer),
-    Delete(UndoDelete),
+    Delete(Box<UndoDelete>), // This variant is big
 }
 
 impl UndoCommand for UndoOperation {

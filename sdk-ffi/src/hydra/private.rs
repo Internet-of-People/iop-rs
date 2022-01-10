@@ -88,7 +88,7 @@ pub extern "C" fn HydraPrivate_key_by_pk(
     let private = unsafe { convert::borrow_in(private) };
     let pub_key = unsafe { convert::borrow_in(pub_key) };
     let fun = || {
-        let key = private.key_by_pk(&pub_key)?;
+        let key = private.key_by_pk(pub_key)?;
         Ok(convert::move_out(key))
     };
     cresult(fun())

@@ -125,7 +125,7 @@ impl KeyRightHistory {
         let heights: Vec<_> =
             self.state.history.iter().map(|item| item.height.unwrap_or_default()).collect();
         let mut sorted = heights.clone();
-        sorted.sort();
+        sorted.sort_unstable(); // equal u32 instances do not differ, so unstable is fine
         ensure!(heights == sorted, "Height of key history items must be strictly increasing");
         Ok(())
     }
@@ -315,13 +315,11 @@ impl DidDocument {
         let history = &key_right.state.history;
         ensure!(! history.is_empty(), "Implementation error: key related to rights were already filtered, right must be present here");
 
-        let right_changes_in_range = history
-            .iter()
-            .filter(|item| is_between(item.height.unwrap_or_default(), from, until))
-            .collect::<Vec<_>>();
+        let mut right_changes_in_range =
+            history.iter().filter(|item| is_between(item.height.unwrap_or_default(), from, until));
 
         if !key_right.is_true_at(from)? {
-            if right_changes_in_range.is_empty() {
+            if right_changes_in_range.next().is_none() {
                 result.add_issue(Severity::Error, "Required right was never granted for key");
             } else {
                 result.add_issue(Severity::Warning, "Required right changed during given period");

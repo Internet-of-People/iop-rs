@@ -64,7 +64,7 @@ pub fn serialize_vendor_field(transaction: &TransactionData, bytes: &mut Vec<u8>
     Ok(())
 }
 
-pub fn serialize_core_type(tx: &TransactionData, mut bytes: &mut Vec<u8>) -> Result<()> {
+pub fn serialize_core_type(tx: &TransactionData, bytes: &mut Vec<u8>) -> Result<()> {
     ensure!(
         matches!(tx.typed_asset.type_group, TxTypeGroup::Core),
         "Implementation error: expecting Core transaction typeGroup"
@@ -74,9 +74,9 @@ pub fn serialize_core_type(tx: &TransactionData, mut bytes: &mut Vec<u8>) -> Res
             format!("Invalid core transaction type: {}", tx.typed_asset.transaction_type)
         })?;
     match core_txtype {
-        CoreTxType::Transfer => serialize_transfer(tx, &mut bytes)?,
-        CoreTxType::Vote => serialize_vote(tx, &mut bytes)?,
-        CoreTxType::DelegateRegistration => serialize_delegate_registration(tx, &mut bytes)?,
+        CoreTxType::Transfer => serialize_transfer(tx, bytes)?,
+        CoreTxType::Vote => serialize_vote(tx, bytes)?,
+        CoreTxType::DelegateRegistration => serialize_delegate_registration(tx, bytes)?,
         CoreTxType::DelegateResignation => (),
         CoreTxType::SecondSignatureRegistration => {
             unimplemented!()
@@ -124,7 +124,7 @@ fn serialize_vote(transaction: &TransactionData, bytes: &mut Vec<u8>) -> Result<
 fn serialize_delegate_registration(tx: &TransactionData, bytes: &mut Vec<u8>) -> Result<()> {
     if let Asset::Core(CoreAsset::Delegate { username }) = &tx.typed_asset.asset {
         bytes.write_u8(username.len() as u8)?;
-        bytes.write_all(&username.as_bytes())?;
+        bytes.write_all(username.as_bytes())?;
     }
     Ok(())
 }

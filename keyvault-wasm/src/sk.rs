@@ -1,7 +1,7 @@
 use super::*;
 
 #[wasm_bindgen(js_name = PrivateKey)]
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 pub struct JsMPrivateKey {
     inner: MPrivateKey,
 }
@@ -39,7 +39,7 @@ impl Wraps<MPrivateKey> for JsMPrivateKey {
 }
 
 #[wasm_bindgen(js_name = SecpPrivateKey)]
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 pub struct JsSecpPrivateKey {
     inner: SecpPrivateKey,
 }

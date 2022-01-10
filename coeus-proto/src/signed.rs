@@ -29,7 +29,7 @@ impl Priced for NoncedBundle {
         self.operations
             .iter()
             .try_fold(Price::zero(), |price, op| price.checked_add(op.get_price()))
-            .unwrap_or(Price::fee(u64::MAX))
+            .unwrap_or_else(|| Price::fee(u64::MAX))
     }
 }
 

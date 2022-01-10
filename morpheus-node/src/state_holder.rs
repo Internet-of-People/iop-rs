@@ -7,6 +7,7 @@ pub struct TransactionIdWithHeight {
     pub height: BlockHeight,
 }
 
+#[derive(Default)]
 pub struct StateHolder {
     corrupted: bool,
     inner: Box<State>,
@@ -15,10 +16,6 @@ pub struct StateHolder {
 impl StateHolder {
     pub const CORRUPTED_ERR_MSG: &'static str =
         "Morpheus state is corrupt. All incoming changes will be ignored.";
-
-    pub fn new() -> Self {
-        Self { corrupted: false, inner: Default::default() }
-    }
 
     pub fn is_corrupted(&self) -> bool {
         self.corrupted

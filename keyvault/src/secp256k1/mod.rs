@@ -180,7 +180,7 @@ mod test {
         let sk_bytes =
             hex::decode("0000000000000000000000000000000000000000000000000000000000000000")
                 .unwrap();
-        let err = SecpPrivateKey::from_bytes(sk_bytes).unwrap_err();
+        let err = SecpPrivateKey::from_bytes(sk_bytes).err().unwrap();
         assert!(err.to_string().contains("Invalid secret key"))
     }
 

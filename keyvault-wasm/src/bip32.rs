@@ -8,7 +8,7 @@ pub struct JsBip32;
 impl JsBip32 {
     pub fn master(seed: &JsSeed, name: &str) -> Result<JsBip32Node, JsValue> {
         let network = Networks::by_name(name).map_err_to_js()?;
-        let node = Bip32.master(&seed.inner(), network.subtree());
+        let node = Bip32.master(seed.inner(), network.subtree());
         Ok(JsBip32Node::from(node))
     }
 }

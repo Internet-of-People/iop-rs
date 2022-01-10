@@ -200,9 +200,9 @@ impl From<bool> for Chain {
     }
 }
 
-impl Into<bool> for Chain {
-    fn into(self) -> bool {
-        matches!(self, Chain::Change)
+impl From<Chain> for bool {
+    fn from(chain: Chain) -> bool {
+        chain == Chain::Change
     }
 }
 

@@ -8,7 +8,7 @@ pub struct JsBip44;
 impl JsBip44 {
     pub fn network(seed: &JsSeed, name: &str) -> Result<JsBip44Coin, JsValue> {
         let network = Networks::by_name(name).map_err_to_js()?;
-        let coin = Bip44.network(&seed.inner(), network).map_err_to_js()?;
+        let coin = Bip44.network(seed.inner(), network).map_err_to_js()?;
         Ok(JsBip44Coin::from(coin))
     }
 }

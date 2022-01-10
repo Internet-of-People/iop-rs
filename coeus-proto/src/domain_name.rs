@@ -22,7 +22,7 @@ impl Edge {
     }
 
     fn is_lowercase_alphanumeric(c: char) -> bool {
-        ('a' <= c && c <= 'z') || ('0' <= c && c <= '9')
+        ('a'..='z').contains(&c) || ('0'..='9').contains(&c)
     }
 }
 

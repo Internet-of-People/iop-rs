@@ -31,7 +31,7 @@ pub extern "C" fn HydraPlugin_get(
     let vault = unsafe { convert::borrow_mut_in(vault) };
     let fun = || {
         let params = params(network, account)?;
-        let plugin = Plugin::get(&vault, &params)?;
+        let plugin = Plugin::get(vault, &params)?;
         let hydra = CHydraPlugin { plugin };
         Ok(convert::move_out(hydra))
     };

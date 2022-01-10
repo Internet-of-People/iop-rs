@@ -153,7 +153,7 @@ impl Domain {
         // Valico supports Json Schema Draft 6, contents were extracted from
         // https://json-schema.org/draft-06/schema
         let schema = include_str!("../json-schema-draft6.json");
-        serde_json::from_str(&schema).unwrap()
+        serde_json::from_str(schema).unwrap()
     }
 }
 

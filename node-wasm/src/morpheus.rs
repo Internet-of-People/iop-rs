@@ -9,7 +9,7 @@ pub struct JsMorpheusState {
 impl JsMorpheusState {
     #[wasm_bindgen(constructor)]
     pub fn new() -> Result<JsMorpheusState, JsValue> {
-        let inner = MorpheusState::new();
+        let inner = MorpheusState::default();
         Ok(Self { inner })
     }
 

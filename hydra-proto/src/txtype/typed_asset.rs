@@ -126,7 +126,7 @@ impl<'de> Deserialize<'de> for TypedAsset {
                 let type_group = type_group.ok_or_else(|| de::Error::missing_field("typeGroup"))?;
                 let transaction_type =
                     transaction_type.ok_or_else(|| de::Error::missing_field("type"))?;
-                let asset = asset.unwrap_or(Asset::default());
+                let asset = asset.unwrap_or_default();
                 Ok(TypedAsset { type_group, transaction_type, asset })
             }
         }

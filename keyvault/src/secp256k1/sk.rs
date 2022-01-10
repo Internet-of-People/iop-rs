@@ -9,7 +9,7 @@ use crate::PrivateKey;
 pub const PRIVATE_KEY_SIZE: usize = secp::util::SECRET_KEY_SIZE;
 
 /// Implementation of Secp256k1::PrivateKey
-#[derive(Debug, Clone, Eq, PartialEq)]
+#[derive(Clone, Eq, PartialEq)]
 pub struct SecpPrivateKey(secp::SecretKey);
 
 impl SecpPrivateKey {

@@ -69,5 +69,5 @@ pub extern "C" fn MPublicKey_verify(
     let pk = unsafe { convert::borrow_in(pk) };
     let data = unsafe { convert::borrow_in(data) };
     let sig = unsafe { convert::borrow_in(sig) };
-    pk.verify(data.as_slice(), &sig)
+    pk.verify(data.as_slice(), sig)
 }

@@ -70,15 +70,14 @@ impl<'a> CommonTransactionFields<'a> {
     }
 
     fn to_data(&self) -> TransactionData {
-        let mut tx_data = TransactionData::default();
-        tx_data.network = Some(self.network.p2pkh_addr()[0]);
-        tx_data.version = Some(2);
-
-        tx_data.sender_public_key = self.sender_public_key.to_string();
-        tx_data.nonce = Some(self.nonce.to_string());
-        tx_data.amount = self.optional.amount.to_string();
-        tx_data.vendor_field = self.optional.vendor_field.to_owned();
-
-        tx_data
+        transaction::TransactionData {
+            network: Some(self.network.p2pkh_addr()[0]),
+            version: Some(2),
+            sender_public_key: self.sender_public_key.to_string(),
+            nonce: Some(self.nonce.to_string()),
+            amount: self.optional.amount.to_string(),
+            vendor_field: self.optional.vendor_field.to_owned(),
+            ..Default::default()
+        }
     }
 }

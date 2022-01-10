@@ -32,7 +32,7 @@ impl JsMPublicKey {
 
     #[wasm_bindgen(js_name = validateId)]
     pub fn validate_id(&self, key_id: &JsMKeyId) -> bool {
-        self.inner.validate_id(&key_id.inner())
+        self.inner.validate_id(key_id.inner())
     }
 
     #[wasm_bindgen(js_name = validateEcdsa)]
@@ -85,12 +85,12 @@ impl JsSecpPublicKey {
 
     #[wasm_bindgen(js_name = validateId)]
     pub fn validate_id(&self, key_id: &JsSecpKeyId) -> bool {
-        self.inner.validate_id(&key_id.inner())
+        self.inner.validate_id(key_id.inner())
     }
 
     #[wasm_bindgen(js_name = validateArkId)]
     pub fn validate_ark_id(&self, key_id: &JsSecpKeyId) -> bool {
-        self.inner.validate_ark_id(&key_id.inner())
+        self.inner.validate_ark_id(key_id.inner())
     }
 
     #[wasm_bindgen(js_name = validateEcdsa)]

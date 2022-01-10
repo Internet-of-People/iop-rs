@@ -176,8 +176,7 @@ impl JsMorpheusOperationSigner {
     pub fn sign(
         &self, public_key: JsMPublicKey, morpheus_private: &JsMorpheusPrivate,
     ) -> Result<JsMorpheusSignedOperation, JsValue> {
-        let private_key =
-            morpheus_private.inner().key_by_pk(&public_key.inner()).map_err_to_js()?;
+        let private_key = morpheus_private.inner().key_by_pk(public_key.inner()).map_err_to_js()?;
         self.sign_inner(private_key.private_key())
     }
 

@@ -1,3 +1,5 @@
+#![allow(clippy::new_without_default)] // WASM does not call default()
+
 mod hydra;
 mod morpheus;
 mod vault;

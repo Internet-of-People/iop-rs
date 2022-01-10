@@ -50,7 +50,7 @@ impl Private {
         for did_kind in DidKind::all() {
             let key_res = self.kind(*did_kind)?.key_by_pk(pk);
             if key_res.is_ok() {
-                return Ok(key_res.unwrap());
+                return key_res;
             }
         }
         bail!("Could not find {} among Morpheus keys", pk);

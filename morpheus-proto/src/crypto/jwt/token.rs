@@ -34,7 +34,7 @@ impl JwtBuilder {
             issued_at: None,
             custom: JwtClaim { content_id: self.content_id.clone() },
         };
-        let token = JwtMultiCipher.token(header, &claims, &sk)?;
+        let token = JwtMultiCipher.token(header, &claims, sk)?;
         Ok(token)
     }
 
@@ -82,7 +82,7 @@ impl JwtParser {
 
     // new would fail on validate_maturity if not_before was missing
     pub fn created_at(&self) -> &DateTime<Utc> {
-        &self.0.claims().not_before.as_ref().unwrap()
+        self.0.claims().not_before.as_ref().unwrap()
     }
 
     pub fn content_id(&self) -> Option<&ContentId> {

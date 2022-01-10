@@ -14,7 +14,7 @@ impl Command for DoDelete {
         // NOTE delete is allowed for expired domains and is essentially a no-op if grace period ended anyway
         let domain = parent_domain.remove_child(child_edge)?;
         let undo_operation = UndoDelete { domain };
-        Ok(UndoOperation::Delete(undo_operation))
+        Ok(UndoOperation::Delete(Box::new(undo_operation)))
     }
 }
 

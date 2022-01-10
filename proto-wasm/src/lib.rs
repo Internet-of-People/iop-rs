@@ -1,3 +1,5 @@
+#![allow(clippy::new_without_default)] // WASM does not call default()
+
 mod coeus;
 mod did;
 mod jwt;
@@ -13,7 +15,6 @@ pub use sign::*;
 // imports from 3rd party crates
 
 use anyhow::Result;
-use serde_json::Value;
 use wasm_bindgen::prelude::*;
 
 // imports from own crates

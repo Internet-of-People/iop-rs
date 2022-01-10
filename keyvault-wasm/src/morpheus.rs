@@ -7,7 +7,7 @@ pub struct JsMorpheus;
 #[wasm_bindgen(js_class = Morpheus)]
 impl JsMorpheus {
     pub fn root(seed: &JsSeed) -> Result<JsMorpheusRoot, JsValue> {
-        let inner = Morpheus.root(&seed.inner()).map_err_to_js()?;
+        let inner = Morpheus.root(seed.inner()).map_err_to_js()?;
         Ok(JsMorpheusRoot::from(inner))
     }
 }

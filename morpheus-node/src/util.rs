@@ -17,7 +17,7 @@ pub fn is_height_in_range_exc_until(
         }
     }
 
-    return true;
+    true
 }
 
 pub fn is_height_in_range_inc_until(
@@ -36,5 +36,5 @@ pub fn is_height_in_range_inc_until(
         }
     }
 
-    return true;
+    true
 }

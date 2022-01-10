@@ -75,7 +75,7 @@ impl Morpheus {
 
     /// Calculate the root node of the Morpheus subtree in the HD wallet.
     pub fn root(self, seed: &Seed) -> Result<MorpheusRoot> {
-        let node = Bip32.master(&seed, &MorpheusSubtree).derive_hardened(Self::BIP43_PURPOSE)?;
+        let node = Bip32.master(seed, &MorpheusSubtree).derive_hardened(Self::BIP43_PURPOSE)?;
         Ok(MorpheusRoot { node })
     }
 
@@ -150,7 +150,7 @@ impl MorpheusVaultAdmin {
 
     /// Returns a reference to the underlying BIP32 node.
     pub fn node(&self) -> &Bip32Node<ed25519::Ed25519> {
-        &self.parent.node()
+        self.parent.node()
     }
 }
 
@@ -168,7 +168,7 @@ impl MorpheusKindAdmin {
 
     /// Returns a reference to the underlying BIP32 node.
     pub fn node(&self) -> &Bip32Node<ed25519::Ed25519> {
-        &self.parent.node()
+        self.parent.node()
     }
 }
 

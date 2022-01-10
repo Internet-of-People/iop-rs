@@ -196,7 +196,7 @@ impl DidDocumentState {
                     auth: auth.clone(),
                     rights: system_rights(false),
                     added_at_height: Some(height),
-                    expires_at_height: expires_at_height.clone(),
+                    expires_at_height: *expires_at_height,
                     revoked_at: None,
                 })
             }
@@ -260,7 +260,7 @@ impl DidDocumentState {
                         did
                     );
                     ensure!(
-                        &last_entry.added_at_height == &Some(height),
+                        last_entry.added_at_height == Some(height),
                         "Cannot revert addKey in DID {}, because it was not added at the specified height.",
                         did
                     );

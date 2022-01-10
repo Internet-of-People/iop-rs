@@ -41,16 +41,3 @@ impl From<SecpPrivateKey> for MPrivateKey {
         Self::Secp256k1(src)
     }
 }
-
-// TODO display/debug
-impl std::fmt::Display for MPrivateKey {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "{}", "TODO")
-    }
-}
-
-impl std::fmt::Debug for MPrivateKey {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        (self as &dyn std::fmt::Display).fmt(f)
-    }
-}
