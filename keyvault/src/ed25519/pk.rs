@@ -1,7 +1,4 @@
-use ed25519_dalek::{self as ed, Verifier};
-
-use super::{Ed25519, EdKeyId, EdSignature};
-use crate::*;
+use super::*;
 
 /// The size of the public key in the compressed format used by [`to_bytes`]
 ///

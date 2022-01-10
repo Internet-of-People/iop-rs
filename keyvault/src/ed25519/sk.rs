@@ -1,5 +1,3 @@
-use ed25519_dalek::{self as ed, Signer};
-
 use super::*;
 
 /// The size of the private key in the format used by [`to_bytes`]

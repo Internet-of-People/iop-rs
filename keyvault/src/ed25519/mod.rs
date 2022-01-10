@@ -9,6 +9,7 @@ mod pk;
 mod sig;
 mod sk;
 
+use ed25519_dalek::{self as ed, Signer as _, Verifier as _};
 use hmac::{Mac, NewMac};
 
 use super::*;

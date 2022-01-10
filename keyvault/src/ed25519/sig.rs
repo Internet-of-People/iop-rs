@@ -1,5 +1,3 @@
-use ed25519_dalek::{self as ed, ed25519::signature::Signature};
-
 use super::*;
 
 /// The serialized byte representation for the current version of the signature algorithm

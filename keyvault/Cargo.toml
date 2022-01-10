@@ -3,7 +3,11 @@ name = "iop-keyvault"
 version = "0.0.15"
 edition = "2018"
 description = "A general-purpose hierarchical deterministic generator for asymmetric keys."
-authors = ["IOP Ventures LLC <dev@iop-ventures.com>", "wigy <wigy_opensource_developer@yahoo.com>", "Rache Bartmoss <bartmoss@tutanota.com>"]
+authors = [
+  "IOP Ventures LLC <dev@iop-ventures.com>",
+  "wigy <wigy_opensource_developer@yahoo.com>",
+  "Rache Bartmoss <bartmoss@tutanota.com>",
+]
 license = "LGPL-3.0-or-later"
 repository = "https://github.com/Internet-of-People/iop-rs"
 homepage = "https://developer.iop.technology/glossary?id=multicipher"
@@ -14,7 +18,7 @@ categories = ["cryptography", "cryptography::cryptocurrencies"]
 anyhow = "1.0.32"
 blake2 = "0.9.0"
 digest = "0.9.0"
-ed25519-dalek = "1.0.0"
+ed25519-dalek = "1.0.1"
 rand = { version = "0.8.3", features = ["getrandom"] }
 getrandom = { version = "0.2.3", features = ["wasm-bindgen", "js"] }
 hex = "0.4.2"
@@ -25,7 +29,7 @@ secp = { version = "0.3.5", package = "libsecp256k1" }
 multibase = "0.9.1"
 orion = "0.16.0"
 ripemd160 = "0.9.1"
-serde = { version="1.0.121", features = ["derive"] }
+serde = { version = "1.0.121", features = ["derive"] }
 serde_bytes = "0.11.3"
 sha2 = "0.9.1"
 tiny-bip39 = { version = "0.8.1", features = [] }
