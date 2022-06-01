@@ -116,6 +116,30 @@ pub extern "C" fn delete_MorpheusOperation(attempt: *mut SignableOperationAttemp
     delete(attempt)
 }
 
+#[no_mangle]
+pub extern "C" fn MorpheusOperation_from_string(
+    input: *const raw::c_char,
+) -> CPtrResult<SignableOperationAttempt> {
+    let fun = || {
+        let input = unsafe { convert::str_in(input)? };
+        let attempt: SignableOperationAttempt = serde_json::from_str(input)?;
+        Ok(convert::move_out(attempt))
+    };
+    cresult(fun())
+}
+
+#[no_mangle]
+pub extern "C" fn MorpheusOperation_to_string(
+    attempt: *const SignableOperationAttempt,
+) -> CPtrResult<raw::c_char> {
+    let fun = || {
+        let attempt = unsafe { convert::borrow_in(attempt) };
+        let json_str = serde_json::to_string(attempt)?;
+        Ok(convert::string_out(json_str))
+    };
+    cresult(fun())
+}
+
 pub struct MorpheusOperationSigner {
     operations: Vec<SignableOperationAttempt>,
 }
@@ -243,6 +267,18 @@ pub extern "C" fn MorpheusAssetBuilder_build(
 #[no_mangle]
 pub extern "C" fn delete_MorpheusAsset(asset: *mut MorpheusAsset) {
     delete(asset)
+}
+
+#[no_mangle]
+pub extern "C" fn MorpheusAsset_from_string(
+    input: *const raw::c_char,
+) -> CPtrResult<MorpheusAsset> {
+    let fun = || {
+        let input = unsafe { convert::str_in(input)? };
+        let asset: MorpheusAsset = serde_json::from_str(input)?;
+        Ok(convert::move_out(asset))
+    };
+    cresult(fun())
 }
 
 #[no_mangle]

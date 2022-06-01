@@ -63,6 +63,12 @@ pub struct JsMorpheusSignableOperation {
 
 #[wasm_bindgen(js_class = MorpheusSignableOperation)]
 impl JsMorpheusSignableOperation {
+    #[wasm_bindgen(constructor)]
+    pub fn new(json: &JsValue) -> Result<JsMorpheusSignableOperation, JsValue> {
+        let inner: SignableOperationAttempt = json.into_serde().map_err_to_js()?;
+        Ok(JsMorpheusSignableOperation { inner })
+    }
+
     #[wasm_bindgen(js_name = toJSON)]
     pub fn to_json(&self) -> Result<JsValue, JsValue> {
         JsValue::from_serde(&self.inner).map_err_to_js()
@@ -92,7 +98,8 @@ impl JsMorpheusOperationBuilder {
     #[wasm_bindgen(constructor)]
     pub fn new(did: &str, last_tx_id: JsValue) -> Result<JsMorpheusOperationBuilder, JsValue> {
         let last_tx_id = last_tx_id.into_serde().map_err_to_js()?;
-        Ok(JsMorpheusOperationBuilder { did: did.parse().map_err_to_js()?, last_tx_id })
+        let did = did.parse().map_err_to_js()?;
+        Ok(JsMorpheusOperationBuilder { did, last_tx_id })
     }
 
     #[wasm_bindgen(js_name = addKey)]
@@ -195,6 +202,12 @@ pub struct JsMorpheusSignedOperation {
 
 #[wasm_bindgen(js_class = MorpheusSignedOperation)]
 impl JsMorpheusSignedOperation {
+    #[wasm_bindgen(constructor)]
+    pub fn new(json: &JsValue) -> Result<JsMorpheusSignedOperation, JsValue> {
+        let inner: SignedOperation = json.into_serde().map_err_to_js()?;
+        Ok(JsMorpheusSignedOperation { inner })
+    }
+
     #[wasm_bindgen(js_name = toJSON)]
     pub fn to_json(&self) -> Result<JsValue, JsValue> {
         JsValue::from_serde(&self.inner).map_err_to_js()
