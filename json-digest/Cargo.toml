@@ -12,14 +12,14 @@ categories = ["cryptography", "algorithms"]
 
 
 [dependencies]
-anyhow = "1.0.32"
+anyhow = "1.0.57"
 multibase = "0.9.1"
-rand = { version = "0.8.3", features = ["getrandom"] }
-serde = { version="1.0.121", features = ["derive"] }
-serde_json = { version = "1.0.64", features = ["preserve_order"] }
-tiny-keccak = "1"
-unicode-normalization = "0.1.13"
+rand = { version = "0.8.5", features = ["getrandom"] }
+serde = { version = "1.0.137", features = ["derive"] }
+serde_json = { version = "1.0.81", features = ["preserve_order"] }
+tiny-keccak = { version = "2.0.2", features = ["sha3"] }
+unicode-normalization = "0.1.19"
 
 
 [dev-dependencies]
-hex = "0.4.2"
+hex = "0.4.3"

@@ -174,7 +174,7 @@ pub fn serialize_signatures(
     }
     if !skip_second_signature {
         let second_signature =
-            transaction.second_signature.as_ref().or_else(|| transaction.sign_signature.as_ref());
+            transaction.second_signature.as_ref().or(transaction.sign_signature.as_ref());
         if let Some(sec_sig) = second_signature {
             write_decoded_hex(sec_sig, bytes)?;
         }

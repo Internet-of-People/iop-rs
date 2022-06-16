@@ -9,21 +9,21 @@ repository = "https://github.com/Internet-of-People/iop-rs"
 
 
 [dependencies]
-anyhow = "1.0.32"
-chrono = { version = "0.4.15", features = ["wasmbind"] }
+anyhow = "1.0.57"
+chrono = { version = "0.4.19", features = ["wasmbind"] }
 iop-hydra-proto = "0.0.15"
 iop-journal-proto = "0.0.15"
 iop-keyvault = "0.0.15"
 iop-morpheus-proto = "0.0.15"
 json-digest = "0.0.15"
-jwt-compact = { version = "0.2.0", default-features = false }
+jwt-compact = { version = "0.5.0", default-features = false }
 #multibase = "0.9.1"
-rand = { version = "0.8.3", features = ["getrandom"] }
-serde = { version="1.0.121", features = ["derive", "rc"] }
-serde_json = { version = "1.0.64", features = ["preserve_order"] }
+rand = { version = "0.8.5", features = ["getrandom"] }
+serde = { version = "1.0.137", features = ["derive", "rc"] }
+serde_json = { version = "1.0.81", features = ["preserve_order"] }
 serde_str = "0.1.0"
 
 
 [target.'cfg(target_os="android")'.dependencies]
-jni = { version = "0.17", default-features = false }
-android_logger = "0.9"
+jni = { version = "0.19.0", default-features = false }
+android_logger = "0.11.0"

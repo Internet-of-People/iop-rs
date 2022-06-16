@@ -3,11 +3,7 @@ name = "iop-keyvault"
 version = "0.0.15"
 edition = "2018"
 description = "A general-purpose hierarchical deterministic generator for asymmetric keys."
-authors = [
-  "IOP Ventures LLC <dev@iop-ventures.com>",
-  "wigy <wigy_opensource_developer@yahoo.com>",
-  "Rache Bartmoss <bartmoss@tutanota.com>",
-]
+authors = ["IOP Ventures LLC <dev@iop-ventures.com>", "wigy <wigy_opensource_developer@yahoo.com>", "Rache Bartmoss <bartmoss@tutanota.com>"]
 license = "LGPL-3.0-or-later"
 repository = "https://github.com/Internet-of-People/iop-rs"
 homepage = "https://developer.iop.technology/glossary?id=multicipher"
@@ -15,25 +11,25 @@ keywords = ["crypto", "wallet", "iop", "vault", "ssi"]
 categories = ["cryptography", "cryptography::cryptocurrencies"]
 
 [dependencies]
-anyhow = "1.0.32"
-blake2 = "0.9.0"
-digest = "0.9.0"
+anyhow = "1.0.57"
+blake2 = "0.10.4"
+digest = { version = "0.10.3", features = ["mac"] }
 ed25519-dalek = "1.0.1"
-rand = { version = "0.8.3", features = ["getrandom"] }
-getrandom = { version = "0.2.3", features = ["wasm-bindgen", "js"] }
-hex = "0.4.2"
-hmac = "0.10.0"
+rand = { version = "0.8.5", features = ["getrandom"] }
+getrandom = { version = "0.2.7", features = ["wasm-bindgen", "js"] }
+hex = "0.4.3"
+hmac = "0.12.1"
 # Unfortunately the crate name of the libsecp256k1 collides with the perfect module name
 # for the cipher, so we rename the dependency here:
-secp = { version = "0.3.5", package = "libsecp256k1" }
+secp = { version = "0.7.0", package = "libsecp256k1" }
 multibase = "0.9.1"
-orion = "0.16.0"
-ripemd160 = "0.9.1"
-serde = { version = "1.0.121", features = ["derive"] }
-serde_bytes = "0.11.3"
-sha2 = "0.9.1"
-tiny-bip39 = { version = "0.8.1", features = [] }
+orion = "0.17.1"
+ripemd = "0.1.1"
+serde = { version = "1.0.137", features = ["derive"] }
+serde_bytes = "0.11.6"
+sha2 = "0.10.2"
+tiny-bip39 = { version = "1.0.0", features = [] }
 
 [dev-dependencies]
-rmp-serde = "0.15.3"
-serde_json = { version = "1.0.64", features = ["preserve_order"] }
+rmp-serde = "1.1.0"
+serde_json = { version = "1.0.81", features = ["preserve_order"] }

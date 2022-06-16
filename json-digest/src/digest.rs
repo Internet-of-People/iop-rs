@@ -1,5 +1,6 @@
 use super::*;
 
+use tiny_keccak::Hasher;
 use unicode_normalization::UnicodeNormalization;
 
 /// Returns an [NFKD normalized] unicode representation of the input
@@ -14,7 +15,7 @@ pub fn normalize_unicode(s: &str) -> String {
 /// We use SHA3_256 with Base-64 URL encoding.
 pub fn default_hasher(content: &[u8]) -> String {
     // TODO we might want to use sha3 crate instead of tiny_keccak
-    let mut hasher = tiny_keccak::Keccak::new_sha3_256();
+    let mut hasher = tiny_keccak::Sha3::v256();
     let mut hash_output = [0u8; 32];
     hasher.update(content);
     hasher.finalize(&mut hash_output);
@@ -132,7 +133,7 @@ pub fn mask_json_subtree<'a, 'b>(
                         canonical_json_entries.push((key, value.to_owned()));
                     } else {
                         // This is a partial match for a Json path to keep open, recurse to mask it partially
-                        let partial_value = mask_json_subtree(value, tails.to_owned())?;
+                        let partial_value = mask_json_subtree(value, tails)?;
                         canonical_json_entries.push((key, partial_value));
                     }
                 } else {

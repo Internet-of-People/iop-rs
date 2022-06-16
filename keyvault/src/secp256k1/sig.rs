@@ -40,7 +40,7 @@ impl SecpSignature {
         );
         let mut array = [0u8; secp::util::SIGNATURE_SIZE];
         array.copy_from_slice(&bytes[VERSION_SIZE..]);
-        let sig = secp::Signature::parse(&array);
+        let sig = secp::Signature::parse_standard(&array)?;
         Ok(Self(sig))
     }
 

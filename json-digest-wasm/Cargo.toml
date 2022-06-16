@@ -21,6 +21,6 @@ crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 json-digest = "0.0.15"
-serde = { version = "1.0.121", features = ["derive"] }
-serde_json = { version = "1.0.64", features = ["preserve_order"] }
-wasm-bindgen = { version = "0.2.73", features = ["serde-serialize"] }
+serde = { version = "1.0.137", features = ["derive"] }
+serde_json = { version = "1.0.81", features = ["preserve_order"] }
+wasm-bindgen = { version = "0.2.81", features = ["serde-serialize"] }

@@ -1,17 +1,21 @@
-use blake2::VarBlake2b;
-use digest::{Update, VariableOutput};
+use blake2::{
+    digest::{consts::U16, typenum::Unsigned},
+    Blake2bMac,
+};
 
 use super::*;
 use crate::multicipher::MKeyId;
 
+type HashSize = U16;
+
 /// This constant is used for keyed hashing of public keys. This does not improve the security
 /// of the hash algorithm, but allows for domain separation if some use-case requires a different
 /// hash of the public key with the same algorithm.
-pub const KEY_ID_SALT: &[u8] = b"open social graph";
+pub const KEY_ID_SALT: &[u8; 17] = b"open social graph";
 
 /// The size of the key identifier in bytes. Since a version byte is prepended to the
 /// hash result, it is not a standard size.
-pub const KEY_ID_SIZE: usize = 16 + VERSION_SIZE;
+pub const KEY_ID_SIZE: usize = <HashSize as Unsigned>::USIZE + VERSION_SIZE;
 
 /// The serialized byte representation for the current version of the hash algorithm
 /// applied on the public key to obtain the key identifier
@@ -48,14 +52,17 @@ impl EdKeyId {
     }
 }
 
+type Blake2bMacVar = Blake2bMac<HashSize>;
+
 impl From<&EdPublicKey> for EdKeyId {
     fn from(pk: &EdPublicKey) -> EdKeyId {
-        let mut hasher = VarBlake2b::new_keyed(KEY_ID_SALT, KEY_ID_SIZE - VERSION_SIZE);
-        hasher.update(pk.to_bytes());
-        let mut hash = Vec::with_capacity(KEY_ID_SIZE);
-        hash.push(KEY_ID_VERSION1);
-        hasher.finalize_variable(|h| hash.extend_from_slice(h));
-        EdKeyId(hash)
+        let mut hasher = <Blake2bMacVar as KeyInit>::new_from_slice(KEY_ID_SALT)
+            .expect("KEY_ID_SALT is shorter than 512 bits for Blake2b512; qed");
+        hasher.update(&pk.to_bytes());
+        let mut hash = [0u8; KEY_ID_SIZE];
+        hash[0] = KEY_ID_VERSION1;
+        hash[VERSION_SIZE..].clone_from_slice(hasher.finalize().into_bytes().as_slice());
+        EdKeyId(hash.into())
     }
 }
 

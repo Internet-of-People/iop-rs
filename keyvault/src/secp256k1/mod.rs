@@ -14,7 +14,7 @@ use super::*;
 
 use digest::generic_array::{typenum::U20, GenericArray};
 use digest::FixedOutput;
-use ripemd160::Ripemd160;
+use ripemd::Ripemd160;
 use sha2::{Digest, Sha256};
 
 fn hash160<B: AsRef<[u8]>>(input: B) -> GenericArray<u8, U20> {

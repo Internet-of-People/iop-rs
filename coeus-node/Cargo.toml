@@ -9,16 +9,18 @@ repository = "https://github.com/Internet-of-People/iop-rs"
 
 
 [dependencies]
-anyhow = "1.0.32"
+anyhow = "1.0.57"
 iop-coeus-proto = "0.0.15"
 iop-journal-proto = "0.0.15"
 iop-keyvault = "0.0.15"
 iop-morpheus-proto = { version = "0.0.15", optional = true }
 json-digest = "0.0.15"
-serde = { version="1.0.121", features = ["derive"] }
-serde_json = { version = "1.0.64", features = ["preserve_order"] }
+serde = { version = "1.0.137", features = ["derive"] }
+serde_json = { version = "1.0.81", features = ["preserve_order"] }
 serde_str = "0.1.0"
 valico = "3.6.0"
+# Need to set features on the outdated dependency of valico
+uuid = { version = "0.8", features = ["v4", "wasm-bindgen"] }
 
 [features]
 #default = ["did"]

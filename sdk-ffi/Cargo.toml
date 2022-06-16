@@ -19,8 +19,8 @@ crate-type = ["rlib", "cdylib"]
 
 
 [dependencies]
-anyhow = "1.0.32"
-chrono = { version = "0.4.15", features = ["wasmbind"] }
+anyhow = "1.0.57"
+chrono = { version = "0.4.19", features = ["wasmbind"] }
 iop-coeus-proto = "0.0.15"
 iop-hydra-proto = "0.0.15"
 iop-hydra-sdk = "0.0.15"
@@ -30,11 +30,11 @@ iop-morpheus-proto = "0.0.15"
 iop-morpheus-sdk = "0.0.15"
 iop-vault = "0.0.15"
 json-digest = "0.0.15"
-serde = { version = "1.0.121", features = ["derive", "rc"] }
-serde_json = { version = "1.0.64", features = ["preserve_order"] }
-serde_repr = "0.1.6"
+serde = { version = "1.0.137", features = ["derive", "rc"] }
+serde_json = { version = "1.0.81", features = ["preserve_order"] }
+serde_repr = "0.1.8"
 
 
 [target.'cfg(target_os="android")'.dependencies]
-jni = { version = "0.17", default-features = false }
-android_logger = "0.9"
+jni = { version = "0.19.0", default-features = false }
+android_logger = "0.11.0"

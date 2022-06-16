@@ -1,7 +1,5 @@
 use super::*;
 
-use hmac::NewMac;
-
 pub const XPRV_DATA_SIZE: usize = 78;
 pub const SK_PREFIX: u8 = 0u8;
 
@@ -22,7 +20,7 @@ impl SecpExtPrivateKey {
     pub(crate) fn from_seed(seed: &[u8]) -> Self {
         // This unwrap would only panic if the digest algorithm had some inconsistent
         // generic parameters, but the SHA512 we use is consistent with itself
-        let mut hasher = HmacSha512::new_varkey(SLIP10_SEED_HASH_SALT).unwrap();
+        let mut hasher = <HmacSha512 as KeyInit>::new_from_slice(SLIP10_SEED_HASH_SALT).unwrap();
         hasher.update(seed);
         let hash_bytes = hasher.finalize().into_bytes();
 
@@ -47,7 +45,7 @@ impl SecpExtPrivateKey {
         let salt = &parent.chain_code.to_bytes();
         // This unwrap would only panic if the digest algorithm had some inconsistent
         // generic parameters, but the SHA512 we use is consistent with itself
-        let mut hasher = HmacSha512::new_varkey(salt).unwrap();
+        let mut hasher = <HmacSha512 as KeyInit>::new_from_slice(salt).unwrap();
 
         recipe(&mut hasher);
 
@@ -125,7 +123,7 @@ impl ExtendedPrivateKey<Secp256k1> for SecpExtPrivateKey {
         ensure!(idx >= 0, "Derivation index cannot be negative");
         let idx = idx as u32;
 
-        let xprv = self.cook_new(idx, |hasher| {
+        let xprv = self.cook_new(idx, |hasher: &mut HmacSha512| {
             hasher.update(&self.sk.public_key().to_bytes());
             hasher.update(&idx.to_be_bytes());
         });
@@ -136,7 +134,7 @@ impl ExtendedPrivateKey<Secp256k1> for SecpExtPrivateKey {
         ensure!(idx >= 0, "Derivation index cannot be negative");
         let idx = 0x8000_0000u32 + idx as u32;
 
-        let xprv = self.cook_new(idx, |hasher| {
+        let xprv = self.cook_new(idx, |hasher: &mut HmacSha512| {
             hasher.update(&[SK_PREFIX]);
             hasher.update(&self.sk.to_bytes());
             hasher.update(&idx.to_be_bytes());

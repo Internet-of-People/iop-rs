@@ -27,13 +27,11 @@ impl JwtBuilder {
 
     pub fn sign(&self, sk: &MPrivateKey) -> Result<String> {
         let pk = sk.public_key();
-        let header = Header { key_id: Some(pk.to_string()), ..Default::default() };
-        let claims = Claims {
-            expiration_date: Some(self.created_at + self.time_to_live),
-            not_before: Some(self.created_at),
-            issued_at: None,
-            custom: JwtClaim { content_id: self.content_id.clone() },
-        };
+        let header = Header::default().with_key_id(pk.to_string());
+        let options = TimeOptions::new(Duration::seconds(0), || self.created_at);
+        let claims = Claims::new(JwtClaim { content_id: self.content_id.clone() })
+            .set_duration(&options, self.time_to_live)
+            .set_not_before(self.created_at);
         let token = JwtMultiCipher.token(header, &claims, sk)?;
         Ok(token)
     }
@@ -61,8 +59,9 @@ impl JwtParser {
             .with_context(|| "Publickey is missing from JWT kid header")?;
         let pk: MPublicKey = pk_str.parse()?;
         let token = JwtMultiCipher.validate_integrity::<JwtClaim>(&untrusted, &pk)?;
-        let options = TimeOptions { current_time, ..Default::default() };
-        token.claims().validate_expiration(options)?.validate_maturity(options)?;
+        let options =
+            TimeOptions::new(Duration::seconds(0), || current_time.unwrap_or_else(Utc::now));
+        token.claims().validate_expiration(&options)?.validate_maturity(&options)?;
 
         Ok(Self(token))
     }
@@ -77,7 +76,7 @@ impl JwtParser {
     // new would fail on validate_maturity or validate_expiration if either not_before or expiration_date were missing
     pub fn time_to_live(&self) -> Duration {
         let claims = self.0.claims();
-        *claims.expiration_date.as_ref().unwrap() - *claims.not_before.as_ref().unwrap()
+        *claims.expiration.as_ref().unwrap() - *claims.not_before.as_ref().unwrap()
     }
 
     // new would fail on validate_maturity if not_before was missing

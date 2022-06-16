@@ -63,7 +63,7 @@ impl Add<&[u8]> for &SecpPublicKey {
 
     fn add(self, rhs: &[u8]) -> Self::Output {
         let sk = secp::SecretKey::parse_slice(rhs)?;
-        let mut sum = self.0.clone();
+        let mut sum = self.0;
         sum.tweak_add_assign(&sk)?;
         Ok(SecpPublicKey(sum))
     }

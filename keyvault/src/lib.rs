@@ -27,7 +27,7 @@ mod tests;
 pub use ::bip39::ErrorKind as Bip39ErrorKind;
 pub use ::bip39::Language as Bip39Language;
 pub use anyhow::Result;
-pub use hmac::Mac;
+pub use digest::Mac;
 
 pub use crate::bip39::*;
 pub use bip32::*;
@@ -44,6 +44,7 @@ use std::hash::{Hash, Hasher};
 use std::str::FromStr;
 
 use anyhow::{anyhow, bail, ensure};
+use digest::KeyInit;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
 /// A public key (also called shared key or pk in some literature) is that part of an asymmetric keypair

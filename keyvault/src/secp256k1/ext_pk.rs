@@ -1,7 +1,5 @@
 use super::*;
 
-use hmac::NewMac;
-
 pub const XPUB_DATA_SIZE: usize = 78;
 
 /// Implementation of Secp256k1::ExtendedPublicKey
@@ -23,7 +21,7 @@ impl SecpExtPublicKey {
         let salt = &parent.chain_code.to_bytes();
         // This unwrap would only panic if the digest algorithm had some inconsistent
         // generic parameters, but the SHA512 we use is consistent with itself
-        let mut hasher = HmacSha512::new_varkey(salt).unwrap();
+        let mut hasher = <HmacSha512 as KeyInit>::new_from_slice(salt).unwrap();
 
         recipe(&mut hasher);
 
@@ -99,7 +97,7 @@ impl ExtendedPublicKey<Secp256k1> for SecpExtPublicKey {
         ensure!(idx >= 0, "Derivation index cannot be negative");
         let idx = idx as u32;
 
-        let xpub = self.cook_new(idx, |hasher| {
+        let xpub = self.cook_new(idx, |hasher: &mut HmacSha512| {
             hasher.update(&self.pk.to_bytes());
             hasher.update(&idx.to_be_bytes());
         });
