@@ -25,8 +25,7 @@ struct VaultImpl {
 }
 
 impl VaultImpl {
-    fn new(encrypted_seed: String, plugins: Vec<Box<dyn VaultPlugin>>) -> Self {
-        let is_dirty = false;
+    fn new(encrypted_seed: String, plugins: Vec<Box<dyn VaultPlugin>>, is_dirty: bool) -> Self {
         Self { encrypted_seed, plugins, is_dirty }
     }
 }
@@ -39,8 +38,8 @@ pub struct Vault {
 }
 
 impl Vault {
-    pub fn new(encrypted_seed: String, plugins: Vec<Box<dyn VaultPlugin>>) -> Self {
-        let imp = VaultImpl::new(encrypted_seed, plugins);
+    pub fn new(encrypted_seed: String, plugins: Vec<Box<dyn VaultPlugin>>, dirty: bool) -> Self {
+        let imp = VaultImpl::new(encrypted_seed, plugins, dirty);
         let inner = Arc::new(RwLock::new(imp));
         Self { inner }
     }
@@ -55,7 +54,8 @@ impl Vault {
         };
         let seed = bip39.phrase(phrase)?.password(bip39_password);
         let encrypted_seed = Self::encrypt_seed(&seed, unlock_password.as_ref())?;
-        Ok(Self::new(encrypted_seed, Vec::new()))
+        let vault = Self::new(encrypted_seed, Vec::new(), true);
+        Ok(vault)
     }
 
     pub fn unlock(&self, unlock_password: &str) -> Result<Seed> {

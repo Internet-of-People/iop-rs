@@ -1,5 +1,5 @@
 //! Cannot use typetags in wasm_bindgen, because it depends on module constructors. So as a workaround
-//! until the https://github.com/mmastrac/rust-ctor/issues/14 issue is resolved.
+//! until the <https://github.com/mmastrac/rust-ctor/issues/14> issue is resolved.
 
 use super::*;
 
@@ -31,6 +31,6 @@ pub struct VaultSerializer {
 impl From<VaultSerializer> for Vault {
     fn from(mut ser: VaultSerializer) -> Self {
         let plugins = ser.plugins.drain(..).map(|p| p.into()).collect::<Vec<_>>();
-        Self::new(ser.encrypted_seed, plugins)
+        Self::new(ser.encrypted_seed, plugins, false)
     }
 }
