@@ -61,7 +61,7 @@ impl<C: KeyDerivationCrypto + 'static> Bip44Coin<C> {
         self.node.path()
     }
 
-    /// Accessor for the underlying nwtwork.
+    /// Accessor for the underlying network.
     pub fn network(&self) -> &'static dyn Network<Suite = C> {
         self.network
     }
@@ -309,7 +309,7 @@ impl<C: KeyDerivationCrypto + 'static> Bip44PublicSubAccount<C> {
 }
 
 #[derive(Clone, Debug)]
-/// Represents a key with a given index used on the chain for storing balance or authenticating actions.
+/// Represents a key with a given index within a sub-account used on the chain for storing balance or authenticating actions.
 pub struct Bip44Key<C: KeyDerivationCrypto + 'static> {
     path: Bip44KeyPath,
     network: &'static dyn Network<Suite = C>,
@@ -345,7 +345,7 @@ impl<C: KeyDerivationCrypto + 'static> Bip44Key<C> {
         self.node.private_key()
     }
 
-    /// Neuters the key and convert it into its public API
+    /// Neuters the key and converts it into its public API
     pub fn neuter(&self) -> Bip44PublicKey<C> {
         Bip44PublicKey::new(self.path.clone(), self.network, self.node.neuter())
     }

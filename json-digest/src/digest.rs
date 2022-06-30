@@ -12,7 +12,7 @@ pub fn normalize_unicode(s: &str) -> String {
 
 /// Multibase-encoded hash of the provided bytes used in many places around this crate.
 ///
-/// We use SHA3_256 with Base-64 URL encoding.
+/// We use SHA3_256 (not Keccak) with Base-64 URL encoding.
 pub fn default_hasher(content: &[u8]) -> String {
     // TODO we might want to use sha3 crate instead of tiny_keccak
     let mut hasher = tiny_keccak::Sha3::v256();

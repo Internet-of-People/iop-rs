@@ -1,4 +1,9 @@
 #![allow(clippy::new_without_default)] // WASM does not call default()
+#![warn(missing_docs)]
+#![deny(rustdoc::broken_intra_doc_links)]
+
+//! This module provides WASM bindings to functionality needed in a client application using the IOP Stack™. Network related
+//! asynchronous code is provided in the TypeScript part of the SDK and is not done from these WASM bindings.
 
 mod hydra;
 mod morpheus;

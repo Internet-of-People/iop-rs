@@ -16,7 +16,7 @@ pub enum MKeyId {
 }
 
 impl MKeyId {
-    /// All multicipher keyids start with this prefix
+    /// All multicipher key ids start with this prefix
     pub const PREFIX: char = 'i';
 
     /// The ciphersuite that this key id belongs to

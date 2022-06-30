@@ -237,7 +237,7 @@ pub struct MorpheusPrivateKey {
 }
 
 impl MorpheusPrivateKey {
-    /// Created the public interface of the node that does not need the private key in memory.
+    /// Creates the public interface of the node that does not need the private key in memory.
     pub fn neuter(&self) -> MorpheusPublicKey {
         let node = self.node.neuter();
         MorpheusPublicKey { path: self.path.clone(), node }

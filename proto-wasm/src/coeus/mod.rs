@@ -1,3 +1,5 @@
+#![allow(missing_docs)] // TODO remove
+
 mod asset;
 mod domain_name;
 mod operation;

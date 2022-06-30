@@ -138,7 +138,7 @@ impl<C: KeyDerivationCrypto + 'static> Bip32PublicNode<C> {
         Ok(Self { path, xpk, subtree })
     }
 
-    /// Creates the public key that belongs to this node for verifying authentications done by the private key.
+    /// Creates the public key that belongs to this node for verifying authentications done by the corresponding private key.
     pub fn public_key(&self) -> C::PublicKey {
         self.xpk.public_key()
     }

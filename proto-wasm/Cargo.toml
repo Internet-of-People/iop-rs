@@ -17,6 +17,7 @@ normal = ["uuid"]
 
 [dependencies]
 anyhow = "1.0.57"
+chrono = { version = "0.4.19", features = ["wasmbind"] }
 iop-coeus-proto = "0.0.15"
 iop-hydra-proto = "0.0.15"
 iop-journal-proto = "0.0.15"

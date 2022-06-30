@@ -40,7 +40,7 @@ impl Bip32PublicNode<Secp256k1> {
         self.xpk().to_xpub(version)
     }
 
-    /// Returns the P2PKH address that belongs key with the version byte of the network.
+    /// Returns the P2PKH address that belongs to this node using the version byte of the network.
     pub fn to_p2pkh_addr(&self, network: &'static dyn Network<Suite = Secp256k1>) -> String {
         let prefix = network.p2pkh_addr();
         self.key_id().to_p2pkh_addr(prefix)

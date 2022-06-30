@@ -110,8 +110,6 @@ impl Bip39 {
 
     /// Validates a whole BIP39 mnemonic phrase and returns an intermediate object that can be
     /// later converted into a [`Seed`] with an optional password.
-    ///
-    /// [`Seed`]: struct.Seed.html
     pub fn phrase(self, phrase: impl AsRef<str>) -> Result<Bip39Phrase> {
         if phrase.as_ref().split(' ').count() != Bip39::MNEMONIC_WORDS {
             bail!("Only {}-word mnemonics are supported", Bip39::MNEMONIC_WORDS)
@@ -119,18 +117,15 @@ impl Bip39 {
         self.short_phrase(phrase)
     }
 
-    /// Use the [`phrase`] method whenever possible. This method allows some legacy use-cases to
-    /// provide mnemonics shorter than [`MNEMONIC_WORDS`] words.
-    ///
-    /// [`phrase`]: #method.phrase
-    /// [`MNEMONIC_WORDS`]: ../constant.MNEMONIC_WORDS
+    /// Use the [`Self::phrase()`] method whenever possible. This method allows some legacy use-cases to
+    /// provide mnemonics shorter than [`Self::MNEMONIC_WORDS`] words.
     pub fn short_phrase(self, phrase: impl AsRef<str>) -> Result<Bip39Phrase> {
         let mnemonic = Mnemonic::from_phrase(phrase.as_ref(), self.lang)?;
         Ok(Bip39Phrase { mnemonic })
     }
 
     /// Creates a BIP39 phrase based on the 256 bits of entropy provided. This method is needed from WASM
-    /// because [`generate`] uses system resources unavailable from WASM.
+    /// because [`Self::generate()`] uses system resources unavailable from WASM.
     pub fn entropy(self, entropy: impl AsRef<[u8]>) -> Result<Bip39Phrase> {
         let size = MnemonicType::for_word_count(Self::MNEMONIC_WORDS).unwrap();
         if entropy.as_ref().len() * 8 != size.entropy_bits() {
@@ -139,7 +134,7 @@ impl Bip39 {
         self.short_entropy(entropy)
     }
 
-    /// Use the ['entropy'] method whenever possible. This method allows some legacy use-cases to
+    /// Use the ['entropy()'] method whenever possible. This method allows some legacy use-cases to
     /// provide mnemonics with low entropy.
     pub fn short_entropy(self, entropy: impl AsRef<[u8]>) -> Result<Bip39Phrase> {
         let mnemonic = Mnemonic::from_entropy(entropy.as_ref(), self.lang)?;

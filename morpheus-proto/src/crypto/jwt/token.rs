@@ -18,11 +18,11 @@ pub struct JwtBuilder {
 
 impl JwtBuilder {
     pub fn new() -> Self {
-        Self::create(None)
+        JwtBuilder { content_id: None, time_to_live: Duration::minutes(5), created_at: Utc::now() }
     }
 
     pub fn with_content_id(content_id: ContentId) -> Self {
-        Self::create(Some(content_id))
+        JwtBuilder { content_id: Some(content_id), ..Self::new() }
     }
 
     pub fn sign(&self, sk: &MPrivateKey) -> Result<String> {
@@ -34,10 +34,6 @@ impl JwtBuilder {
             .set_not_before(self.created_at);
         let token = JwtMultiCipher.token(header, &claims, sk)?;
         Ok(token)
-    }
-
-    fn create(content_id: Option<ContentId>) -> Self {
-        JwtBuilder { content_id, time_to_live: Duration::minutes(5), created_at: Utc::now() }
     }
 }
 

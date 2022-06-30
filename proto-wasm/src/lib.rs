@@ -1,4 +1,8 @@
 #![allow(clippy::new_without_default)] // WASM does not call default()
+#![warn(missing_docs)]
+#![deny(rustdoc::broken_intra_doc_links)]
+
+//! This library defines WASM wrappers for objects used both by clients in the SDK and the blockchain node implementation.
 
 mod coeus;
 mod did;

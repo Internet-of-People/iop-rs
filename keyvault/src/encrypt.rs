@@ -1,4 +1,4 @@
-//! A thin integration of Argon2i and XChaCha20Poly1305 algorithms from the orion crate to encrypt/decrypt in-memory blobs with a password.
+//! A thin integration of `Argon2i` and `XChaCha20Poly1305` algorithms from the `orion` crate to encrypt/decrypt in-memory blobs with a password.
 
 use orion::aead::SecretKey;
 
@@ -18,7 +18,7 @@ fn password_to_key(pw: &str, salt: &[u8]) -> Result<SecretKey> {
     Ok(key)
 }
 
-/// Generates a 24-byte random nonce that can be used with the [`encrypt`] function.
+/// Generates a 24-byte random nonce that can be used with the [`encrypt()`] function.
 ///
 /// # Errors
 ///
@@ -63,8 +63,8 @@ pub fn encrypt(
     Ok(output)
 }
 
-/// Decrypts the ciphertext with a password. The format of the ciphertext is defined by the [`encrypt`] function. Only the matching password will
-/// decrypt the ciphertext.
+/// Decrypts the ciphertext with a password. The format of the ciphertext is defined by the [`encrypt()`] function. Only the matching
+/// password will decrypt the ciphertext.
 pub fn decrypt(ciphertext: impl AsRef<[u8]>, pw: impl AsRef<str>) -> Result<Vec<u8>> {
     use orion::aead::open;
     use orion::hazardous::stream::xchacha20::XCHACHA_NONCESIZE;
@@ -81,6 +81,19 @@ pub fn decrypt(ciphertext: impl AsRef<[u8]>, pw: impl AsRef<str>) -> Result<Vec<
 #[cfg(test)]
 mod test {
     use super::*;
+
+    #[test]
+    fn encrypt_test_vector() -> Result<()> {
+        let nonce = hex::decode(b"55287edc4265bdd919532b93dc0d4854b36b5d5a3c979384")?;
+        let password = "password123";
+        let plaintext = b"Be at the big tree at 5pm tomorrow!";
+        let ciphertext = encrypt(plaintext, password, &nonce)?;
+
+        assert_eq!(ciphertext.len(), plaintext.len() + 40);
+        assert_eq!(hex::encode(ciphertext), "55287edc4265bdd919532b93dc0d4854b36b5d5a3c979384f7e4e8cf7af1f0b5d0d2df2d08fb2d5039d4108f2d5c37643cb0d72c13d07c7b7c9485cfbae8923c594c2134f389ba19ae240e");
+
+        Ok(())
+    }
 
     #[test]
     fn encrypt_decrypt_roundtrip() -> Result<()> {

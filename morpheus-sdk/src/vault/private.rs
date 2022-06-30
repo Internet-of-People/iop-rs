@@ -42,6 +42,10 @@ impl Private {
         self.kind(DidKind::Resource)
     }
 
+    pub fn node(&self) -> &Bip32Node<Ed25519> {
+        self.root.node()
+    }
+
     pub fn public(&self) -> Public {
         Public::new(self.state.clone())
     }

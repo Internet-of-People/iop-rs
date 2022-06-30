@@ -15,5 +15,5 @@ crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 iop-keyvault = "0.0.15"
-serde_json = { version = "1.0.81", features = ["preserve_order"] }
+serde = { version = "1.0.137", features = ["derive"] }
 wasm-bindgen = { version = "0.2.81", features = ["serde-serialize"] }

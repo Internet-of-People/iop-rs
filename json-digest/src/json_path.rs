@@ -1,5 +1,5 @@
 //! Utility functions to specify subtrees in a JSON document. Path pattern syntax is based on
-//! JQ patterns, see https://stedolan.github.io/jq/manual/#Basicfilters
+//! JQ patterns, see <https://stedolan.github.io/jq/manual/#Basicfilters>
 
 use super::*;
 

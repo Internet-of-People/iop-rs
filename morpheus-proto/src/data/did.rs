@@ -1,6 +1,6 @@
 use super::*;
 
-// NOTE should be const, but current language rules do not allow that
+// NOTE should be const, but current const fn implementations do not allow that
 fn prefix_multicipher_keyid() -> String {
     multicipher::MKeyId::PREFIX.to_string()
 }
@@ -75,7 +75,7 @@ impl From<&Did> for String {
         // if !key_id_str.starts_with(prefix_multicipher_keyid) {
         //     panic!("Implementation error: {} is not a valid KeyId: must start with {}", key_id_str, prefix_multicipher_keyid );
         // }
-        key_id_str.replacen(&prefix_multicipher_keyid(), Did::PREFIX, 1)
+        key_id_str.replacen(multicipher::MKeyId::PREFIX, Did::PREFIX, 1)
     }
 }
 

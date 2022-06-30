@@ -25,7 +25,7 @@ impl Bip44Account<Secp256k1> {
 }
 
 impl Bip44PublicAccount<Secp256k1> {
-    /// Recreates the public API of a BIP44 account from its parts
+    /// Recreates the public API of a BIP44 account from the BIP32 readable format
     pub fn from_xpub(
         account: i32, xpub: impl AsRef<str>, network: &'static dyn Network<Suite = Secp256k1>,
     ) -> Result<Bip44PublicAccount<Secp256k1>> {
@@ -41,7 +41,7 @@ impl Bip44PublicAccount<Secp256k1> {
 }
 
 impl Bip44SubAccount<Secp256k1> {
-    /// Recreates the private API of a BIP44 account from its parts
+    /// Recreates the private API of a BIP44 sub-account from its parts
     pub fn from_xprv(
         account: i32, chain: Chain, xprv: impl AsRef<str>,
         network: &'static dyn Network<Suite = Secp256k1>,
