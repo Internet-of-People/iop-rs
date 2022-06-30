@@ -14,9 +14,13 @@ wasm-pack build --release --target browser --out-dir pkg/browser --out-name iop_
 wasm-pack build --release --target nodejs --out-dir pkg/node --out-name iop_node_wasm
 
 mv pkg/browser/*.d.ts pkg/
+mv pkg/browser/README.md pkg/
+mv pkg/browser/LICENSE pkg/
 rm pkg/browser/.gitignore
 rm pkg/browser/package.json
 rm pkg/node/*.d.ts
+rm pkg/node/README.md
+rm pkg/node/LICENSE
 rm pkg/node/.gitignore
 rm pkg/node/package.json
 

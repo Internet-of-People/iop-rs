@@ -1,10 +1,10 @@
 [package]
 name = "iop-journal-proto"
-version = "0.0.15"
+version = "0.0.16"
 description = "Journal-independent abstract definitions for the IOP Stack™"
 authors = ["IOP Ventures LLC <dev@iop-ventures.com>", "Rache Bartmoss <bartmoss@tutanota.com>", "wigy <wigy_opensource_developer@yahoo.com>"]
 license = "LGPL-3.0-or-later"
-edition = "2018"
+edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

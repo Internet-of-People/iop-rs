@@ -1,14 +1,14 @@
 [package]
 name = "iop-hydra-proto"
 description = "Hydra-core specific protocol definitions for the IOP Stack™"
-version = "0.0.15"
+version = "0.0.16"
 authors = [
   "IOP Ventures LLC <dev@iop-ventures.com>",
   "Rache Bartmoss <bartmoss@tutanota.com>",
   "wigy <wigy_opensource_developer@yahoo.com>",
 ]
 license = "LGPL-3.0-or-later"
-edition = "2018"
+edition = "2021"
 repository = "https://github.com/Internet-of-People/iop-rs"
 homepage = "https://developer.iop.technology/"
 
@@ -17,11 +17,11 @@ homepage = "https://developer.iop.technology/"
 anyhow = "1.0.57"
 byteorder = "1.4.3"
 hex = "0.4.3"
-iop-coeus-proto = "0.0.15"
-iop-journal-proto = "0.0.15"
-iop-keyvault = "0.0.15"
-iop-morpheus-proto = "0.0.15"
-json-digest = "0.0.15"
+iop-coeus-proto = "0.0.16"
+iop-journal-proto = "0.0.16"
+iop-keyvault = "0.0.16"
+iop-morpheus-proto = "0.0.16"
+json-digest = "0.0.16"
 num-derive = "0.3.3"
 num-traits = "0.2.15"
 rand = { version = "0.8.5", features = ["getrandom"] }

@@ -1,20 +1,20 @@
 [package]
 name = "iop-hydra-sdk"
 description = "Hydraledger specific modules for the IOP Stack™ SDK"
-version = "0.0.15"
+version = "0.0.16"
 authors = ["IOP Ventures LLC <dev@iop-ventures.com>", "Rache Bartmoss <bartmoss@tutanota.com>", "wigy <wigy_opensource_developer@yahoo.com>"]
 license = "LGPL-3.0-or-later"
-edition = "2018"
+edition = "2021"
 
 
 [dependencies]
 anyhow = "1.0.57"
 byteorder = "1.4.3"
 hex = "0.4.3"
-iop-hydra-proto = "0.0.15"
-iop-keyvault = "0.0.15"
-iop-morpheus-proto = "0.0.15"
-iop-vault = "0.0.15"
+iop-hydra-proto = "0.0.16"
+iop-keyvault = "0.0.16"
+iop-morpheus-proto = "0.0.16"
+iop-vault = "0.0.16"
 parking_lot = { version = "0.12.1", features = ["serde"] }
 rand = { version = "0.8.5", features = ["getrandom"] }
 serde = { version = "1.0.137", features = ["derive"] }

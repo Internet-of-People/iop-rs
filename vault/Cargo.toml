@@ -1,15 +1,15 @@
 [package]
 name = "iop-vault"
 description = "A hierarchical deterministic wallet that allows plugin extensions for the IOP Stack™"
-version = "0.0.15"
+version = "0.0.16"
 authors = ["IOP Ventures LLC <dev@iop-ventures.com>", "Rache Bartmoss <bartmoss@tutanota.com>", "wigy <wigy_opensource_developer@yahoo.com>"]
-edition = "2018"
+edition = "2021"
 license = "LGPL-3.0-or-later"
 
 
 [dependencies]
 anyhow = "1.0.57"
-iop-keyvault = "0.0.15"
+iop-keyvault = "0.0.16"
 multibase = "0.9.1"
 parking_lot = { version = "0.12.1", features = ["serde"] }
 serde = { version = "1.0.137", features = ["derive", "rc"] }

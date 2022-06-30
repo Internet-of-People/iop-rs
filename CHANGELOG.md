@@ -1,5 +1,39 @@
 # Changelog
 
+## 0.0.16 (2022-06-30)
+
+### Added
+
+- New WASM bindings:
+  - `allNetworkNames()` lists all network names that are accepted as a parameter in some methods.
+  - `Bip39.shortEntropy()`, `Bip39.shortPhrase()` improves compatibility with old wallets like Coinomi.
+  - `wrapWithNonce()` helps adding extra entropy to a JSON document, where selective masking will be used.
+  - `MorpheusPrivate.path` and `MorpheusPrivateKind.path` returns BIP32 derivation paths to allow compatibility with other wallets.
+  - `MorpheusOperationSigner.signWithId()` makes it easier to sign with a key if only its identifier is known to the caller.
+  - `JwtBuilder.timeToLive` property helps to override the default 5s expiration of tokens.
+  - `new MorpheusSignableOperation(json)` and `new MorpheusSignedOperation(json)` mirrors `MorpheusSignableOperation.toJSON()` and
+    `MorpheusSignedOperation.toJSON()`, so it is easier to build complex SSI transactions.
+- Documented all WASM methods in the SDK, except those related to Coeus for now.
+
+### Changed
+
+- Vault freshly created from a random seed is dirty (unsaved).
+- All crates are now using Rust edition 2021.
+
+## 0.0.15 (2021-11-09)
+
+### Fixed
+
+- `JsSubtreePolicies` methods should not take ownership of self
+
+### Added
+
+- Exposed all 4 DID kinds (persona, device, group, resource) through WASM, FFI and vault file format.
+- Exposed SignedJson serialization format through WASM and FFI.
+- Made the native Rust SDK more usable by re-exporting symbols through it.
+- Morpheus node stores transaction ID of PoE SSI operations, so it can be queried in IBeforeProofHistory.
+- scripts/publish.sh helps publishing all crates in the correct order.
+
 ## 0.0.14 (2021-07-21)
 
 ### Fixed
@@ -14,9 +48,11 @@
 
 ### Added
 
-- You can now set the vendor field (aka. smart bridge field) and set a manual fee on Hydra core transactions using the 2 new optional arguments TypeScript SDK HydraTxBuilder factory methods got.
+- You can now set the vendor field (aka. smart bridge field) and set a manual fee on Hydra core transactions using the 2 new optional
+  arguments TypeScript SDK HydraTxBuilder factory methods got.
 - Added some missing bindings to WASM and FFI, `SecpKeyId.toAddress` being the most important one.
-- Multicipher objects (`MPrivateKey`, `MPublicKey` and `MKeyId`) can be safely downcasted in Rust to secp256p1 and ed25519 cipher objects. Not supported in WASM and FFI yet.
+- Multicipher objects (`MPrivateKey`, `MPublicKey` and `MKeyId`) can be safely downcasted in Rust to secp256p1 and ed25519 cipher
+  objects. Not supported in WASM and FFI yet.
 
 ### Changed
 
@@ -27,19 +63,23 @@
 
 ### Added
 
-- You can now set the vendor field (aka. smart bridge field) and set a manual fee on Hydra core transactions using the 2 new optional arguments TypeScript SDK HydraTxBuilder factory methods got.
+- You can now set the vendor field (aka. smart bridge field) and set a manual fee on Hydra core transactions using the 2 new optional
+  arguments TypeScript SDK HydraTxBuilder factory methods got.
 
 ## 0.0.12 (2021-03-17)
 
 ### Added
 
-- Crate `iop-sdk` now exports important types and is generally usable as an early draft in clients. Note that it currently does not follow any conventions of the Dart and Typescript SDKs but exposes some internal implementation details.
+- Crate `iop-sdk` now exports important types and is generally usable as an early draft in clients. Note that it currently does not
+  follow any conventions of the Dart and Typescript SDKs but exposes some internal implementation details.
 - Hydra and Morpheus vault plugins are now thread-safe and thus easily usable in async environments as well.
 
 ### Changed
 
-- BREAKING: renamed Hydra and Morpheus `vault::Plugin` function `rewind()` to `init()` for clarity. Naming changes also affect FFI and WASM interfaces.
-- BREAKING: suffixed functions that mutate Hydra and Morpheus vaults (by generating keys into them) with `_mut`. This does not affect FFI and WASM though.
+- BREAKING: renamed Hydra and Morpheus `vault::Plugin` function `rewind()` to `init()` for clarity. Naming changes also affect FFI
+  and WASM interfaces.
+- BREAKING: suffixed functions that mutate Hydra and Morpheus vaults (by generating keys into them) with `_mut`. This does not affect
+  FFI and WASM though.
 - updated dependencies
 
 ### Fixed
@@ -81,17 +121,21 @@
 
 ## 0.0.6 (2020-11-06)
 
-We're heavily refactoring our crate structure while implementing Coeus, our decentralized naming system as our second Layer-2 component. Our end goal is to make fine-grained crates for reducing dependency footprint for integrators by separating client/server sides and making Morpheus and Coeus optional plugins.
+We're heavily refactoring our crate structure while implementing Coeus, our decentralized naming system as our second Layer-2
+component. Our end goal is to make fine-grained crates for reducing dependency footprint for integrators by separating client/server
+sides and making Morpheus and Coeus optional plugins.
 
 ### Added
 
-- Coeus: generic decentralized naming system built on top of a distributed ledger. Allows binding arbitrary data to names, allowing naming schemas, wallets, DIDs, devices, etc. This helps public figures and services to be more accessible and transparent. For more details, see the [IOP Developer Portal](https://developer.iop.technology/dns).
+- Coeus: generic decentralized naming system built on top of a distributed ledger. Allows binding arbitrary data to names, allowing
+  naming schemas, wallets, DIDs, devices, etc. This helps public figures and services to be more accessible and transparent. For more
+  details, see the [IOP Developer Portal](https://developer.iop.technology/dns).
 
 ### Changed
 
 - BREAKING: changed crate hierarchy
   - coeus-core: a temporary crate with proto, sdk and node parts are not separated yet
-  - coeus-core-wasm: WebAssembly bindings for Coeus, sdk and node parts are not separated yet 
+  - coeus-core-wasm: WebAssembly bindings for Coeus, sdk and node parts are not separated yet
   - hydra-proto: extracted hydra-dependent blockchain features (e.g. Morpheus and Coeus transactions) into their own crate
   - hydra-sdk: Hydra BIP32 subtree plugin for the Vault
   - morpheus-sdk-legacy: the old morpheus-sdk is now considered to be legacy code and was thus renamed

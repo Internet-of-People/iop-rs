@@ -1,6 +1,8 @@
 # Changelog
 
-## 0.0.13 (TODO)
+This file is deprecated, see the CHANGELOG in the repository root of iop-rs.
+
+## 0.0.13 (2021-07-09)
 
 ### Change
 

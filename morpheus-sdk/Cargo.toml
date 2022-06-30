@@ -1,17 +1,17 @@
 [package]
 name = "iop-morpheus-sdk"
 description = "Morpheus specific modules for the IOP Stack™ SDK"
-version = "0.0.15"
+version = "0.0.16"
 authors = ["IOP Ventures LLC <dev@iop-ventures.com>", "Rache Bartmoss <bartmoss@tutanota.com>", "wigy <wigy_opensource_developer@yahoo.com>"]
 license = "LGPL-3.0-or-later"
-edition = "2018"
+edition = "2021"
 repository = "https://github.com/Internet-of-People/iop-rs"
 homepage = "https://developer.iop.technology/"
 
 [dependencies]
 anyhow = "1.0.57"
-iop-keyvault = "0.0.15"
-iop-vault = "0.0.15"
+iop-keyvault = "0.0.16"
+iop-vault = "0.0.16"
 parking_lot = { version = "0.12.1", features = ["serde"] }
 rand = { version = "0.8.5", features = ["getrandom"] }
 serde = { version = "1.0.137", features = ["derive"] }
@@ -21,8 +21,8 @@ typetag = "0.1.8"
 
 [dev-dependencies]
 chrono = { version = "0.4.19", features = ["wasmbind"] }
-iop-morpheus-proto = "0.0.15"
-json-digest = "0.0.15"
+iop-morpheus-proto = "0.0.16"
+json-digest = "0.0.16"
 serde_json = { version = "1.0.81", features = ["preserve_order"] }
 
 

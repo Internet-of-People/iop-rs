@@ -1,9 +1,9 @@
 [package]
 name = "iop-morpheus-proto"
 description = "Morpheus protocol definitions used on both node and sdk side of the IOP Stack™"
-version = "0.0.15"
+version = "0.0.16"
 authors = ["IOP Ventures LLC <dev@iop-ventures.com>", "Rache Bartmoss <bartmoss@tutanota.com>", "wigy <wigy_opensource_developer@yahoo.com>"]
-edition = "2018"
+edition = "2021"
 license = "LGPL-3.0-or-later"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -11,9 +11,9 @@ license = "LGPL-3.0-or-later"
 [dependencies]
 anyhow = "1.0.57"
 chrono = { version = "0.4.19", features = ["wasmbind"] }
-iop-journal-proto = "0.0.15"
-iop-keyvault = "0.0.15"
-json-digest = "0.0.15"
+iop-journal-proto = "0.0.16"
+iop-keyvault = "0.0.16"
+json-digest = "0.0.16"
 jwt-compact = { version = "0.5.0", default-features = false, features = ["std"] }
 serde = { version = "1.0.137", features = ["derive"] }
 serde_json = { version = "1.0.81", features = ["preserve_order"] }

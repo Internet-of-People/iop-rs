@@ -5,7 +5,8 @@
     "Rache Bartmoss <bartmoss@tutanota.com>",
     "wigy <wigy_opensource_developer@yahoo.com>"
   ],
-  "version": "0.0.15",
+  "version": "0.0.16",
+  "license": "LGPL-3.0-or-later",
   "files": [
     "browser/iop_node_wasm_bg.wasm",
     "browser/iop_node_wasm_bg.js",

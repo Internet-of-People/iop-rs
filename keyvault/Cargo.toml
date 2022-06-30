@@ -1,7 +1,7 @@
 [package]
 name = "iop-keyvault"
-version = "0.0.15"
-edition = "2018"
+version = "0.0.16"
+edition = "2021"
 description = "A general-purpose hierarchical deterministic generator for asymmetric keys."
 authors = ["IOP Ventures LLC <dev@iop-ventures.com>", "wigy <wigy_opensource_developer@yahoo.com>", "Rache Bartmoss <bartmoss@tutanota.com>"]
 license = "LGPL-3.0-or-later"

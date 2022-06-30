@@ -1,9 +1,9 @@
 [package]
 name = "iop-morpheus-node"
 description = "Morpheus layer-2 plugin implementation for Hydraledger"
-version = "0.0.15"
+version = "0.0.16"
 authors = ["IOP Ventures LLC <dev@iop-ventures.com>", "Rache Bartmoss <bartmoss@tutanota.com>", "wigy <wigy_opensource_developer@yahoo.com>"]
-edition = "2018"
+edition = "2021"
 license = "LGPL-3.0-or-later"
 repository = "https://github.com/Internet-of-People/iop-rs"
 
@@ -11,11 +11,11 @@ repository = "https://github.com/Internet-of-People/iop-rs"
 [dependencies]
 anyhow = "1.0.57"
 chrono = { version = "0.4.19", features = ["wasmbind"] }
-iop-hydra-proto = "0.0.15"
-iop-journal-proto = "0.0.15"
-iop-keyvault = "0.0.15"
-iop-morpheus-proto = "0.0.15"
-json-digest = "0.0.15"
+iop-hydra-proto = "0.0.16"
+iop-journal-proto = "0.0.16"
+iop-keyvault = "0.0.16"
+iop-morpheus-proto = "0.0.16"
+json-digest = "0.0.16"
 jwt-compact = { version = "0.5.0", default-features = false }
 #multibase = "0.9.1"
 rand = { version = "0.8.5", features = ["getrandom"] }
