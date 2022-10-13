@@ -19,6 +19,7 @@ pub use sign::*;
 // imports from 3rd party crates
 
 use anyhow::Result;
+use serde_wasm_bindgen::*;
 use wasm_bindgen::prelude::*;
 
 // imports from own crates

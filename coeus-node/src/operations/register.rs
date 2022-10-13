@@ -1,6 +1,7 @@
 use super::*;
 
 impl AuthorizedCommand for DoRegister {
+    // Note: this warning reminds us that in order to let DIDs to own domains, we'll need this state.
     fn validate_auth(&self, state: &State, pk: &MPublicKey) -> Result<()> {
         self.owner.validate_impersonation(pk)
     }

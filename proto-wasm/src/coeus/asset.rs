@@ -9,7 +9,7 @@ pub struct JsCoeusAsset {
 impl JsCoeusAsset {
     #[wasm_bindgen(constructor)]
     pub fn new(data: &JsValue) -> Result<JsCoeusAsset, JsValue> {
-        let inner: CoeusAsset = data.into_serde().map_err_to_js()?;
+        let inner: CoeusAsset = from_value(data.clone())?;
         Ok(inner.into())
     }
 
@@ -28,7 +28,8 @@ impl JsCoeusAsset {
 
     #[wasm_bindgen(js_name = toJSON)]
     pub fn to_json(&self) -> Result<JsValue, JsValue> {
-        JsValue::from_serde(&self.inner).map_err_to_js()
+        let res = to_value(&self.inner)?;
+        Ok(res)
     }
 }
 

@@ -16,7 +16,8 @@ impl JsCoeusState {
     #[wasm_bindgen(js_name = resolveData)]
     pub fn resolve_data(&self, name: &JsDomainName) -> Result<JsValue, JsValue> {
         let data = self.inner.resolve_data(name.inner()).map_err_to_js()?;
-        JsValue::from_serde(data).map_err_to_js()
+        let res = to_value(data)?;
+        Ok(res)
     }
 
     #[wasm_bindgen(js_name = getMetadata)]
@@ -39,13 +40,15 @@ impl JsCoeusState {
             expires_at_height: domain.expires_at_height(),
         };
 
-        JsValue::from_serde(&metadata).map_err_to_js()
+        let res = to_value(&metadata)?;
+        Ok(res)
     }
 
     #[wasm_bindgen(js_name = getChildren)]
     pub fn get_children(&self, name: &JsDomainName) -> Result<JsValue, JsValue> {
         let domain = self.inner.domain(name.inner()).map_err_to_js()?;
-        JsValue::from_serde(&domain.child_names()).map_err_to_js()
+        let res = to_value(&domain.child_names())?;
+        Ok(res)
     }
 
     #[wasm_bindgen(js_name = lastNonce)]

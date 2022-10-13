@@ -20,10 +20,10 @@ impl JsMorpheusTxBuilder {
     /// Vendor field is a public memo attached to the transaction. The fee can be manually overriden, or the defaults will be
     /// calculated based on the size of the serialized transaction size and some offset based on the transaction type.
     pub fn build(
-        network_name: &str, morpheus_asset: JsValue, sender_pubkey: &JsSecpPublicKey, nonce: u64,
+        network_name: &str, morpheus_asset: &JsValue, sender_pubkey: &JsSecpPublicKey, nonce: u64,
         vendor_field: Option<String>, manual_fee: Option<u64>,
     ) -> Result<JsValue, JsValue> {
-        let morpheus_asset: MorpheusAsset = morpheus_asset.into_serde().map_err_to_js()?;
+        let morpheus_asset: MorpheusAsset = from_value(morpheus_asset.clone())?;
         let common_fields = CommonTransactionFields {
             network: Networks::by_name(network_name).map_err_to_js()?,
             sender_public_key: sender_pubkey.inner().to_owned(),
@@ -31,7 +31,8 @@ impl JsMorpheusTxBuilder {
             optional: OptionalTransactionFields { amount: 0, vendor_field, manual_fee },
         };
         let morpheus_tx = Transaction::new(common_fields, morpheus_asset.operation_attempts);
-        JsValue::from_serde(&morpheus_tx.to_data()).map_err_to_js()
+        let res = to_value(&morpheus_tx.to_data())?;
+        Ok(res)
     }
 }
 
@@ -75,7 +76,8 @@ impl JsMorpheusAssetBuilder {
     /// @see MorpheusTxBuilder
     pub fn build(&self) -> Result<JsValue, JsValue> {
         let asset = MorpheusAsset::new(self.op_attempts.to_owned());
-        JsValue::from_serde(&asset).map_err_to_js()
+        let res = to_value(&asset)?;
+        Ok(res)
     }
 }
 
@@ -91,14 +93,14 @@ impl JsMorpheusSignableOperation {
     /// Deserializes a single unsigned SSI operation from a JSON.
     #[wasm_bindgen(constructor)]
     pub fn new(json: &JsValue) -> Result<JsMorpheusSignableOperation, JsValue> {
-        let inner: SignableOperationAttempt = json.into_serde().map_err_to_js()?;
+        let inner: SignableOperationAttempt = from_value(json.clone())?;
         Ok(JsMorpheusSignableOperation { inner })
     }
 
     /// Serializes a single unsigned SSI operation into a JSON.
     #[wasm_bindgen(js_name = toJSON)]
     pub fn to_json(&self) -> Result<JsValue, JsValue> {
-        JsValue::from_serde(&self.inner).map_err_to_js()
+        to_value(&self.inner).map_err_to_js()
     }
 }
 
@@ -128,8 +130,8 @@ impl JsMorpheusOperationBuilder {
     /// the DID on-chain can be queried on the blockchain that the SSI transaction will be sent to. If no transactions modified the
     /// implicit DID document yet, this parameter must be `null`.
     #[wasm_bindgen(constructor)]
-    pub fn new(did: &str, last_tx_id: JsValue) -> Result<JsMorpheusOperationBuilder, JsValue> {
-        let last_tx_id = last_tx_id.into_serde().map_err_to_js()?;
+    pub fn new(did: &str, last_tx_id: &JsValue) -> Result<JsMorpheusOperationBuilder, JsValue> {
+        let last_tx_id = from_value(last_tx_id.clone())?;
         let did = did.parse().map_err_to_js()?;
         Ok(JsMorpheusOperationBuilder { did, last_tx_id })
     }
@@ -142,10 +144,10 @@ impl JsMorpheusOperationBuilder {
     /// DID.
     #[wasm_bindgen(js_name = addKey)]
     pub fn add_key(
-        &self, authentication: &str, expires_at_height: JsValue,
+        &self, authentication: &str, expires_at_height: &JsValue,
     ) -> Result<JsMorpheusSignableOperation, JsValue> {
         let auth = Authentication::from_str(authentication).map_err_to_js()?;
-        let expires_at_height = expires_at_height.into_serde().map_err_to_js()?;
+        let expires_at_height = from_value(expires_at_height.clone())?;
         let operation = SignableOperationDetails::AddKey { auth, expires_at_height };
         self.to_attempt(operation)
     }
@@ -283,14 +285,14 @@ impl JsMorpheusSignedOperation {
     /// Deserializes a set of signed SSI operations from a JSON.
     #[wasm_bindgen(constructor)]
     pub fn new(json: &JsValue) -> Result<JsMorpheusSignedOperation, JsValue> {
-        let inner: SignedOperation = json.into_serde().map_err_to_js()?;
+        let inner: SignedOperation = from_value(json.clone())?;
         Ok(JsMorpheusSignedOperation { inner })
     }
 
     /// Serializes a set of signed SSI operations into a JSON.
     #[wasm_bindgen(js_name = toJSON)]
     pub fn to_json(&self) -> Result<JsValue, JsValue> {
-        JsValue::from_serde(&self.inner).map_err_to_js()
+        to_value(&self.inner).map_err_to_js()
     }
 }
 

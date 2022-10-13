@@ -45,7 +45,7 @@ impl JsMorpheusState {
     pub fn before_proof_history(&self, content_id: &str) -> Result<JsValue, JsValue> {
         let state = self.inner.state().map_err_to_js()?;
         let history = state.before_proof_history(content_id);
-        let js_history = JsValue::from_serde(&history).map_err_to_js()?;
+        let js_history = to_value(&history)?;
         Ok(js_history)
     }
 
@@ -60,9 +60,10 @@ impl JsMorpheusState {
         let state = self.inner.state().map_err_to_js()?;
         let js_vec_opt = state
             .get_tx_ids(did, include_attempts, from_height_inc, until_height_inc)
-            .map(|a| JsValue::from_serde(&a.collect::<Vec<_>>()))
-            .unwrap_or_else(|| JsValue::from_serde(&([] as [TransactionIdWithHeight; 0])));
-        js_vec_opt.map_err_to_js()
+            .map(|a| to_value(&a.collect::<Vec<_>>()))
+            .unwrap_or_else(|| to_value(&([] as [TransactionIdWithHeight; 0])));
+        let res = js_vec_opt?;
+        Ok(res)
     }
 
     #[wasm_bindgen(js_name = lastTxId)]
@@ -81,24 +82,21 @@ impl JsMorpheusState {
         }
         let state = self.inner.state().map_err_to_js()?;
         let doc = state.get_doc_at(did_data, height_opt).map_err_to_js()?;
-        let js_doc = JsValue::from_serde(&doc).map_err_to_js()?;
+        let js_doc = to_value(&doc)?;
         Ok(js_doc)
     }
 
     #[wasm_bindgen(js_name = dryRun)]
     pub fn dry_run(&self, asset: &JsValue) -> Result<Vec<JsValue>, JsValue> {
-        let asset: MorpheusAsset = asset.into_serde().map_err_to_js()?;
-        let errs = self.inner.dry_run(&asset).map_err_to_js()?;
-        let js_errs = errs
-            .iter()
-            .try_fold(
-                Vec::<JsValue>::with_capacity(errs.len()),
-                |mut v, err| -> serde_json::Result<_> {
-                    v.push(JsValue::from_serde(err)?);
-                    Ok(v)
-                },
-            )
-            .map_err_to_js()?;
+        let asset: MorpheusAsset = from_value(asset.clone())?;
+        let errs = self.inner.dry_run(&asset);
+        let js_errs = errs.iter().try_fold(
+            Vec::<JsValue>::with_capacity(errs.len()),
+            |mut v, err| -> Result<_, serde_wasm_bindgen::Error> {
+                v.push(to_value(err)?);
+                Ok(v)
+            },
+        )?;
         Ok(js_errs)
     }
 
@@ -117,7 +115,7 @@ impl JsMorpheusState {
 
     #[wasm_bindgen(js_name = applyTransaction)]
     pub fn apply_transaction(&mut self, txid: &str, asset: &JsValue) -> Result<(), JsValue> {
-        let asset: MorpheusAsset = asset.into_serde().map_err_to_js()?;
+        let asset: MorpheusAsset = from_value(asset.clone())?;
         self.inner.apply_transaction(txid, &asset).map_err_to_js()
     }
 
@@ -129,7 +127,7 @@ impl JsMorpheusState {
 
     #[wasm_bindgen(js_name = revertTransaction)]
     pub fn revert_transaction(&mut self, txid: &str, asset: &JsValue) -> Result<(), JsValue> {
-        let asset: MorpheusAsset = asset.into_serde().map_err_to_js()?;
+        let asset: MorpheusAsset = from_value(asset.clone())?;
         self.inner.revert_transaction(txid, &asset).map_err_to_js()
     }
 }

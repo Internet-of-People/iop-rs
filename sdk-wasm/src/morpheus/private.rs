@@ -109,7 +109,7 @@ impl JsMorpheusPrivate {
         &self, id: &JsMKeyId, js_req: &JsValue,
     ) -> Result<JsSignedJson, JsValue> {
         let signer = self.create_signer(id)?;
-        let request: WitnessRequest = js_req.into_serde().map_err(err_to_js)?;
+        let request: WitnessRequest = from_value(js_req.clone()).map_err(err_to_js)?;
         let signed_request = signer.sign_witness_request(request).map_err(err_to_js)?;
 
         into_signed_json(signed_request)
@@ -127,7 +127,7 @@ impl JsMorpheusPrivate {
         &self, id: &JsMKeyId, js_stmt: &JsValue,
     ) -> Result<JsSignedJson, JsValue> {
         let signer = self.create_signer(id)?;
-        let statement: WitnessStatement = js_stmt.into_serde().map_err(err_to_js)?;
+        let statement: WitnessStatement = from_value(js_stmt.clone()).map_err(err_to_js)?;
         let signed_statement = signer.sign_witness_statement(statement).map_err(err_to_js)?;
 
         into_signed_json(signed_statement)
@@ -145,7 +145,8 @@ impl JsMorpheusPrivate {
         &self, id: &JsMKeyId, js_presentation: &JsValue,
     ) -> Result<JsSignedJson, JsValue> {
         let signer = self.create_signer(id)?;
-        let presentation: ClaimPresentation = js_presentation.into_serde().map_err(err_to_js)?;
+        let presentation: ClaimPresentation =
+            from_value(js_presentation.clone()).map_err(err_to_js)?;
         let signed_presentation =
             signer.sign_claim_presentation(presentation).map_err(err_to_js)?;
 

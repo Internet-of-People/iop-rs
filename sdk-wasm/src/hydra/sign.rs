@@ -23,9 +23,10 @@ impl JsHydraSigner {
     /// properly set to the one matching the signer private key.
     #[wasm_bindgen(js_name = signHydraTransaction)]
     pub fn sign_hydra_transaction(&self, transaction: &JsValue) -> Result<JsValue, JsValue> {
-        let mut tx = transaction.into_serde().map_err_to_js()?;
+        let mut tx = from_value(transaction.clone())?;
         self.inner.sign_hydra_transaction(&mut tx).map_err_to_js()?;
-        JsValue::from_serde(&tx).map_err_to_js()
+        let res = to_value(&tx)?;
+        Ok(res)
     }
 }
 

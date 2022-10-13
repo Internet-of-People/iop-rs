@@ -14,7 +14,7 @@ impl JsSubtreePolicies {
 
     #[wasm_bindgen(js_name = withSchema)]
     pub fn with_schema(&self, schema: &JsValue) -> Result<JsSubtreePolicies, JsValue> {
-        Ok(self.inner.clone().with_schema(schema.into_serde().map_err_to_js()?).into())
+        Ok(self.inner.clone().with_schema(from_value(schema.clone())?).into())
     }
 
     #[wasm_bindgen(js_name = withExpiration)]

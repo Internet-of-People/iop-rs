@@ -21,6 +21,7 @@ use std::str::FromStr;
 
 use anyhow::{Context, Result};
 use serde::{Deserialize, Serialize};
+use serde_wasm_bindgen::*;
 use wasm_bindgen::prelude::*;
 
 // imports from own crates

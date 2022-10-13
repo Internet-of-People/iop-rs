@@ -25,6 +25,7 @@ iop-keyvault = "0.0.16"
 iop-keyvault-wasm = "0.0.16"
 iop-morpheus-proto = "0.0.16"
 serde = { version = "1.0.137", features = ["derive"] }
+serde-wasm-bindgen = "0.4.5"
 serde_json = { version = "1.0.81", features = ["preserve_order"] }
 serde_str = "0.1.0"
-wasm-bindgen = { version = "0.2.81", features = ["serde-serialize"] }
+wasm-bindgen = { version = "0.2.81" }

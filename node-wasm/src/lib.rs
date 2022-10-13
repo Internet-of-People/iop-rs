@@ -13,6 +13,7 @@ pub use iop_proto_wasm::*;
 pub use json_digest_wasm::*;
 
 use serde::Serialize;
+use serde_wasm_bindgen::*;
 use wasm_bindgen::prelude::*;
 
 use iop_coeus_node::{State as CoeusState, Version};

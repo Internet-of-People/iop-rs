@@ -31,12 +31,12 @@ impl StateHolder {
         Ok(&self.inner)
     }
 
-    pub fn dry_run(&self, asset: &MorpheusAsset) -> Result<Vec<OperationError>> {
+    pub fn dry_run(&self, asset: &MorpheusAsset) -> Vec<OperationError> {
         if self.is_corrupted() {
-            return Ok(vec![OperationError {
+            return vec![OperationError {
                 invalid_operation_attempt: None,
                 message: StateHolder::CORRUPTED_ERR_MSG.to_owned(),
-            }]);
+            }];
         }
 
         let temp = self.inner.clone();
@@ -53,11 +53,10 @@ impl StateHolder {
             },
         );
         // TODO The TS code just stopped on the 1st error, should we collect them all?
-        let errors = match res {
+        match res {
             Ok(_) => vec![],
             Err(e) => vec![e],
-        };
-        Ok(errors)
+        }
     }
 
     pub fn block_applying(&mut self, height: BlockHeight) -> Result<()> {

@@ -68,6 +68,7 @@ pub use sk::*;
 // imports from 3rd party crates
 
 use serde::Serialize;
+use serde_wasm_bindgen::*;
 use wasm_bindgen::prelude::*;
 
 // imports from own crates
@@ -148,7 +149,7 @@ struct NetworkNames(Vec<&'static str>);
 #[wasm_bindgen(js_name = allNetworkNames)]
 pub fn all_network_names() -> IStringArray {
     let names: Vec<&'static str> = Networks::ALL.iter().map(|n| n.name()).collect();
-    let array = JsValue::from_serde(&NetworkNames(names))
-        .expect("No object keyed maps in the object graph; qed");
+    let array =
+        to_value(&NetworkNames(names)).expect("No object keyed maps in the object graph; qed");
     array.into()
 }

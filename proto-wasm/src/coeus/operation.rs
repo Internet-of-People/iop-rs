@@ -16,7 +16,7 @@ impl JsUserOperation {
             owner.inner().to_owned(),
             subtree_policies.inner().to_owned(),
             RegistrationPolicy::default(),
-            data.into_serde().map_err_to_js()?,
+            from_value(data.clone())?,
             expires_at_height,
         );
         Ok(reg_op.into())
@@ -24,7 +24,7 @@ impl JsUserOperation {
 
     pub fn update(name: &JsDomainName, data: &JsValue) -> Result<JsUserOperation, JsValue> {
         let name = name.inner().to_owned();
-        let upd_op = UserOperation::update(name, data.into_serde().map_err_to_js()?);
+        let upd_op = UserOperation::update(name, from_value(data.clone())?);
         Ok(upd_op.into())
     }
 

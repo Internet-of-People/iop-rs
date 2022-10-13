@@ -82,14 +82,12 @@ impl JsHydraPrivate {
     /// {@link key} before calling this method.
     #[wasm_bindgen(js_name = signHydraTransaction)]
     pub fn sign_hydra_transaction(&self, hyd_addr: &str, tx: &JsValue) -> Result<JsValue, JsValue> {
-        let mut tx: HydraTransactionData =
-            tx.into_serde().with_context(|| "Parsing ITransactionData").map_err_to_js()?;
+        let mut tx: HydraTransactionData = from_value(tx.clone())?;
         self.inner
             .sign_hydra_transaction(hyd_addr, &mut tx)
             .context("Signing ITransactionData")
             .map_err_to_js()?;
-        let signed_tx =
-            JsValue::from_serde(&tx).context("Serializing ITransactionData").map_err_to_js()?;
+        let signed_tx = to_value(&tx)?;
         Ok(signed_tx)
     }
 }

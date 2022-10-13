@@ -6,6 +6,7 @@
 //! of all allowed documents. Order of keys in an object and Unicode normalization are well-defined in this
 //! subset, making it suitable for hashing.
 
+use serde_wasm_bindgen::*;
 use wasm_bindgen::prelude::*;
 
 use json_digest::*;
@@ -61,7 +62,7 @@ impl<T, E: ToString> MapJsError<T> for Result<T, E> {
 /// has enough entropy. @see wrapJsonWithNonce
 #[wasm_bindgen(js_name = selectiveDigestJson)]
 pub fn selective_digest(data: &JsValue, keep_properties_list: &str) -> Result<String, JsValue> {
-    let serde_data: serde_json::Value = data.into_serde().map_err_to_js()?;
+    let serde_data: serde_json::Value = from_value(data.clone())?;
     let digested_data_str =
         selective_digest_json(&serde_data, keep_properties_list).map_err_to_js()?;
     Ok(digested_data_str)
@@ -80,7 +81,7 @@ pub fn digest(data: &JsValue) -> Result<String, JsValue> {
 /// This is a drop-in replacement for `JSON.stringify(data)`
 #[wasm_bindgen(js_name = stringifyJson)]
 pub fn stringify(data: &JsValue) -> Result<String, JsValue> {
-    let serde_data: serde_json::Value = data.into_serde().map_err_to_js()?;
+    let serde_data: serde_json::Value = from_value(data.clone())?;
     let stringified = canonical_json(&serde_data).map_err_to_js()?;
     Ok(stringified)
 }
@@ -100,12 +101,12 @@ pub fn stringify(data: &JsValue) -> Result<String, JsValue> {
 /// ```
 #[wasm_bindgen(js_name = wrapWithNonce)]
 pub fn wrap_with_nonce(data: &JsValue) -> Result<JsValue, JsValue> {
-    let serde_data: serde_json::Value = data.into_serde().map_err_to_js()?;
+    let serde_data: serde_json::Value = from_value(data.clone())?;
     let nonce = Nonce264::generate();
     let wrapped_serde = serde_json::json!({
         "nonce": nonce.0,
         "value": serde_data,
     });
-    let wrapped_json = JsValue::from_serde(&wrapped_serde).map_err_to_js()?;
+    let wrapped_json = to_value(&wrapped_serde)?;
     Ok(wrapped_json)
 }
