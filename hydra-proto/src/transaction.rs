@@ -5,7 +5,7 @@ pub struct TxBatch {
     pub transactions: Vec<TransactionData>,
 }
 
-#[derive(Clone, Debug, Default, Deserialize, PartialEq, Serialize)]
+#[derive(Clone, Debug, Default, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct TransactionData {
     #[serde(skip_serializing_if = "Option::is_none")]

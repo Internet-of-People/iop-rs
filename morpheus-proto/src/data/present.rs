@@ -23,7 +23,7 @@ impl Content for License {}
 impl Signable for License {}
 
 // TODO this probably should be more strictly typed here
-#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
 pub struct ProvenClaim {
     pub claim: serde_json::Value,
     pub statements: Vec<Signed<serde_json::Value>>,
@@ -32,7 +32,7 @@ pub struct ProvenClaim {
 impl Content for ProvenClaim {}
 impl Signable for ProvenClaim {}
 
-#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
 pub struct ClaimPresentation {
     #[serde(rename = "provenClaims")]
     pub proven_claims: Vec<ProvenClaim>,
