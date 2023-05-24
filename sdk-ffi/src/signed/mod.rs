@@ -3,13 +3,13 @@ mod json;
 
 use super::*;
 
-fn public_key<T: Signable>(signed: *mut Signed<T>) -> *mut MPublicKey {
+fn public_key<T: Signable>(signed: *const Signed<T>) -> *mut MPublicKey {
     let signed = unsafe { convert::borrow_in(signed) };
     let pk = signed.public_key().to_owned();
     convert::move_out(pk)
 }
 
-fn signature<T: Signable>(signed: *mut Signed<T>) -> *mut MSignature {
+fn signature<T: Signable>(signed: *const Signed<T>) -> *mut MSignature {
     let signed = unsafe { convert::borrow_in(signed) };
     let sig = signed.signature().to_owned();
     convert::move_out(sig)
