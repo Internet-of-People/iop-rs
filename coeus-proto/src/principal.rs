@@ -47,7 +47,6 @@ impl Principal {
 }
 
 /// Equal Principals will result in equal hash, so we are fine here
-#[allow(clippy::derive_hash_xor_eq)]
 impl Hash for Principal {
     fn hash<H>(&self, h: &mut H)
     where

@@ -1,6 +1,6 @@
 pub mod serializer;
 
-use std::io::{prelude::*, Cursor};
+use std::io::{Cursor, prelude::*};
 
 use anyhow::Result;
 use varint::VarintWrite; // VarintRead

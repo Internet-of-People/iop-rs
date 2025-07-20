@@ -1,6 +1,6 @@
 use super::*;
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn SecpPrivateKey_sign_hydra_tx(
     sk: *mut SecpPrivateKey, unsigned_tx: *const raw::c_char,
 ) -> CPtrResult<raw::c_char> {

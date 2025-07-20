@@ -2,17 +2,17 @@ use super::*;
 
 type NoncedBundleBuilder = Vec<UserOperation>;
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn delete_NoncedBundleBuilder(builder: *mut NoncedBundleBuilder) {
     delete(builder)
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn NoncedBundleBuilder_new() -> *mut NoncedBundleBuilder {
     convert::move_out(NoncedBundleBuilder::new())
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn NoncedBundleBuilder_add(
     builder: *mut NoncedBundleBuilder, operation: *mut UserOperation,
 ) {
@@ -21,7 +21,7 @@ pub extern "C" fn NoncedBundleBuilder_add(
     builder.push(operation.to_owned());
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn NoncedBundleBuilder_build(
     builder: *const NoncedBundleBuilder, nonce: Nonce,
 ) -> *mut NoncedBundle {
@@ -30,12 +30,12 @@ pub extern "C" fn NoncedBundleBuilder_build(
     convert::move_out(nonced_bundle)
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn delete_NoncedBundle(nonced: *mut NoncedBundle) {
     delete(nonced)
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn NoncedBundle_sign(
     nonced_bundle: *const NoncedBundle, sk: *const MPrivateKey,
 ) -> CPtrResult<SignedBundle> {
@@ -48,13 +48,13 @@ pub extern "C" fn NoncedBundle_sign(
     cresult(fun())
 }
 
-// TODO #[no_mangle] pub extern "C" fn NoncedBundle_price(nonced_bundle: *mut NoncedBundle, state: ...) -> CPtrResult<...> {}
-// TODO #[no_mangle] pub extern "C" fn NoncedBundle_serialize(nonced_bundle: *mut NoncedBundle) -> CPtrResult<...> {}
+// TODO #[unsafe(no_mangle)] pub extern "C" fn NoncedBundle_price(nonced_bundle: *mut NoncedBundle, state: ...) -> CPtrResult<...> {}
+// TODO #[unsafe(no_mangle)] pub extern "C" fn NoncedBundle_serialize(nonced_bundle: *mut NoncedBundle) -> CPtrResult<...> {}
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn delete_SignedBundle(signed: *mut SignedBundle) {
     delete(signed)
 }
 
-// TODO #[no_mangle] pub extern "C" fn SignedBundle_price(signed_bundle: *mut SignedBundle, state: ...) -> CPtrResult<...> {}
-// TODO #[no_mangle] pub extern "C" fn SignedBundle_verify(signed_bundle: *mut SignedBundle) -> CPtrResult<...> {}
+// TODO #[unsafe(no_mangle)] pub extern "C" fn SignedBundle_price(signed_bundle: *mut SignedBundle, state: ...) -> CPtrResult<...> {}
+// TODO #[unsafe(no_mangle)] pub extern "C" fn SignedBundle_verify(signed_bundle: *mut SignedBundle) -> CPtrResult<...> {}

@@ -37,7 +37,7 @@ impl EdSignature {
             "Only identifier version {:x} is supported",
             SIGNATURE_VERSION1
         );
-        let sig = ed::Signature::from_bytes(&bytes[VERSION_SIZE..])?;
+        let sig = ed::Signature::try_from(&bytes[VERSION_SIZE..])?;
         Ok(Self(sig))
     }
 }

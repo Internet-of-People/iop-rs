@@ -19,7 +19,7 @@ impl CVault {
     }
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn Vault_create(
     lang: *const raw::c_char, seed: *const raw::c_char, word25: *const raw::c_char,
     unlock_pwd: *const raw::c_char,
@@ -36,7 +36,7 @@ pub extern "C" fn Vault_create(
     cresult(fun())
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn Vault_load(json: *const raw::c_char) -> CPtrResult<CVault> {
     let fun = || {
         let json = unsafe { convert::str_in(json)? };
@@ -47,12 +47,12 @@ pub extern "C" fn Vault_load(json: *const raw::c_char) -> CPtrResult<CVault> {
     cresult(fun())
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn delete_Vault(vault: *mut CVault) {
     delete(vault)
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn Vault_save(vault: *mut CVault) -> CPtrResult<raw::c_char> {
     let vault = unsafe { convert::borrow_in(vault) };
     let fun = || {
@@ -63,7 +63,7 @@ pub extern "C" fn Vault_save(vault: *mut CVault) -> CPtrResult<raw::c_char> {
     cresult(fun())
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn Vault_dirty_get(vault: *mut CVault) -> CPtrResult<raw::c_uchar> {
     let vault = unsafe { convert::borrow_in(vault) };
     let fun = || {

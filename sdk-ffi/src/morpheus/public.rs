@@ -1,11 +1,11 @@
 use super::*;
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn delete_MorpheusPublic(public: *mut MorpheusPublic) {
     delete(public)
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn MorpheusPublic_kind(
     public: *mut MorpheusPublic, did_kind: *const raw::c_char,
 ) -> CPtrResult<MorpheusPublicKind> {
@@ -19,7 +19,7 @@ pub extern "C" fn MorpheusPublic_kind(
     cresult(fun())
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn MorpheusPublic_personas_get(
     public: *mut MorpheusPublic,
 ) -> CPtrResult<MorpheusPublicKind> {
@@ -31,7 +31,7 @@ pub extern "C" fn MorpheusPublic_personas_get(
     cresult(fun())
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn MorpheusPublic_devices_get(
     public: *mut MorpheusPublic,
 ) -> CPtrResult<MorpheusPublicKind> {
@@ -43,7 +43,7 @@ pub extern "C" fn MorpheusPublic_devices_get(
     cresult(fun())
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn MorpheusPublic_groups_get(
     public: *mut MorpheusPublic,
 ) -> CPtrResult<MorpheusPublicKind> {
@@ -55,7 +55,7 @@ pub extern "C" fn MorpheusPublic_groups_get(
     cresult(fun())
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn MorpheusPublic_resources_get(
     public: *mut MorpheusPublic,
 ) -> CPtrResult<MorpheusPublicKind> {
@@ -67,7 +67,7 @@ pub extern "C" fn MorpheusPublic_resources_get(
     cresult(fun())
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn MorpheusPublic_key_by_id(
     public: *mut MorpheusPublic, id: *mut MKeyId,
 ) -> CPtrResult<MPublicKey> {

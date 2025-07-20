@@ -2,7 +2,7 @@ use super::*;
 
 use iop_keyvault::Bip39;
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn Bip39_generate_phrase(lang: *const raw::c_char) -> CPtrResult<raw::c_char> {
     let fun = || {
         let lang_code = unsafe { convert::str_in(lang)? };
@@ -13,7 +13,7 @@ pub extern "C" fn Bip39_generate_phrase(lang: *const raw::c_char) -> CPtrResult<
     cresult(fun())
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn Bip39_validate_phrase(
     lang: *const raw::c_char, phrase: *const raw::c_char,
 ) -> CPtrResult<raw::c_void> {
@@ -27,7 +27,7 @@ pub extern "C" fn Bip39_validate_phrase(
     cresult_void(fun())
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn Bip39_list_words(
     lang: *const raw::c_char, pref: *const raw::c_char,
 ) -> CPtrResult<CSlice<*mut raw::c_char>> {

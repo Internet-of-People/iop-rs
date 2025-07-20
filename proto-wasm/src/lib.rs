@@ -26,7 +26,6 @@ use wasm_bindgen::prelude::*;
 
 use iop_coeus_proto::*;
 use iop_journal_proto::*;
-use iop_keyvault_wasm::*;
 use iop_morpheus_proto::{
     crypto::{
         jwt::{JwtBuilder, JwtParser},

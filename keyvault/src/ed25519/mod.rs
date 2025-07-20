@@ -19,7 +19,7 @@ use super::*;
 /// Mopheus/Prometheus/Mercury.
 pub struct Ed25519;
 
-pub use cc::{ChainCode, CHAIN_CODE_SIZE};
+pub use cc::{CHAIN_CODE_SIZE, ChainCode};
 pub use ext_sk::EdExtPrivateKey;
 pub use id::{EdKeyId, KEY_ID_SALT, KEY_ID_SIZE, KEY_ID_VERSION1};
 pub use morpheus::*;
@@ -74,7 +74,7 @@ mod tests {
     }
 
     mod key_id {
-        use crate::{ed25519::EdPublicKey, PublicKey};
+        use crate::{PublicKey, ed25519::EdPublicKey};
 
         fn test(pk_hex: &str, key_id_hex: &str) {
             let pk_bytes = hex::decode(pk_hex).unwrap();
@@ -82,7 +82,7 @@ mod tests {
 
             let key_id = pk.key_id();
 
-            assert_eq!(hex::encode(&key_id.to_bytes()), key_id_hex)
+            assert_eq!(hex::encode(key_id.to_bytes()), key_id_hex)
         }
 
         #[test]
@@ -112,8 +112,8 @@ mod tests {
 
     mod derivation {
         use crate::{
-            ed25519::{Ed25519, EdExtPrivateKey},
             ExtendedPrivateKey, ExtendedPublicKey, KeyDerivationCrypto, Seed,
+            ed25519::{Ed25519, EdExtPrivateKey},
         };
         struct TestDerivation {
             xprv: EdExtPrivateKey,
@@ -151,7 +151,9 @@ mod tests {
         // https://github.com/satoshilabs/slips/blob/master/slip-0010.md#test-vector-2-for-ed25519
         #[test]
         fn test_slip_0010_vector2() {
-            let mut t = TestDerivation::new("fffcf9f6f3f0edeae7e4e1dedbd8d5d2cfccc9c6c3c0bdbab7b4b1aeaba8a5a29f9c999693908d8a8784817e7b7875726f6c696663605d5a5754514e4b484542");
+            let mut t = TestDerivation::new(
+                "fffcf9f6f3f0edeae7e4e1dedbd8d5d2cfccc9c6c3c0bdbab7b4b1aeaba8a5a29f9c999693908d8a8784817e7b7875726f6c696663605d5a5754514e4b484542",
+            );
             t.assert_state(
                 "ef70a74db9c3a5af931b5fe73ed8e1a53464133654fd55e7a66f8570b8e33c3b",
                 "171cb88b1b3c1db25add599712e36245d75bc65a1a5c9e18d76f9f2b1eab4012",

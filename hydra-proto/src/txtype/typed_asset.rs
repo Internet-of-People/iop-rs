@@ -113,7 +113,7 @@ impl<'de> Deserialize<'de> for TypedAsset {
                                     return Err(de::Error::custom(format!(
                                         "Invalid (typeGroup,type) pair: ({:?},{})",
                                         type_group, transaction_type
-                                    )))
+                                    )));
                                 }
                             }
                         }

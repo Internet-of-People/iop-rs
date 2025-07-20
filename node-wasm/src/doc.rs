@@ -6,7 +6,7 @@ pub struct JsDidDocument {
 }
 
 // Note: implement these function to be able to replace TS's DidDocument class to Rust.
-#[wasm_bindgen(js_class = DidDocument)]
+// #[wasm_bindgen(js_class = DidDocument)]
 impl JsDidDocument {
     // readonly height: number;
     // readonly did: Did;

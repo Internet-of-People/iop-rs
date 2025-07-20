@@ -1,16 +1,16 @@
 use super::*;
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn delete_JwtBuilder(builder: *mut JwtBuilder) {
     delete(builder)
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn JwtBuilder_default() -> *mut JwtBuilder {
     convert::move_out(JwtBuilder::default())
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn JwtBuilder_with_content_id(
     content_id: *const raw::c_char,
 ) -> CPtrResult<JwtBuilder> {
@@ -22,7 +22,7 @@ pub extern "C" fn JwtBuilder_with_content_id(
     cresult(fun())
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn JwtBuilder_sign(
     builder: *const JwtBuilder, sk: *const MPrivateKey,
 ) -> CPtrResult<raw::c_char> {
@@ -35,25 +35,26 @@ pub extern "C" fn JwtBuilder_sign(
     cresult(fun())
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn JwtBuilder_created_at_set(builder: *mut JwtBuilder, value: i64) {
-    let mut builder = unsafe { convert::borrow_mut_in(builder) };
-    builder.created_at = Utc.timestamp(value, 0);
+    let builder = unsafe { convert::borrow_mut_in(builder) };
+    builder.created_at =
+        Utc.timestamp_opt(value, 0).single().expect("UTC timestamps are unambiguous");
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn JwtBuilder_created_at_get(builder: *const JwtBuilder) -> i64 {
     let builder = unsafe { convert::borrow_in(builder) };
     builder.created_at.timestamp()
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn JwtBuilder_time_to_live_set(builder: *mut JwtBuilder, value: i64) {
-    let mut builder = unsafe { convert::borrow_mut_in(builder) };
+    let builder = unsafe { convert::borrow_mut_in(builder) };
     builder.time_to_live = Duration::seconds(value);
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn JwtBuilder_time_to_live_get(builder: *const JwtBuilder) -> i64 {
     let builder = unsafe { convert::borrow_in(builder) };
     builder.time_to_live.num_seconds()

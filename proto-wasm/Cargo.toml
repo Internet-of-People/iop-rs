@@ -1,31 +1,29 @@
 [package]
 name = "iop-proto-wasm"
-version = "0.0.16"
-authors = ["IOP Ventures LLC <dev@iop-ventures.com>", "Rache Bartmoss <bartmoss@tutanota.com>", "wigy <wigy_opensource_developer@yahoo.com>"]
-edition = "2021"
-license = "LGPL-3.0-or-later"
 description = "WebAssembly bindings shared between node and sdk in the IOP Stack™"
-repository = "https://github.com/Internet-of-People/iop-rs"
-homepage = "https://developer.iop.technology/glossary?id=json-masking"
 
+version.workspace = true
+rust-version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
 
 [lib]
 crate-type = ["cdylib", "rlib"]
 
-[package.metadata.cargo-udeps.ignore]
-normal = ["uuid"]
-
 [dependencies]
-anyhow = "1.0.57"
-chrono = { version = "0.4.19", features = ["wasmbind"] }
-iop-coeus-proto = "0.0.16"
-iop-hydra-proto = "0.0.16"
-iop-journal-proto = "0.0.16"
-iop-keyvault = "0.0.16"
-iop-keyvault-wasm = "0.0.16"
-iop-morpheus-proto = "0.0.16"
-serde = { version = "1.0.137", features = ["derive"] }
-serde-wasm-bindgen = "0.4.5"
-serde_json = { version = "1.0.81", features = ["preserve_order"] }
-serde_str = "0.1.0"
-wasm-bindgen = { version = "0.2.81" }
+anyhow = { workspace = true }
+chrono = { workspace = true }
+iop-coeus-proto = { workspace = true }
+iop-hydra-proto = { workspace = true }
+iop-journal-proto = { workspace = true }
+iop-keyvault = { workspace = true }
+iop-keyvault-wasm = { workspace = true }
+iop-morpheus-proto = { workspace = true }
+serde = { workspace = true }
+serde-wasm-bindgen = { workspace = true }
+serde_json = { workspace = true }
+serde_str = { workspace = true }
+wasm-bindgen = { workspace = true }

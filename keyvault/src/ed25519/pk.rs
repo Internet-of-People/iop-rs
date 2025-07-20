@@ -7,7 +7,7 @@ pub const PUBLIC_KEY_SIZE: usize = ed::PUBLIC_KEY_LENGTH;
 
 /// Implementation of Ed25519::PublicKey
 #[derive(Clone, Eq, PartialEq)]
-pub struct EdPublicKey(ed::PublicKey);
+pub struct EdPublicKey(ed::VerifyingKey);
 
 impl EdPublicKey {
     /// The public key serialized in a format that can be fed to [`from_bytes`]
@@ -26,19 +26,19 @@ impl EdPublicKey {
     ///
     /// [`to_bytes`]: #method.to_bytes
     pub fn from_bytes<D: AsRef<[u8]>>(bytes: D) -> Result<Self> {
-        let pk = ed::PublicKey::from_bytes(bytes.as_ref())?;
+        let pk = ed::VerifyingKey::try_from(bytes.as_ref())?;
         Ok(Self(pk))
     }
 }
 
-impl From<ed::PublicKey> for EdPublicKey {
-    fn from(pk: ed::PublicKey) -> Self {
+impl From<ed::VerifyingKey> for EdPublicKey {
+    fn from(pk: ed::VerifyingKey) -> Self {
         Self(pk)
     }
 }
 
-impl<'a> From<&'a EdPublicKey> for &'a ed::PublicKey {
-    fn from(pk: &'a EdPublicKey) -> &'a ed::PublicKey {
+impl<'a> From<&'a EdPublicKey> for &'a ed::VerifyingKey {
+    fn from(pk: &'a EdPublicKey) -> &'a ed::VerifyingKey {
         &pk.0
     }
 }
@@ -58,7 +58,6 @@ impl PublicKey<Ed25519> for EdPublicKey {
     }
 }
 
-#[allow(clippy::derive_hash_xor_eq)] // If the 2 pks are equal. their hashes will be equal, too
 impl Hash for EdPublicKey {
     fn hash<H: Hasher>(&self, hasher: &mut H) {
         self.to_bytes().hash(hasher);

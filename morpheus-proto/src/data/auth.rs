@@ -1,6 +1,6 @@
 use super::*;
 
-use iop_keyvault::{multicipher, PublicKey};
+use iop_keyvault::{PublicKey, multicipher};
 
 #[derive(Clone, Debug, Deserialize, Eq, Serialize)]
 #[serde(untagged)]

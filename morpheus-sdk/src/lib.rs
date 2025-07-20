@@ -7,7 +7,7 @@ use std::sync::Arc;
 
 // imports from 3rd party crates
 
-use anyhow::{bail, ensure, Context, Result};
+use anyhow::{Context, Result, bail, ensure};
 //use log::*;
 use parking_lot::RwLock;
 use serde::{Deserialize, Serialize};
@@ -15,9 +15,9 @@ use serde::{Deserialize, Serialize};
 // imports from own crates
 
 use iop_keyvault::{
+    Bip32Node, PublicKey as _, Seed,
     ed25519::{DidKind, Ed25519, Morpheus, MorpheusKind, MorpheusPrivateKey, MorpheusRoot},
     multicipher::{MKeyId, MPublicKey},
-    Bip32Node, PublicKey as _, Seed,
 };
 use iop_vault::{BoundPlugin, PluginPrivate, PluginPublic, State, Vault, VaultPlugin};
 
@@ -28,7 +28,7 @@ mod test {
     use chrono::{DateTime, Duration, TimeZone as _, Timelike as _, Utc};
 
     use crate::vault::Plugin as MorpheusPlugin;
-    use iop_keyvault::{ed25519::MorpheusPrivateKey, Seed};
+    use iop_keyvault::{Seed, ed25519::MorpheusPrivateKey};
     use iop_morpheus_proto::crypto::jwt::*;
     use iop_vault::Vault;
 
@@ -36,7 +36,7 @@ mod test {
     const CONTENT_ID: &str = "cjupqquRRag2lKTWAje-fDgorYUBEn4Ni6K8RMuNhXWNa8";
 
     fn test_now() -> DateTime<Utc> {
-        Utc.timestamp(1596195267, 0)
+        Utc.timestamp_opt(1596195267, 0).single().expect("This specific constant is unambiguous")
     }
 
     fn persona() -> Result<MorpheusPrivateKey> {

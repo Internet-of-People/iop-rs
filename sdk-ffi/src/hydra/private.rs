@@ -1,11 +1,11 @@
 use super::*;
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn delete_HydraPrivate(private: *mut Private) {
     delete(private)
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn HydraPrivate_public_get(private: *mut Private) -> CPtrResult<Public> {
     let fun = || {
         let private = unsafe { convert::borrow_in(private) };
@@ -15,7 +15,7 @@ pub extern "C" fn HydraPrivate_public_get(private: *mut Private) -> CPtrResult<P
     cresult(fun())
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn HydraPrivate_xpub_get(private: *mut Private) -> CPtrResult<raw::c_char> {
     let private = unsafe { convert::borrow_in(private) };
     let fun = || {
@@ -25,14 +25,14 @@ pub extern "C" fn HydraPrivate_xpub_get(private: *mut Private) -> CPtrResult<raw
     cresult(fun())
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn HydraPrivate_xprv_get(private: *mut Private) -> *mut raw::c_char {
     let private = unsafe { convert::borrow_in(private) };
     let xprv = private.xprv();
     convert::string_out(xprv)
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn HydraPrivate_receive_keys_get(private: *mut Private) -> CPtrResult<u32> {
     let private = unsafe { convert::borrow_in(private) };
     let fun = || {
@@ -42,7 +42,7 @@ pub extern "C" fn HydraPrivate_receive_keys_get(private: *mut Private) -> CPtrRe
     cresult(fun())
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn HydraPrivate_change_keys_get(private: *mut Private) -> CPtrResult<u32> {
     let private = unsafe { convert::borrow_in(private) };
     let fun = || {
@@ -53,7 +53,7 @@ pub extern "C" fn HydraPrivate_change_keys_get(private: *mut Private) -> CPtrRes
 }
 
 // TODO consider using strong typing for tx
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn HydraPrivate_sign_hydra_tx(
     private: *mut Private, hyd_addr: *const raw::c_char, unsigned_tx: *const raw::c_char,
 ) -> CPtrResult<raw::c_char> {
@@ -69,7 +69,7 @@ pub extern "C" fn HydraPrivate_sign_hydra_tx(
     cresult(fun())
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn HydraPrivate_key(
     private: *mut Private, idx: i32,
 ) -> CPtrResult<Bip44Key<Secp256k1>> {
@@ -81,7 +81,7 @@ pub extern "C" fn HydraPrivate_key(
     cresult(fun())
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn HydraPrivate_key_by_pk(
     private: *mut Private, pub_key: *mut SecpPublicKey,
 ) -> CPtrResult<Bip44Key<Secp256k1>> {

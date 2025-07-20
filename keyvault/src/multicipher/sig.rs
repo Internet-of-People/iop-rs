@@ -176,7 +176,7 @@ mod test {
             case(
                 "sez86ALkZRspsufndsFkaT3GS5m4FHxUTGhBPRpdqqgfdgCMPWzDvxHjVAZXQNVPH8vHohuRkLtEWtT9guyscG2WsZB",
                 "016291d657deec24024827e69c3abe01a30ce548a284743a445e3680d7db5ac3ac \
-                 18ff9b538d16f290ae67f760984dc6594a7c15e9716ed28dc027beceea1ec40a"
+                 18ff9b538d16f290ae67f760984dc6594a7c15e9716ed28dc027beceea1ec40a",
             );
         }
 
@@ -265,8 +265,8 @@ mod test {
 
     /// Test vectors based on https://tools.ietf.org/html/rfc8032#page-24
     mod sign_verify {
-        use crate::{ed25519::EdPrivateKey, multicipher::MPrivateKey};
         use crate::{PrivateKey, PublicKey};
+        use crate::{ed25519::EdPrivateKey, multicipher::MPrivateKey};
 
         fn test(sk_hex: &str, mpk_str: &str, msg_hex: &str, msig_str: &str) {
             let sk_bytes = hex::decode(sk_hex).unwrap();

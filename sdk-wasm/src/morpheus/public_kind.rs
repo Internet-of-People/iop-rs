@@ -19,7 +19,7 @@ impl JsMorpheusPublicKind {
     /// Retrieves how many DIDs have already be generated of this kind.
     #[wasm_bindgen(getter)]
     pub fn count(&self) -> Result<u32, JsValue> {
-        self.inner.len().map_err_to_js().map(|c| c as u32)
+        self.inner.len().map_err_to_js()
     }
 
     /// Retrieves the multicipher {@link PublicKey} with the given index in this subtree.

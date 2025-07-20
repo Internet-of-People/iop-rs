@@ -19,13 +19,13 @@ use std::fmt;
 use std::hash::Hash;
 use std::str::FromStr;
 
-use anyhow::{bail, ensure, Result};
+use anyhow::{Result, bail, ensure};
 use serde::{Deserialize, Serialize};
 
 use iop_journal_proto::*;
 use iop_keyvault::{
-    multicipher::{MPrivateKey, MPublicKey, MSignature},
     PrivateKey, PublicKey,
+    multicipher::{MPrivateKey, MPublicKey, MSignature},
 };
 use json_digest::canonical_json;
 

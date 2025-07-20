@@ -17,7 +17,7 @@ use std::sync::Arc;
 
 // imports from 3rd party crates
 
-use anyhow::{ensure, format_err, Result};
+use anyhow::{Result, ensure, format_err};
 use parking_lot::{
     MappedRwLockReadGuard, MappedRwLockWriteGuard, RwLock, RwLockReadGuard, RwLockWriteGuard,
 };
@@ -27,4 +27,4 @@ use serde::Serialize;
 
 // imports from own crates
 
-use iop_keyvault::{encrypt::*, Bip39, Seed};
+use iop_keyvault::{Bip39, Seed, encrypt::*};

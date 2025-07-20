@@ -1,11 +1,11 @@
 use super::*;
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn delete_UserOperation(op: *mut UserOperation) {
     delete(op)
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn UserOperation_register(
     domain: *const raw::c_char, owner: *const raw::c_char, subtree_policies: *mut SubtreePolicies,
     data: *const raw::c_char, expires_at_height: BlockHeight,
@@ -28,7 +28,7 @@ pub extern "C" fn UserOperation_register(
     cresult(fun())
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn UserOperation_update(
     domain: *const raw::c_char, data: *const raw::c_char,
 ) -> CPtrResult<UserOperation> {
@@ -41,7 +41,7 @@ pub extern "C" fn UserOperation_update(
     cresult(fun())
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn UserOperation_renew(
     domain: *const raw::c_char, expires_at_height: BlockHeight,
 ) -> CPtrResult<UserOperation> {
@@ -53,7 +53,7 @@ pub extern "C" fn UserOperation_renew(
     cresult(fun())
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn UserOperation_transfer(
     domain: *const raw::c_char, to_owner: *const raw::c_char,
 ) -> CPtrResult<UserOperation> {
@@ -66,7 +66,7 @@ pub extern "C" fn UserOperation_transfer(
     cresult(fun())
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn UserOperation_delete(domain: *const raw::c_char) -> CPtrResult<UserOperation> {
     let fun = || {
         let domain = unsafe { convert::str_in(domain)? }.parse()?;

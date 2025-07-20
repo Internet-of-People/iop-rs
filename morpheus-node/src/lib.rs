@@ -22,7 +22,7 @@ use std::fmt;
 
 // imports from 3rd party crates
 
-use anyhow::{bail, ensure, Result};
+use anyhow::{Result, bail, ensure};
 use serde::{Deserialize, Serialize};
 
 // imports from own crates

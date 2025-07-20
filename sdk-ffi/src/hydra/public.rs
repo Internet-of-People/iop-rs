@@ -1,11 +1,11 @@
 use super::*;
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn delete_HydraPublic(public: *mut Public) {
     delete(public)
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn HydraPublic_xpub_get(public: *mut Public) -> CPtrResult<raw::c_char> {
     let public = unsafe { convert::borrow_in(public) };
     let fun = || {
@@ -15,7 +15,7 @@ pub extern "C" fn HydraPublic_xpub_get(public: *mut Public) -> CPtrResult<raw::c
     cresult(fun())
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn HydraPublic_receive_keys_get(public: *mut Public) -> CPtrResult<u32> {
     let public = unsafe { convert::borrow_in(public) };
     let fun = || {
@@ -25,7 +25,7 @@ pub extern "C" fn HydraPublic_receive_keys_get(public: *mut Public) -> CPtrResul
     cresult(fun())
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn HydraPublic_change_keys_get(public: *mut Public) -> CPtrResult<u32> {
     let public = unsafe { convert::borrow_in(public) };
     let fun = || {
@@ -35,7 +35,7 @@ pub extern "C" fn HydraPublic_change_keys_get(public: *mut Public) -> CPtrResult
     cresult(fun())
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn HydraPublic_key(
     public: *mut Public, idx: i32,
 ) -> CPtrResult<Bip44PublicKey<Secp256k1>> {
@@ -47,7 +47,7 @@ pub extern "C" fn HydraPublic_key(
     cresult(fun())
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn HydraPublic_key_by_address(
     public: *mut Public, address: *const raw::c_char,
 ) -> CPtrResult<Bip44PublicKey<Secp256k1>> {

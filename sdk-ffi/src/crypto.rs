@@ -1,6 +1,6 @@
 use super::*;
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn selective_digest_json(
     raw_json: *const raw::c_char, raw_keep_paths: *const raw::c_char,
 ) -> CPtrResult<raw::c_char> {
@@ -13,7 +13,7 @@ pub extern "C" fn selective_digest_json(
     cresult(fun())
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn digest_json(raw_json: *const raw::c_char) -> CPtrResult<raw::c_char> {
     let fun = || {
         let json_str = unsafe { convert::str_in(raw_json)? };
@@ -23,7 +23,7 @@ pub extern "C" fn digest_json(raw_json: *const raw::c_char) -> CPtrResult<raw::c
     cresult(fun())
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn stringify_json(raw_json: *const raw::c_char) -> CPtrResult<raw::c_char> {
     let fun = || {
         let json_str = unsafe { convert::str_in(raw_json)? };
@@ -34,7 +34,7 @@ pub extern "C" fn stringify_json(raw_json: *const raw::c_char) -> CPtrResult<raw
     cresult(fun())
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn nonce264() -> CPtrResult<raw::c_char> {
     let fun = || {
         let nonce = Nonce264::generate();

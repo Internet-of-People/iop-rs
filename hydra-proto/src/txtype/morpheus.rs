@@ -18,7 +18,7 @@ impl<'a> Transaction<'a> {
     }
 }
 
-impl<'a> Aip29Transaction for Transaction<'a> {
+impl Aip29Transaction for Transaction<'_> {
     fn fee(&self) -> u64 {
         self.asset.fee()
     }

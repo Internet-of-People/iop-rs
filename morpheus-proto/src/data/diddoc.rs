@@ -313,7 +313,10 @@ impl DidDocument {
         }
 
         let history = &key_right.state.history;
-        ensure!(! history.is_empty(), "Implementation error: key related to rights were already filtered, right must be present here");
+        ensure!(
+            !history.is_empty(),
+            "Implementation error: key related to rights were already filtered, right must be present here"
+        );
 
         let mut right_changes_in_range =
             history.iter().filter(|item| is_between(item.height.unwrap_or_default(), from, until));
@@ -423,7 +426,7 @@ mod test {
         assert_eq!(doc.did, "did:morpheus:ezbeWGSY2dqcUBqT8K7R14xr".parse()?);
         assert_eq!(doc.tombstoned_at_height, None);
         assert_eq!(doc.queried_at_height, 126);
-        assert_eq!(doc.tombstoned, false);
+        assert!(!doc.tombstoned);
 
         let first_key = &doc.keys[0].state.authentication;
         let second_key = &doc.keys[1].state.authentication;
@@ -521,7 +524,7 @@ mod test {
         assert_eq!(doc.did, "did:morpheus:ezbeWGSY2dqcUBqT8K7R14xr".parse()?);
         assert_eq!(doc.tombstoned_at_height, Some(100));
         assert_eq!(doc.queried_at_height, 200);
-        assert_eq!(doc.tombstoned, true);
+        assert!(doc.tombstoned);
 
         let first_key = &doc.keys[0].state.authentication;
         let second_key = &doc.keys[1].state.authentication;

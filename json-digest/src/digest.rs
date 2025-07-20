@@ -1,7 +1,10 @@
-use super::*;
+use std::collections::HashMap;
 
+use anyhow::{Result, bail, ensure};
 use tiny_keccak::Hasher;
 use unicode_normalization::UnicodeNormalization;
+
+use crate::json_path;
 
 /// Returns an [NFKD normalized] unicode representation of the input
 ///
@@ -19,7 +22,7 @@ pub fn default_hasher(content: &[u8]) -> String {
     let mut hash_output = [0u8; 32];
     hasher.update(content);
     hasher.finalize(&mut hash_output);
-    multibase::encode(multibase::Base::Base64Url, &hash_output)
+    multibase::encode(multibase::Base::Base64Url, hash_output)
 }
 
 /// Multibase-encoded hash of the utf8 representation of the provided string,
@@ -205,7 +208,7 @@ pub fn selective_digest_json(
 pub fn selective_digest_data<T: serde::Serialize>(
     data: &T, keep_paths_str: &str,
 ) -> Result<String> {
-    let json_value = serde_json::to_value(&data)?;
+    let json_value = serde_json::to_value(data)?;
     selective_digest_json(&json_value, keep_paths_str)
 }
 

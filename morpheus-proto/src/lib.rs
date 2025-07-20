@@ -4,12 +4,12 @@ pub mod txtype;
 
 use std::ops::Deref;
 
-use anyhow::{anyhow, bail, ensure, Result};
+use anyhow::{Result, anyhow, bail, ensure};
 use serde::{Deserialize, Serialize};
 
-use iop_journal_proto::{serializer, BlockHeight};
+use iop_journal_proto::{BlockHeight, serializer};
 use iop_keyvault::{
-    multicipher::{MPublicKey, MSignature},
     PublicKey,
+    multicipher::{MPublicKey, MSignature},
 };
-use json_digest::{canonical_json, default_hasher, digest_data, Nonce264};
+use json_digest::{Nonce264, canonical_json, default_hasher, digest_data};

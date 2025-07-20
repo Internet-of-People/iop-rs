@@ -42,7 +42,9 @@ impl CoreTransactionType {
 
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
+#[derive(Default)]
 pub enum CoreAsset {
+    #[default]
     None,
     Signature {
         #[serde(rename = "publicKey")]
@@ -133,12 +135,6 @@ impl CoreAsset {
     }
 }
 
-impl Default for CoreAsset {
-    fn default() -> Self {
-        CoreAsset::None
-    }
-}
-
 #[derive(Clone, Debug)]
 pub struct Transaction<'a> {
     common_fields: CommonTransactionFields<'a>,
@@ -190,7 +186,7 @@ impl<'a> Transaction<'a> {
     }
 }
 
-impl<'a> Aip29Transaction for Transaction<'a> {
+impl Aip29Transaction for Transaction<'_> {
     fn fee(&self) -> u64 {
         self.tx_type.fee()
     }

@@ -1,11 +1,11 @@
 use super::*;
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn delete_SecpKeyId(secp_id: *mut SecpKeyId) {
     delete(secp_id)
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn SecpKeyId_from_address(
     address: *mut raw::c_char, network: *mut raw::c_char,
 ) -> CPtrResult<SecpKeyId> {
@@ -22,7 +22,7 @@ pub extern "C" fn SecpKeyId_from_address(
     cresult(fun())
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn SecpKeyId_to_address(
     secp_id: *const SecpKeyId, network: *const raw::c_char,
 ) -> CPtrResult<raw::c_char> {

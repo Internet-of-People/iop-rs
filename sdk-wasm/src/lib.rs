@@ -27,17 +27,16 @@ use wasm_bindgen::prelude::*;
 // imports from own crates
 
 use iop_hydra_proto::{
-    txtype::{hyd_core, Aip29Transaction, CommonTransactionFields, OptionalTransactionFields},
     TransactionData as HydraTransactionData,
+    txtype::{Aip29Transaction, CommonTransactionFields, OptionalTransactionFields, hyd_core},
 };
 use iop_hydra_sdk::vault as hd_hydra;
 use iop_keyvault::{
+    Network, Networks, PublicKey as _,
     ed25519::DidKind,
     multicipher::*,
     secp256k1::{Secp256k1, SecpPublicKey},
-    Network, Networks, PublicKey as _,
 };
-use iop_keyvault_wasm::*;
 use iop_morpheus_proto::{
     crypto::sign::{PrivateKeySigner, Signable, Signed, SyncMorpheusSigner},
     data::{Authentication, ClaimPresentation, Did, WitnessRequest, WitnessStatement},
@@ -47,4 +46,4 @@ use iop_vault::{BoundPlugin, Vault, VaultPlugin};
 
 pub use iop_keyvault_wasm::*;
 pub use iop_proto_wasm::*;
-pub use json_digest_wasm::*;
+pub use json_digest_wasm::{digest, selective_digest, stringify, wrap_with_nonce};

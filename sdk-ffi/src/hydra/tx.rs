@@ -2,7 +2,7 @@ use super::*;
 
 use iop_hydra_proto::txtype::hyd_core;
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn HydraTxBuilder_transfer(
     network: *const raw::c_char, sender_public_key: *const SecpPublicKey,
     recipient_id: *const raw::c_char, amount: u64, nonce: u64,
@@ -48,7 +48,7 @@ fn create_vote_tx<'a, 'b>(
     cresult(fun())
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn HydraTxBuilder_vote(
     network: *const raw::c_char, sender_public_key: *const SecpPublicKey,
     delegate: *const SecpPublicKey, nonce: u64,
@@ -56,7 +56,7 @@ pub extern "C" fn HydraTxBuilder_vote(
     create_vote_tx(network, sender_public_key, delegate, nonce, hyd_core::Transaction::vote)
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn HydraTxBuilder_unvote(
     network: *const raw::c_char, sender_public_key: *const SecpPublicKey,
     delegate: *const SecpPublicKey, nonce: u64,
@@ -64,7 +64,7 @@ pub extern "C" fn HydraTxBuilder_unvote(
     create_vote_tx(network, sender_public_key, delegate, nonce, hyd_core::Transaction::unvote)
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn HydraTxBuilder_register_delegate(
     network: *const raw::c_char, sender_public_key: *const SecpPublicKey,
     delegate_name: *const raw::c_char, nonce: u64,

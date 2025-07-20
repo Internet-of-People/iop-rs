@@ -5,12 +5,12 @@ pub struct CoeusTxBuilder {
     network: &'static dyn Network<Suite = Secp256k1>,
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn delete_CoeusTxBuilder(op: *mut CoeusTxBuilder) {
     delete(op)
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn CoeusTxBuilder_new(network: *const raw::c_char) -> CPtrResult<CoeusTxBuilder> {
     let fun = || {
         let network = unsafe { convert::str_in(network) }?;
@@ -21,7 +21,7 @@ pub extern "C" fn CoeusTxBuilder_new(network: *const raw::c_char) -> CPtrResult<
     cresult(fun())
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn CoeusTxBuilder_build(
     builder: *mut CoeusTxBuilder, bundle: *mut SignedBundle, sender_pubkey: *const SecpPublicKey,
     nonce: Nonce,

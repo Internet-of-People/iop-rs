@@ -192,11 +192,7 @@ pub enum Chain {
 
 impl From<bool> for Chain {
     fn from(change: bool) -> Self {
-        if change {
-            Chain::Change
-        } else {
-            Chain::Receiving
-        }
+        if change { Chain::Change } else { Chain::Receiving }
     }
 }
 
@@ -442,12 +438,21 @@ mod test {
 
         let coin = Bip44.network(&seed, &hyd::Mainnet)?;
         assert_eq!(coin.bip32_path(), &"m/44'/4741444'".parse()?);
-        assert_eq!(coin.to_xprv(), "HYDMVzSE83q9tomV2q935JF5mRZXUB37urS6ZpAvi17d5tFNK7K45ddZmjMZJKYQ8yLjKrq4HFewhXuL5AjDzb9Ft5efNT8upEy1ftARyhmxRFZH");
+        assert_eq!(
+            coin.to_xprv(),
+            "HYDMVzSE83q9tomV2q935JF5mRZXUB37urS6ZpAvi17d5tFNK7K45ddZmjMZJKYQ8yLjKrq4HFewhXuL5AjDzb9Ft5efNT8upEy1ftARyhmxRFZH"
+        );
 
         let account = coin.account(0)?;
         assert_eq!(account.bip32_path(), &"m/44'/4741444'/0'".parse()?);
-        assert_eq!(account.to_xprv(), "HYDMVzUVgP7S8GNPrKWhvoFPivfS25QnhfKi1iydA7jbWRwVuMJTVZzBQvBV86zpNJg83rrtvj6SWsftT3nNg5PQ9kwEdzTSpEDH5KbZsjbKBbhs");
-        assert_eq!(account.neuter().to_xpub(), "hydmW129yVihVKVgXGWfvV3ZSePrhri2FgepKuyMEZ3Eg7bf91jrFZrmAo2hsVcS49dTRP5wZM7A8vudxWk5n8J2Ci12CSNvLy76CsnRaMK4A2b5");
+        assert_eq!(
+            account.to_xprv(),
+            "HYDMVzUVgP7S8GNPrKWhvoFPivfS25QnhfKi1iydA7jbWRwVuMJTVZzBQvBV86zpNJg83rrtvj6SWsftT3nNg5PQ9kwEdzTSpEDH5KbZsjbKBbhs"
+        );
+        assert_eq!(
+            account.neuter().to_xpub(),
+            "hydmW129yVihVKVgXGWfvV3ZSePrhri2FgepKuyMEZ3Eg7bf91jrFZrmAo2hsVcS49dTRP5wZM7A8vudxWk5n8J2Ci12CSNvLy76CsnRaMK4A2b5"
+        );
 
         let key = account.key(5)?;
         assert_eq!(key.bip32_path(), &"m/44'/4741444'/0'/0/5".parse()?);
@@ -476,8 +481,14 @@ mod test {
 
         let sub_account = account.chain(Chain::Receiving)?;
         assert_eq!(sub_account.bip32_path(), &"m/44'/4741444'/0'/0".parse()?);
-        assert_eq!(sub_account.to_xprv(), "HYDMVzVXwQGdZsas8KUKcmTzXtR4Le1fioCn4r8aMFa1CLvCzXJJa28ogEUPdZD1BrSTuBLDGRv5SaPHStH7ZYABhdD6Tf6dCPLd5eaJ9aArC8po");
-        assert_eq!(sub_account.neuter().to_xpub(), "hydmW13CEWstvvi9oGUHcTGAFc9V2RJuGpXtP38JRgseN2aNEBjhL21PS7KcNwqbz2jh787bMSPNkd7sYsdVm5rzdeyweau32iL6qzCgpn79R4o2");
+        assert_eq!(
+            sub_account.to_xprv(),
+            "HYDMVzVXwQGdZsas8KUKcmTzXtR4Le1fioCn4r8aMFa1CLvCzXJJa28ogEUPdZD1BrSTuBLDGRv5SaPHStH7ZYABhdD6Tf6dCPLd5eaJ9aArC8po"
+        );
+        assert_eq!(
+            sub_account.neuter().to_xpub(),
+            "hydmW13CEWstvvi9oGUHcTGAFc9V2RJuGpXtP38JRgseN2aNEBjhL21PS7KcNwqbz2jh787bMSPNkd7sYsdVm5rzdeyweau32iL6qzCgpn79R4o2"
+        );
 
         let recv0 = sub_account.key(0)?;
         assert_eq!(recv0.bip32_path(), &"m/44'/4741444'/0'/0/0".parse()?);

@@ -1,5 +1,5 @@
 use super::{
-    secp256k1::{ark, btc, hyd, iop, Secp256k1},
+    secp256k1::{Secp256k1, ark, btc, hyd, iop},
     *,
 };
 

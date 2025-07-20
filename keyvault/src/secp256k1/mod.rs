@@ -12,17 +12,16 @@ mod sk;
 
 use super::*;
 
-use digest::generic_array::{typenum::U20, GenericArray};
 use digest::FixedOutput;
 use ripemd::Ripemd160;
 use sha2::{Digest, Sha256};
 
-fn hash160<B: AsRef<[u8]>>(input: B) -> GenericArray<u8, U20> {
+fn hash160<B: AsRef<[u8]>>(input: B) -> [u8; 20] {
     let mut inner_hasher = Sha256::default();
     inner_hasher.update(input);
     let mut outer_hasher = Ripemd160::default();
-    outer_hasher.update(inner_hasher.finalize_fixed());
-    outer_hasher.finalize_fixed()
+    outer_hasher.update(inner_hasher.finalize_fixed().as_slice());
+    outer_hasher.finalize_fixed().into()
 }
 
 const CHECKSUM_LEN: usize = 4;
@@ -84,16 +83,14 @@ impl Secp256k1 {
     }
 }
 
-pub use bip32::*;
-pub use bip44::*;
-pub use cc::{ChainCode, CHAIN_CODE_SIZE};
+pub use cc::{CHAIN_CODE_SIZE, ChainCode};
 pub use ext_pk::SecpExtPublicKey;
 pub use ext_sk::SecpExtPrivateKey;
-pub use id::{SecpKeyId, KEY_ID_SIZE, KEY_ID_VERSION1};
+pub use id::{KEY_ID_SIZE, KEY_ID_VERSION1, SecpKeyId};
 pub use networks::{ark, btc, hyd, iop};
-pub use pk::{SecpPublicKey, PUBLIC_KEY_SIZE, PUBLIC_KEY_UNCOMPRESSED_SIZE};
-pub use sig::{SecpSignature, SIGNATURE_SIZE, SIGNATURE_VERSION1};
-pub use sk::{SecpPrivateKey, PRIVATE_KEY_SIZE};
+pub use pk::{PUBLIC_KEY_SIZE, PUBLIC_KEY_UNCOMPRESSED_SIZE, SecpPublicKey};
+pub use sig::{SIGNATURE_SIZE, SIGNATURE_VERSION1, SecpSignature};
+pub use sk::{PRIVATE_KEY_SIZE, SecpPrivateKey};
 
 impl AsymmetricCrypto for Secp256k1 {
     type KeyId = SecpKeyId;
@@ -216,8 +213,8 @@ mod test {
     // Also, you can use
     mod slip10_test_vectors {
         use crate::{
-            secp256k1::{btc, Network, Secp256k1, SecpExtPrivateKey},
             ExtendedPrivateKey, KeyDerivationCrypto, Seed,
+            secp256k1::{Network, Secp256k1, SecpExtPrivateKey, btc},
         };
         struct TestDerivation {
             xprv: SecpExtPrivateKey,
@@ -234,8 +231,8 @@ mod test {
             fn assert_state(&self, xpub_str: &str, xprv_str: &str) {
                 let xpub = self.xprv.neuter();
 
-                assert_eq!(xpub.to_xpub(&btc::Mainnet.bip32_xpub()), xpub_str);
-                assert_eq!(self.xprv.to_xprv(&btc::Mainnet.bip32_xprv()), xprv_str);
+                assert_eq!(xpub.to_xpub(btc::Mainnet.bip32_xpub()), xpub_str);
+                assert_eq!(self.xprv.to_xprv(btc::Mainnet.bip32_xprv()), xprv_str);
             }
 
             fn derive_hardened(&mut self, idx: i32) {
@@ -251,7 +248,9 @@ mod test {
 
         #[test]
         fn test_vector_2() {
-            let mut t = TestDerivation::new("fffcf9f6f3f0edeae7e4e1dedbd8d5d2cfccc9c6c3c0bdbab7b4b1aeaba8a5a29f9c999693908d8a8784817e7b7875726f6c696663605d5a5754514e4b484542");
+            let mut t = TestDerivation::new(
+                "fffcf9f6f3f0edeae7e4e1dedbd8d5d2cfccc9c6c3c0bdbab7b4b1aeaba8a5a29f9c999693908d8a8784817e7b7875726f6c696663605d5a5754514e4b484542",
+            );
             t.assert_state("xpub661MyMwAqRbcFW31YEwpkMuc5THy2PSt5bDMsktWQcFF8syAmRUapSCGu8ED9W6oDMSgv6Zz8idoc4a6mr8BDzTJY47LJhkJ8UB7WEGuduB", "xprv9s21ZrQH143K31xYSDQpPDxsXRTUcvj2iNHm5NUtrGiGG5e2DtALGdso3pGz6ssrdK4PFmM8NSpSBHNqPqm55Qn3LqFtT2emdEXVYsCzC2U");
             t.derive_normal(0);
             t.assert_state("xpub69H7F5d8KSRgmmdJg2KhpAK8SR3DjMwAdkxj3ZuxV27CprR9LgpeyGmXUbC6wb7ERfvrnKZjXoUmmDznezpbZb7ap6r1D3tgFxHmwMkQTPH", "xprv9vHkqa6EV4sPZHYqZznhT2NPtPCjKuDKGY38FBWLvgaDx45zo9WQRUT3dKYnjwih2yJD9mkrocEZXo1ex8G81dwSM1fwqWpWkeS3v86pgKt");
@@ -267,7 +266,9 @@ mod test {
 
         #[test]
         fn test_vector_3() {
-            let mut t = TestDerivation::new("4b381541583be4423346c643850da4b320e46a87ae3d2a4e6da11eba819cd4acba45d239319ac14f863b8d5ab5a0d0c64d2e8a1e7d1457df2e5a3c51c73235be");
+            let mut t = TestDerivation::new(
+                "4b381541583be4423346c643850da4b320e46a87ae3d2a4e6da11eba819cd4acba45d239319ac14f863b8d5ab5a0d0c64d2e8a1e7d1457df2e5a3c51c73235be",
+            );
             t.assert_state("xpub661MyMwAqRbcEZVB4dScxMAdx6d4nFc9nvyvH3v4gJL378CSRZiYmhRoP7mBy6gSPSCYk6SzXPTf3ND1cZAceL7SfJ1Z3GC8vBgp2epUt13", "xprv9s21ZrQH143K25QhxbucbDDuQ4naNntJRi4KUfWT7xo4EKsHt2QJDu7KXp1A3u7Bi1j8ph3EGsZ9Xvz9dGuVrtHHs7pXeTzjuxBrCmmhgC6");
             t.derive_hardened(0);
             t.assert_state("xpub68NZiKmJWnxxS6aaHmn81bvJeTESw724CRDs6HbuccFQN9Ku14VQrADWgqbhhTHBaohPX4CjNLf9fq9MYo6oDaPPLPxSb7gwQN3ih19Zm4Y", "xprv9uPDJpEQgRQfDcW7BkF7eTya6RPxXeJCqCJGHuCJ4GiRVLzkTXBAJMu2qaMWPrS7AANYqdq6vcBcBUdJCVVFceUvJFjaPdGZ2y9WACViL4L");
@@ -282,14 +283,14 @@ mod test {
     // ./bitcointool -c pubfrompriv -p <WIF>
     // ./bitcointool -c addrfrompub -k <pub>
     mod btc_key_conversions {
-        use crate::secp256k1::{btc, Bip178, Network, SecpPrivateKey};
+        use crate::secp256k1::{Bip178, Network, SecpPrivateKey, btc};
         use crate::{PrivateKey, PublicKey};
 
         fn test(sk_hex: &str, wif: &str, pk_hex: &str, id_hex: &str, address: &str) {
             let sk_bytes = hex::decode(sk_hex).unwrap();
             let sk = SecpPrivateKey::from_bytes(sk_bytes).unwrap();
 
-            let sk_wif = sk.to_wif(&btc::Mainnet.wif(), Bip178::Compressed);
+            let sk_wif = sk.to_wif(btc::Mainnet.wif(), Bip178::Compressed);
             assert_eq!(sk_wif, wif);
 
             let pk = sk.public_key();
@@ -300,7 +301,7 @@ mod test {
             let id_bytes = id.to_bytes();
             assert_eq!(hex::encode(&id_bytes), id_hex);
 
-            let act_address = id.to_p2pkh_addr(&btc::Mainnet.p2pkh_addr());
+            let act_address = id.to_p2pkh_addr(btc::Mainnet.p2pkh_addr());
             assert_eq!(act_address, address);
         }
 
@@ -457,9 +458,9 @@ mod test {
 
             let key_id = pk.ark_key_id();
 
-            assert_eq!(key_id.to_p2pkh_addr(&hyd::Mainnet.p2pkh_addr()), addr);
-            assert_eq!(key_id.to_p2pkh_addr(&hyd::Devnet.p2pkh_addr()), addr_dev);
-            assert_eq!(key_id.to_p2pkh_addr(&hyd::Testnet.p2pkh_addr()), addr_test);
+            assert_eq!(key_id.to_p2pkh_addr(hyd::Mainnet.p2pkh_addr()), addr);
+            assert_eq!(key_id.to_p2pkh_addr(hyd::Devnet.p2pkh_addr()), addr_dev);
+            assert_eq!(key_id.to_p2pkh_addr(hyd::Testnet.p2pkh_addr()), addr_test);
         }
     }
 
@@ -475,8 +476,8 @@ mod test {
 
             let key_id = pk.ark_key_id();
 
-            assert_eq!(key_id.to_p2pkh_addr(&ark::Mainnet.p2pkh_addr()), main_addr);
-            assert_eq!(key_id.to_p2pkh_addr(&ark::Devnet.p2pkh_addr()), dev_addr);
+            assert_eq!(key_id.to_p2pkh_addr(ark::Mainnet.p2pkh_addr()), main_addr);
+            assert_eq!(key_id.to_p2pkh_addr(ark::Devnet.p2pkh_addr()), dev_addr);
         }
 
         #[test]

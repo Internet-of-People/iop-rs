@@ -1,7 +1,7 @@
 # --- Overwritten values
-edition = "2021"
+edition = "2024"
 use_small_heuristics = "Max"
-fn_args_layout = "Compressed"
+fn_params_layout = "Compressed"
 use_field_init_shorthand = true
 use_try_shorthand = true
 # --- Default values

@@ -27,12 +27,12 @@ impl JwtBuilder {
 
     pub fn sign(&self, sk: &MPrivateKey) -> Result<String> {
         let pk = sk.public_key();
-        let header = Header::default().with_key_id(pk.to_string());
+        let header = Header::<JwtClaim>::default().with_key_id(pk.to_string());
         let options = TimeOptions::new(Duration::seconds(0), || self.created_at);
         let claims = Claims::new(JwtClaim { content_id: self.content_id.clone() })
             .set_duration(&options, self.time_to_live)
             .set_not_before(self.created_at);
-        let token = JwtMultiCipher.token(header, &claims, sk)?;
+        let token = JwtMultiCipher.token(&header, &claims, sk)?;
         Ok(token)
     }
 }
@@ -54,7 +54,7 @@ impl JwtParser {
             .as_ref()
             .with_context(|| "Publickey is missing from JWT kid header")?;
         let pk: MPublicKey = pk_str.parse()?;
-        let token = JwtMultiCipher.validate_integrity::<JwtClaim>(&untrusted, &pk)?;
+        let token = JwtMultiCipher.validator(&pk).validate(&untrusted)?;
         let options =
             TimeOptions::new(Duration::seconds(0), || current_time.unwrap_or_else(Utc::now));
         token.claims().validate_expiration(&options)?.validate_maturity(&options)?;

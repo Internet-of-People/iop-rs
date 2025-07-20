@@ -1,7 +1,7 @@
 use super::*;
 
-use iop_hydra_proto::txtype::{coeus, Aip29Transaction, CommonTransactionFields};
-use iop_keyvault::{secp256k1::Secp256k1, Network, Networks};
+use iop_hydra_proto::txtype::{Aip29Transaction, CommonTransactionFields, coeus};
+use iop_keyvault::{Network, Networks, secp256k1::Secp256k1};
 
 #[wasm_bindgen(js_name = CoeusTxBuilder)]
 pub struct JsCoeusTxBuilder {

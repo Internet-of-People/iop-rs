@@ -1,6 +1,6 @@
 use blake2::{
-    digest::{consts::U16, typenum::Unsigned},
     Blake2bMac,
+    digest::{consts::U16, typenum::Unsigned},
 };
 
 use super::*;

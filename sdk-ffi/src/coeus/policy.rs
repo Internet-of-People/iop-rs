@@ -1,16 +1,16 @@
 use super::*;
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn delete_SubtreePolicies(op: *mut SubtreePolicies) {
     delete(op)
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn SubtreePolicies_new() -> *mut SubtreePolicies {
     convert::move_out(SubtreePolicies::new())
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn SubtreePolicies_with_schema(
     policies: *mut SubtreePolicies, schema: *const raw::c_char,
 ) -> CPtrResult<SubtreePolicies> {
@@ -23,7 +23,7 @@ pub extern "C" fn SubtreePolicies_with_schema(
     cresult(fun())
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn SubtreePolicies_with_expiration(
     policies: *mut SubtreePolicies, max_expiry: BlockCount,
 ) -> CPtrResult<SubtreePolicies> {

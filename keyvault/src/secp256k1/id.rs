@@ -86,10 +86,10 @@ impl SecpKeyId {
     /// ARK uses a non-standard hashing of the compressed public key.
     pub fn from_ark_pk(pk: &SecpPublicKey) -> Self {
         let mut hasher = Ripemd160::default();
-        hasher.update(&pk.to_bytes());
+        hasher.update(pk.to_bytes());
         let hash = hasher.finalize_fixed();
 
-        Self::from_v1_bytes(&*hash)
+        Self::from_v1_bytes(&hash)
     }
 
     fn from_v1_bytes(hash: &[u8]) -> Self {
@@ -105,7 +105,7 @@ impl From<&SecpPublicKey> for SecpKeyId {
     // https://en.bitcoin.it/wiki/Technical_background_of_version_1_Bitcoin_addresses
     fn from(pk: &SecpPublicKey) -> Self {
         let hash = hash160(&pk.to_bytes()[..]);
-        Self::from_v1_bytes(&*hash)
+        Self::from_v1_bytes(&hash)
     }
 }
 

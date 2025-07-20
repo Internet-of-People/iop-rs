@@ -7,7 +7,7 @@ use anyhow::Context;
 
 fn password_to_key(pw: &str, salt: &[u8]) -> Result<SecretKey> {
     use orion::hazardous::stream::chacha20::CHACHA_KEYSIZE;
-    use orion::kdf::{derive_key, Password, Salt};
+    use orion::kdf::{Password, Salt, derive_key};
 
     let pw = Password::from_slice(pw.as_bytes()).with_context(|| "Password is too short")?;
     let salt = Salt::from_slice(salt).with_context(|| "Salt is too short")?;
@@ -25,7 +25,7 @@ fn password_to_key(pw: &str, salt: &[u8]) -> Result<SecretKey> {
 /// When the underlying platform is unable to provide enough random entropy.
 pub fn nonce() -> Result<[u8; 24]> {
     let mut result = [0u8; 24];
-    getrandom::getrandom(&mut result)?;
+    getrandom::fill(&mut result)?;
     Ok(result)
 }
 
@@ -36,7 +36,7 @@ pub fn encrypt(
     plaintext: impl AsRef<[u8]>, pw: impl AsRef<str>, nonce: impl AsRef<[u8]>,
 ) -> Result<Vec<u8>> {
     use orion::hazardous::{
-        aead::xchacha20poly1305::{seal, Nonce, SecretKey as XSecretKey},
+        aead::xchacha20poly1305::{Nonce, SecretKey as XSecretKey, seal},
         mac::poly1305::POLY1305_OUTSIZE,
         stream::xchacha20::XCHACHA_NONCESIZE,
     };
@@ -90,7 +90,10 @@ mod test {
         let ciphertext = encrypt(plaintext, password, &nonce)?;
 
         assert_eq!(ciphertext.len(), plaintext.len() + 40);
-        assert_eq!(hex::encode(ciphertext), "55287edc4265bdd919532b93dc0d4854b36b5d5a3c979384f7e4e8cf7af1f0b5d0d2df2d08fb2d5039d4108f2d5c37643cb0d72c13d07c7b7c9485cfbae8923c594c2134f389ba19ae240e");
+        assert_eq!(
+            hex::encode(ciphertext),
+            "55287edc4265bdd919532b93dc0d4854b36b5d5a3c979384f7e4e8cf7af1f0b5d0d2df2d08fb2d5039d4108f2d5c37643cb0d72c13d07c7b7c9485cfbae8923c594c2134f389ba19ae240e"
+        );
 
         Ok(())
     }
@@ -102,7 +105,7 @@ mod test {
         let password = "password123";
         let message = "Be at the big tree at 5pm tomorrow!";
         let plaintext = message.as_bytes().to_owned();
-        let ciphertext = encrypt(&plaintext, password, &nonce)?;
+        let ciphertext = encrypt(&plaintext, password, nonce)?;
         let plaintext2 = decrypt(&ciphertext, password)?;
 
         assert_eq!(&plaintext2, &plaintext);

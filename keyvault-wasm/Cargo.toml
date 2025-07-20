@@ -1,20 +1,26 @@
 [package]
 name = "iop-keyvault-wasm"
-version = "0.0.16"
-edition = "2021"
 description = "WebAssembly wrappers for the iop-keyvault crate."
-authors = ["IOP Ventures LLC <dev@iop-ventures.com>", "wigy <wigy_opensource_developer@yahoo.com>", "Rache Bartmoss <bartmoss@tutanota.com>"]
-license = "LGPL-3.0-or-later"
-repository = "https://github.com/Internet-of-People/iop-rs"
-homepage = "https://iop.global"
 keywords = ["crypto", "wallet", "iop", "wasm", "ssi"]
 categories = ["cryptography", "cryptography::cryptocurrencies", "wasm"]
+
+version.workspace = true
+rust-version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
 
 [lib]
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
-iop-keyvault = "0.0.16"
-serde = { version = "1.0.137", features = ["derive"] }
-serde-wasm-bindgen = "0.4.5"
-wasm-bindgen = { version = "0.2.81" }
+iop-keyvault = { workspace = true }
+getrandom = { workspace = true, features = ["wasm_js"]}
+serde = { workspace = true }
+serde-wasm-bindgen = { workspace = true }
+wasm-bindgen = { workspace = true }
+
+[target.wasm32-unknown-unknown]
+rustflags = ['--cfg', 'getrandom_backend="wasm_js"']

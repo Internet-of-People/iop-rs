@@ -17,18 +17,18 @@ mod vault;
 use std::os::raw;
 use std::str::FromStr;
 
-use anyhow::{ensure, Result};
+use anyhow::{Result, ensure};
 
 use iop_hydra_proto::txtype::{
     Aip29Transaction, CommonTransactionFields, OptionalTransactionFields,
 };
 use iop_journal_proto::BlockHeight;
 use iop_keyvault::{
+    Bip32Node, Bip32PublicNode, Bip44Key, Bip44PublicKey, Network, Networks, PrivateKey as _,
+    PublicKey as _,
     ed25519::{DidKind, MorpheusPrivateKey, MorpheusPublicKey},
     multicipher::*,
     secp256k1::*,
-    Bip32Node, Bip32PublicNode, Bip44Key, Bip44PublicKey, Network, Networks, PrivateKey as _,
-    PublicKey as _,
 };
 use iop_morpheus_proto::{
     crypto::{jwt::*, sign::*},

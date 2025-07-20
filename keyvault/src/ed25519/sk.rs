@@ -6,7 +6,8 @@ use super::*;
 pub const PRIVATE_KEY_SIZE: usize = ed::SECRET_KEY_LENGTH;
 
 /// Implementation of Ed25519::PrivateKey
-pub struct EdPrivateKey(ed::Keypair);
+#[derive(Clone)]
+pub struct EdPrivateKey(ed::SigningKey);
 
 impl EdPrivateKey {
     /// The private key serialized in a format that can be fed to [`from_bytes`]
@@ -14,7 +15,7 @@ impl EdPrivateKey {
     /// [`from_bytes`]: #method.from_bytes
     pub fn to_bytes(&self) -> Vec<u8> {
         let mut res = Vec::with_capacity(PRIVATE_KEY_SIZE);
-        res.extend_from_slice(self.0.secret.as_bytes());
+        res.extend_from_slice(self.0.as_bytes());
         res
     }
 
@@ -25,26 +26,15 @@ impl EdPrivateKey {
     ///
     /// [`to_bytes`]: #method.to_bytes
     pub fn from_bytes<D: AsRef<[u8]>>(bytes: D) -> Result<Self> {
-        let secret = ed::SecretKey::from_bytes(bytes.as_ref())?;
-        let public = ed::PublicKey::from(&secret);
-        let key_pair = ed::Keypair { secret, public };
-        Ok(Self(key_pair))
-    }
-}
-
-impl Clone for EdPrivateKey {
-    fn clone(&self) -> Self {
-        let secret_bytes = self.0.secret.as_bytes();
-        let public_bytes = self.0.public.as_bytes();
-        let secret = ed::SecretKey::from_bytes(secret_bytes).unwrap();
-        let public = ed::PublicKey::from_bytes(public_bytes).unwrap();
-        Self(ed::Keypair { secret, public })
+        let secret_key = ed::SecretKey::try_from(bytes.as_ref())?;
+        let signing_key = ed::SigningKey::from_bytes(&secret_key);
+        Ok(Self(signing_key))
     }
 }
 
 impl PrivateKey<Ed25519> for EdPrivateKey {
     fn public_key(&self) -> EdPublicKey {
-        let pk = self.0.public;
+        let pk = self.0.verifying_key();
         pk.into()
     }
     fn sign<D: AsRef<[u8]>>(&self, data: D) -> EdSignature {
@@ -53,14 +43,14 @@ impl PrivateKey<Ed25519> for EdPrivateKey {
     }
 }
 
-impl From<ed::Keypair> for EdPrivateKey {
-    fn from(sk: ed::Keypair) -> Self {
+impl From<ed::SigningKey> for EdPrivateKey {
+    fn from(sk: ed::SigningKey) -> Self {
         Self(sk)
     }
 }
 
-impl From<EdPrivateKey> for ed::Keypair {
-    fn from(sk: EdPrivateKey) -> ed::Keypair {
+impl From<EdPrivateKey> for ed::SigningKey {
+    fn from(sk: EdPrivateKey) -> ed::SigningKey {
         sk.0
     }
 }

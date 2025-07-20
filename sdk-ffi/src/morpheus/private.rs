@@ -1,11 +1,11 @@
 use super::*;
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn delete_MorpheusPrivate(private: *mut MorpheusPrivate) {
     delete(private)
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn MorpheusPrivate_kind(
     private: *mut MorpheusPrivate, did_kind: *const raw::c_char,
 ) -> CPtrResult<MorpheusPrivateKind> {
@@ -19,7 +19,7 @@ pub extern "C" fn MorpheusPrivate_kind(
     cresult(fun())
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn MorpheusPrivate_personas_get(
     private: *mut MorpheusPrivate,
 ) -> CPtrResult<MorpheusPrivateKind> {
@@ -31,7 +31,7 @@ pub extern "C" fn MorpheusPrivate_personas_get(
     cresult(fun())
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn MorpheusPrivate_devices_get(
     private: *mut MorpheusPrivate,
 ) -> CPtrResult<MorpheusPrivateKind> {
@@ -43,7 +43,7 @@ pub extern "C" fn MorpheusPrivate_devices_get(
     cresult(fun())
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn MorpheusPrivate_groups_get(
     private: *mut MorpheusPrivate,
 ) -> CPtrResult<MorpheusPrivateKind> {
@@ -55,7 +55,7 @@ pub extern "C" fn MorpheusPrivate_groups_get(
     cresult(fun())
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn MorpheusPrivate_resources_get(
     private: *mut MorpheusPrivate,
 ) -> CPtrResult<MorpheusPrivateKind> {
@@ -67,13 +67,13 @@ pub extern "C" fn MorpheusPrivate_resources_get(
     cresult(fun())
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn MorpheusPrivate_public_get(private: *mut MorpheusPrivate) -> *mut MorpheusPublic {
     let private = unsafe { convert::borrow_in(private) };
     convert::move_out(private.public())
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn MorpheusPrivate_key_by_pk(
     private: *mut MorpheusPrivate, pk: *mut MPublicKey,
 ) -> CPtrResult<MorpheusPrivateKey> {
@@ -86,7 +86,7 @@ pub extern "C" fn MorpheusPrivate_key_by_pk(
     cresult(fun())
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn MorpheusPrivate_sign_did_operations(
     private: *mut MorpheusPrivate, id: *mut MKeyId, message: *mut CSlice<u8>,
 ) -> CPtrResult<Signed<Box<[u8]>>> {
@@ -103,7 +103,7 @@ pub extern "C" fn MorpheusPrivate_sign_did_operations(
     cresult(fun())
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn MorpheusPrivate_sign_witness_request(
     private: *mut MorpheusPrivate, id: *mut MKeyId, request: *mut raw::c_char,
 ) -> CPtrResult<Signed<serde_json::Value>> {
@@ -120,7 +120,7 @@ pub extern "C" fn MorpheusPrivate_sign_witness_request(
     cresult(fun())
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn MorpheusPrivate_sign_witness_statement(
     private: *mut MorpheusPrivate, id: *mut MKeyId, statement: *mut raw::c_char,
 ) -> CPtrResult<Signed<serde_json::Value>> {
@@ -137,7 +137,7 @@ pub extern "C" fn MorpheusPrivate_sign_witness_statement(
     cresult(fun())
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn MorpheusPrivate_sign_claim_presentation(
     private: *mut MorpheusPrivate, id: *mut MKeyId, presentation: *mut raw::c_char,
 ) -> CPtrResult<Signed<serde_json::Value>> {

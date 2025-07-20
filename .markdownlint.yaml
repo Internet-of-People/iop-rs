@@ -1,0 +1,16 @@
+default: true
+extends: null
+no-hard-tabs:
+  code_blocks: true
+  spaces_per_tab: 4
+line-length:
+  line_length: 130
+  heading_line_length: 70
+  code_block_line_length: 130
+  code_blocks: true
+  tables: false
+  headings: true
+  strict: false
+  stern: true
+no-duplicate-heading:
+  siblings_only: true

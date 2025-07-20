@@ -5,8 +5,8 @@ use crate::{
     data::*,
 };
 use iop_keyvault::{
-    multicipher::{MKeyId, MPrivateKey, MPublicKey, MSignature},
     PrivateKey, PublicKey,
+    multicipher::{MKeyId, MPrivateKey, MPublicKey, MSignature},
 };
 
 pub trait Signable: Content {

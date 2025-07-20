@@ -19,7 +19,7 @@ impl NoncedBundle {
     }
 
     pub fn serialize(&self) -> Result<String> {
-        let data = serde_json::to_value(&self)?;
+        let data = serde_json::to_value(self)?;
         json_digest::canonical_json(&data)
     }
 }
@@ -48,7 +48,7 @@ pub struct SignedBundle {
 impl SignedBundle {
     /// Verifies whether the operations are correctly signed with the public key provided
     pub fn verify(&self) -> bool {
-        self.bundle.serialize().map_or(false, |s| self.public_key.verify(s, &self.signature))
+        self.bundle.serialize().is_ok_and(|s| self.public_key.verify(s, &self.signature))
     }
 }
 

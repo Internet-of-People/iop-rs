@@ -16,7 +16,7 @@ use super::*;
 mod test {
     use super::*;
 
-    use iop_keyvault::{secp256k1::hyd, Seed};
+    use iop_keyvault::{Seed, secp256k1::hyd};
     use iop_vault::Vault;
 
     #[test]
@@ -46,7 +46,7 @@ mod test {
         assert_eq!(priv_key_0_by_pk.bip44_path().key(), 0);
 
         let err = Plugin::init(&mut vault, unlock_password, &parameters).unwrap_err();
-        assert!((&err.to_string()).contains("was already added"));
+        assert!(err.to_string().contains("was already added"));
 
         Ok(())
     }

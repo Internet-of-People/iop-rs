@@ -258,7 +258,7 @@ impl State {
 mod test {
     use super::*;
 
-    use iop_keyvault::{multicipher::MPrivateKey, PrivateKey};
+    use iop_keyvault::{PrivateKey, multicipher::MPrivateKey};
 
     trait StateExt {
         fn apply_operation(&mut self, op: impl Command) -> Result<Version>;

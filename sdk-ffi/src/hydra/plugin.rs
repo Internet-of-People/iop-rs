@@ -10,7 +10,7 @@ fn params(network: *const raw::c_char, account: i32) -> Result<Parameters> {
     Ok(Parameters::new(network, account))
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn HydraPlugin_init(
     vault: *mut Vault, unlock_pwd: *const raw::c_char, network: *const raw::c_char, account: i32,
 ) -> CPtrResult<raw::c_void> {
@@ -24,7 +24,7 @@ pub extern "C" fn HydraPlugin_init(
     cresult_void(fun())
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn HydraPlugin_get(
     vault: *mut Vault, network: *const raw::c_char, account: i32,
 ) -> CPtrResult<CHydraPlugin> {
@@ -38,7 +38,7 @@ pub extern "C" fn HydraPlugin_get(
     cresult(fun())
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn HydraPlugin_private(
     hydra: *mut CHydraPlugin, unlock_pwd: *const raw::c_char,
 ) -> CPtrResult<Private> {
@@ -51,7 +51,7 @@ pub extern "C" fn HydraPlugin_private(
     cresult(fun())
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn HydraPlugin_public(hydra: *mut CHydraPlugin) -> CPtrResult<Public> {
     let hydra = unsafe { convert::borrow_in(hydra) };
     let fun = || {
@@ -61,7 +61,7 @@ pub extern "C" fn HydraPlugin_public(hydra: *mut CHydraPlugin) -> CPtrResult<Pub
     cresult(fun())
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn delete_HydraPlugin(hydra: *mut CHydraPlugin) {
     delete(hydra)
 }

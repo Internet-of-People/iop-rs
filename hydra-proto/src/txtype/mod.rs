@@ -64,7 +64,7 @@ pub struct OptionalTransactionFields {
     pub vendor_field: Option<String>,
 }
 
-impl<'a> CommonTransactionFields<'a> {
+impl CommonTransactionFields<'_> {
     pub fn calculate_fee(&self, tx: &dyn Aip29Transaction) -> u64 {
         self.optional.manual_fee.unwrap_or_else(|| tx.fee())
     }

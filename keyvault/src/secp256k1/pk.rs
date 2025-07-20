@@ -84,7 +84,6 @@ impl PublicKey<Secp256k1> for SecpPublicKey {
     }
 }
 
-#[allow(clippy::derive_hash_xor_eq)] // If the 2 pks are equal. their hashes will be equal, too
 impl Hash for SecpPublicKey {
     fn hash<H: Hasher>(&self, hasher: &mut H) {
         self.to_bytes().hash(hasher);

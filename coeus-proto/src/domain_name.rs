@@ -22,7 +22,7 @@ impl Edge {
     }
 
     fn is_lowercase_alphanumeric(c: char) -> bool {
-        ('a'..='z').contains(&c) || ('0'..='9').contains(&c)
+        c.is_ascii_lowercase() || c.is_ascii_digit()
     }
 }
 

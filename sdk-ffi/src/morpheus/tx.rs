@@ -21,12 +21,12 @@ impl MorpheusOperationBuilder {
     }
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn delete_MorpheusOperationBuilder(builder: *mut MorpheusOperationBuilder) {
     delete(builder)
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn MorpheusOperationBuilder_new(
     did: *const Did, last_tx_id: *const raw::c_char,
 ) -> CPtrResult<MorpheusOperationBuilder> {
@@ -39,7 +39,7 @@ pub extern "C" fn MorpheusOperationBuilder_new(
     cresult(fun())
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn MorpheusOperationBuilder_add_key(
     builder: *mut MorpheusOperationBuilder, authentication: *const raw::c_char,
     expires_at_height: BlockHeight,
@@ -55,7 +55,7 @@ pub extern "C" fn MorpheusOperationBuilder_add_key(
     cresult(fun())
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn MorpheusOperationBuilder_revoke_key(
     builder: *mut MorpheusOperationBuilder, authentication: *const raw::c_char,
 ) -> CPtrResult<SignableOperationAttempt> {
@@ -69,7 +69,7 @@ pub extern "C" fn MorpheusOperationBuilder_revoke_key(
     cresult(fun())
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn MorpheusOperationBuilder_add_right(
     builder: *mut MorpheusOperationBuilder, authentication: *const raw::c_char,
     right: *const raw::c_char,
@@ -85,7 +85,7 @@ pub extern "C" fn MorpheusOperationBuilder_add_right(
     cresult(fun())
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn MorpheusOperationBuilder_revoke_right(
     builder: *mut MorpheusOperationBuilder, authentication: *const raw::c_char,
     right: *const raw::c_char,
@@ -101,7 +101,7 @@ pub extern "C" fn MorpheusOperationBuilder_revoke_right(
     cresult(fun())
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn MorpheusOperationBuilder_tombstone_did(
     builder: *mut MorpheusOperationBuilder,
 ) -> *mut SignableOperationAttempt {
@@ -111,12 +111,12 @@ pub extern "C" fn MorpheusOperationBuilder_tombstone_did(
     convert::move_out(attempt)
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn delete_MorpheusOperation(attempt: *mut SignableOperationAttempt) {
     delete(attempt)
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn MorpheusOperation_from_string(
     input: *const raw::c_char,
 ) -> CPtrResult<SignableOperationAttempt> {
@@ -128,7 +128,7 @@ pub extern "C" fn MorpheusOperation_from_string(
     cresult(fun())
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn MorpheusOperation_to_string(
     attempt: *const SignableOperationAttempt,
 ) -> CPtrResult<raw::c_char> {
@@ -144,17 +144,17 @@ pub struct MorpheusOperationSigner {
     operations: Vec<SignableOperationAttempt>,
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn delete_MorpheusOperationSigner(signer: *mut MorpheusOperationSigner) {
     delete(signer)
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn MorpheusOperationSigner_new() -> *mut MorpheusOperationSigner {
     convert::move_out(MorpheusOperationSigner { operations: vec![] })
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn MorpheusOperationSigner_add(
     signer: *mut MorpheusOperationSigner, op: *mut SignableOperationAttempt,
 ) {
@@ -163,7 +163,7 @@ pub extern "C" fn MorpheusOperationSigner_add(
     signer.operations.push(op.to_owned());
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn MorpheusOperationSigner_sign_with_key(
     signer: *mut MorpheusOperationSigner, private_key: *const MPrivateKey,
 ) -> CPtrResult<SignedOperation> {
@@ -175,7 +175,7 @@ pub extern "C" fn MorpheusOperationSigner_sign_with_key(
     cresult(fun())
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn MorpheusOperationSigner_sign(
     signer: *mut MorpheusOperationSigner, public_key: *const MPublicKey,
     morpheus_private: *const MorpheusPrivate,
@@ -199,12 +199,12 @@ fn MorpheusOperationSigner_sign_inner(
     signable_ops.sign(&signer)
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn delete_MorpheusSignedOperation(operation: *mut SignedOperation) {
     delete(operation)
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn MorpheusSignedOperation_to_string(
     signed_op: *mut SignedOperation,
 ) -> CPtrResult<raw::c_char> {
@@ -220,18 +220,18 @@ pub struct MorpheusAssetBuilder {
     op_attempts: Vec<OperationAttempt>,
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn delete_MorpheusAssetBuilder(builder: *mut MorpheusAssetBuilder) {
     delete(builder)
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn MorpheusAssetBuilder_new() -> *mut MorpheusAssetBuilder {
     let builder = MorpheusAssetBuilder { op_attempts: Default::default() };
     convert::move_out(builder)
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn MorpheusAssetBuilder_add_signed(
     builder: *mut MorpheusAssetBuilder, signed_ops: *mut SignedOperation,
 ) {
@@ -240,7 +240,7 @@ pub extern "C" fn MorpheusAssetBuilder_add_signed(
     builder.op_attempts.push(OperationAttempt::Signed(signed_ops.to_owned()));
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn MorpheusAssetBuilder_add_register_before_proof(
     builder: *mut MorpheusAssetBuilder, content_id: *const raw::c_char,
 ) -> CPtrResult<raw::c_void> {
@@ -255,7 +255,7 @@ pub extern "C" fn MorpheusAssetBuilder_add_register_before_proof(
     cresult_void(fun())
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn MorpheusAssetBuilder_build(
     builder: *mut MorpheusAssetBuilder,
 ) -> *mut MorpheusAsset {
@@ -264,12 +264,12 @@ pub extern "C" fn MorpheusAssetBuilder_build(
     convert::move_out(asset)
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn delete_MorpheusAsset(asset: *mut MorpheusAsset) {
     delete(asset)
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn MorpheusAsset_from_string(
     input: *const raw::c_char,
 ) -> CPtrResult<MorpheusAsset> {
@@ -281,7 +281,7 @@ pub extern "C" fn MorpheusAsset_from_string(
     cresult(fun())
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn MorpheusAsset_to_string(asset: *mut MorpheusAsset) -> CPtrResult<raw::c_char> {
     let fun = || {
         let asset = unsafe { convert::borrow_in(asset) };
@@ -291,7 +291,7 @@ pub extern "C" fn MorpheusAsset_to_string(asset: *mut MorpheusAsset) -> CPtrResu
     cresult(fun())
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn MorpheusTxBuilder_build(
     network: *const raw::c_char, asset: *const MorpheusAsset,
     sender_public_key: *const SecpPublicKey, nonce: u64,

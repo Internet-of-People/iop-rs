@@ -2,8 +2,9 @@ use super::*;
 
 use crate::txtype::hyd_core::CoreTransactionType;
 use crate::txtype::{
+    TxTypeGroup,
     hyd_core::{CoreAsset, CoreTransactionType as CoreTxType},
-    TxTypeGroup, *,
+    *,
 };
 
 pub fn to_bytes(
@@ -43,7 +44,7 @@ pub fn serialize_common(transaction: &TransactionData) -> Result<Vec<u8>> {
     bytes.write_u8(transaction.network.with_context(|| "Network is missing")?)?;
 
     bytes.write_u32::<LittleEndian>(transaction.typed_asset.type_group as u32)?;
-    bytes.write_u16::<LittleEndian>(transaction.typed_asset.transaction_type as u16)?;
+    bytes.write_u16::<LittleEndian>(transaction.typed_asset.transaction_type)?;
     let nonce: u64 = transaction.nonce.as_ref().with_context(|| "Nonce is missing")?.parse()?;
     bytes.write_u64::<LittleEndian>(nonce)?;
 
@@ -116,7 +117,7 @@ fn serialize_vote(transaction: &TransactionData, bytes: &mut Vec<u8>) -> Result<
             .collect();
 
         bytes.write_u8(votes.len() as u8)?;
-        bytes.write_all(&hex::decode(&votes_hex.join(""))?)?;
+        bytes.write_all(&hex::decode(votes_hex.join(""))?)?;
     }
     Ok(())
 }
@@ -186,7 +187,7 @@ pub fn serialize_signatures(
 }
 
 fn write_decoded_hex(signature: &str, bytes: &mut Vec<u8>) -> Result<()> {
-    let signatures_bytes = hex::decode(&signature)?;
+    let signatures_bytes = hex::decode(signature)?;
     bytes.write_all(&signatures_bytes)?;
     Ok(())
 }

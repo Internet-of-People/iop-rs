@@ -1,11 +1,11 @@
 use super::*;
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn delete_ValidationResult(validation: *mut ValidationResult) {
     delete(validation)
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn ValidationResult_status_get(
     validation: *mut ValidationResult,
 ) -> *mut raw::c_char {
@@ -14,7 +14,7 @@ pub extern "C" fn ValidationResult_status_get(
     convert::string_out(status)
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn ValidationResult_issues_get(
     validation: *mut ValidationResult,
 ) -> *mut CSlice<*mut ValidationIssue> {
@@ -24,25 +24,25 @@ pub extern "C" fn ValidationResult_issues_get(
     convert::move_out(CSlice::from(issues))
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn delete_ValidationIssue(issue: *mut ValidationIssue) {
     delete(issue)
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn ValidationIssue_code_get(issue: *mut ValidationIssue) -> u32 {
     let issue = unsafe { convert::borrow_in(issue) };
     issue.code()
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn ValidationIssue_reason_get(issue: *mut ValidationIssue) -> *mut raw::c_char {
     let issue = unsafe { convert::borrow_in(issue) };
     let reason = issue.reason().to_owned();
     convert::string_out(reason)
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn ValidationIssue_severity_get(issue: *mut ValidationIssue) -> *mut raw::c_char {
     let issue = unsafe { convert::borrow_in(issue) };
     let severity = issue.severity().to_string();

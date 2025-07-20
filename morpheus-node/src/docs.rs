@@ -63,14 +63,14 @@ impl DidDocumentState {
         let keys: Vec<KeyData> = keys_at_height
             .iter()
             .enumerate()
-            .map(|(i, k)| self.key_entry_to_data(*k, i, height))
+            .map(|(i, k)| self.key_entry_to_data(k, i, height))
             .collect();
 
         let rights: HashMap<Right, Vec<KeyRightHistory>> = Right::map_all(|r| {
             keys_at_height
                 .iter()
                 .enumerate()
-                .map(|(i, k)| self.key_entry_to_right_history(*k, i, height, r))
+                .map(|(i, k)| self.key_entry_to_right_history(k, i, height, r))
                 .collect()
         });
 
@@ -292,7 +292,11 @@ impl DidDocumentState {
                         auth
                     );
                 } else {
-                    bail!("Cannot revert revokeKey in DID {} because it does not have a key matching {}", did, auth)
+                    bail!(
+                        "Cannot revert revokeKey in DID {} because it does not have a key matching {}",
+                        did,
+                        auth
+                    )
                 }
             }
             AddRight { auth, right } => {

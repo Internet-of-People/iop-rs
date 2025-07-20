@@ -1,31 +1,31 @@
 [package]
 name = "iop-morpheus-sdk"
 description = "Morpheus specific modules for the IOP Stack™ SDK"
-version = "0.0.16"
-authors = ["IOP Ventures LLC <dev@iop-ventures.com>", "Rache Bartmoss <bartmoss@tutanota.com>", "wigy <wigy_opensource_developer@yahoo.com>"]
-license = "LGPL-3.0-or-later"
-edition = "2021"
-repository = "https://github.com/Internet-of-People/iop-rs"
-homepage = "https://developer.iop.technology/"
+
+version.workspace = true
+rust-version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
 
 [dependencies]
-anyhow = "1.0.57"
-iop-keyvault = "0.0.16"
-iop-vault = "0.0.16"
-parking_lot = { version = "0.12.1", features = ["serde"] }
-rand = { version = "0.8.5", features = ["getrandom"] }
-serde = { version = "1.0.137", features = ["derive"] }
-serde_bytes = "0.11.6"
-typetag = "0.1.8"
-
+anyhow = { workspace = true }
+iop-keyvault = { workspace = true }
+iop-vault = { workspace = true }
+parking_lot = { workspace = true }
+rand = { workspace = true }
+serde = { workspace = true }
+serde_bytes = { workspace = true }
+typetag = { workspace = true }
 
 [dev-dependencies]
-chrono = { version = "0.4.19", features = ["wasmbind"] }
-iop-morpheus-proto = "0.0.16"
-json-digest = "0.0.16"
-serde_json = { version = "1.0.81", features = ["preserve_order"] }
-
+chrono = { workspace = true }
+iop-morpheus-proto = { workspace = true }
+json-digest = { workspace = true }
+serde_json = { workspace = true }
 
 [target.'cfg(target_os="android")'.dependencies]
-jni = { version = "0.19.0", default-features = false }
-android_logger = "0.11.0"
+jni = { version = "0.21.1", default-features = false }
+android_logger = "0.15.1"

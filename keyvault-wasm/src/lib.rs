@@ -74,10 +74,10 @@ use wasm_bindgen::prelude::*;
 // imports from own crates
 
 use iop_keyvault::{
-    ed25519::*, encrypt as keyvault_encrypt, multicipher::*, secp256k1::*, Bip32, Bip32Node,
-    Bip32PublicNode, Bip39, Bip39Phrase, Bip44, Bip44Account, Bip44Coin, Bip44Key,
-    Bip44PublicAccount, Bip44PublicKey, Bip44PublicSubAccount, Bip44SubAccount, Chain, Networks,
-    PrivateKey as _, PublicKey as _, Seed,
+    Bip32, Bip32Node, Bip32PublicNode, Bip39, Bip39Phrase, Bip44, Bip44Account, Bip44Coin,
+    Bip44Key, Bip44PublicAccount, Bip44PublicKey, Bip44PublicSubAccount, Bip44SubAccount, Chain,
+    Networks, PrivateKey as _, PublicKey as _, Seed, ed25519::*, encrypt as keyvault_encrypt,
+    multicipher::*, secp256k1::*,
 };
 
 // code
@@ -137,6 +137,7 @@ pub fn validate_network_name(name: &str) -> bool {
 
 #[wasm_bindgen]
 extern "C" {
+    /// A typedef for `string[]` in JS
     #[wasm_bindgen(typescript_type = "string[]")]
     pub type IStringArray;
 }

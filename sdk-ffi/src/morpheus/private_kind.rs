@@ -1,20 +1,20 @@
 use super::*;
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn delete_MorpheusPrivateKind(kind: *mut MorpheusPrivateKind) {
     delete(kind)
 }
 
 // TODO MorpheusPrivateKind_bip32_path_get and MorpheusPrivateKind_network_get
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn MorpheusPrivateKind_kind_get(kind: *mut MorpheusPrivateKind) -> *mut raw::c_char {
     let kind = unsafe { convert::borrow_in(kind) };
     let res = format!("{:?}", kind.path());
     convert::string_out(res)
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn MorpheusPrivateKind_len_get(kind: *mut MorpheusPrivateKind) -> CPtrResult<usize> {
     let kind = unsafe { convert::borrow_in(kind) };
     let fun = || {
@@ -24,7 +24,7 @@ pub extern "C" fn MorpheusPrivateKind_len_get(kind: *mut MorpheusPrivateKind) ->
     cresult(fun())
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn MorpheusPrivateKind_is_empty_get(
     kind: *mut MorpheusPrivateKind,
 ) -> CPtrResult<u8> {
@@ -36,7 +36,7 @@ pub extern "C" fn MorpheusPrivateKind_is_empty_get(
     cresult(fun())
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn MorpheusPrivateKind_neuter(
     kind: *mut MorpheusPrivateKind,
 ) -> *mut MorpheusPublicKind {
@@ -44,7 +44,7 @@ pub extern "C" fn MorpheusPrivateKind_neuter(
     convert::move_out(kind.neuter())
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn MorpheusPrivateKind_key(
     kind: *mut MorpheusPrivateKind, idx: i32,
 ) -> CPtrResult<MorpheusPrivateKey> {
@@ -56,7 +56,7 @@ pub extern "C" fn MorpheusPrivateKind_key(
     cresult(fun())
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn MorpheusPrivateKind_did(
     kind: *mut MorpheusPrivateKind, idx: i32,
 ) -> CPtrResult<Did> {

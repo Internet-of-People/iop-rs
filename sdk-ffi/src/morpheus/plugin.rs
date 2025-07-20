@@ -4,7 +4,7 @@ pub struct CMorpheusPlugin {
     pub(crate) plugin: BoundPlugin<MorpheusPlugin, MorpheusPublic, MorpheusPrivate>,
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn MorpheusPlugin_init(
     vault: *mut Vault, unlock_pwd: *const raw::c_char,
 ) -> CPtrResult<raw::c_void> {
@@ -17,7 +17,7 @@ pub extern "C" fn MorpheusPlugin_init(
     cresult_void(fun())
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn MorpheusPlugin_get(vault: *mut Vault) -> CPtrResult<CMorpheusPlugin> {
     let vault = unsafe { convert::borrow_mut_in(vault) };
     let fun = || {
@@ -28,7 +28,7 @@ pub extern "C" fn MorpheusPlugin_get(vault: *mut Vault) -> CPtrResult<CMorpheusP
     cresult(fun())
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn MorpheusPlugin_public_get(
     morpheus: *mut CMorpheusPlugin,
 ) -> CPtrResult<MorpheusPublic> {
@@ -40,7 +40,7 @@ pub extern "C" fn MorpheusPlugin_public_get(
     cresult(fun())
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn MorpheusPlugin_private(
     morpheus: *mut CMorpheusPlugin, unlock_pwd: *const raw::c_char,
 ) -> CPtrResult<MorpheusPrivate> {
@@ -53,7 +53,7 @@ pub extern "C" fn MorpheusPlugin_private(
     cresult(fun())
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn delete_MorpheusPlugin(morpheus: *mut CMorpheusPlugin) {
     delete(morpheus)
 }

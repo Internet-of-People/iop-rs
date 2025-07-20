@@ -18,7 +18,7 @@ impl<'a> Transaction<'a> {
     }
 }
 
-impl<'a> Aip29Transaction for Transaction<'a> {
+impl Aip29Transaction for Transaction<'_> {
     fn fee(&self) -> u64 {
         self.asset.fee()
     }
@@ -35,7 +35,7 @@ impl<'a> Aip29Transaction for Transaction<'a> {
 mod test {
     use super::*;
 
-    use iop_keyvault::{multicipher::MPrivateKey, PrivateKey};
+    use iop_keyvault::{PrivateKey, multicipher::MPrivateKey};
 
     #[test]
     fn binary_roundtrip() {

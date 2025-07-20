@@ -1,7 +1,7 @@
 //! Utility functions to specify subtrees in a JSON document. Path pattern syntax is based on
 //! JQ patterns, see <https://stedolan.github.io/jq/manual/#Basicfilters>
 
-use super::*;
+use anyhow::{Result, bail};
 
 /// Checks if any of the paths exist in the provided value.
 pub fn matches(tree: &serde_json::Value, paths_pattern: &str) -> Result<bool> {

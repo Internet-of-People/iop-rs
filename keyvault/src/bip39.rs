@@ -1,5 +1,4 @@
 use ::bip39::{Mnemonic, MnemonicType};
-use getrandom::getrandom;
 
 use super::*;
 
@@ -16,7 +15,7 @@ impl Bip39 {
     /// Creates the right sized entropy using the CSPRNG available on the platform.
     pub fn generate_entropy() -> Result<[u8; 32]> {
         let mut entropy = [0u8; 256 / 8];
-        getrandom(&mut entropy)?;
+        getrandom::fill(&mut entropy)?;
         Ok(entropy)
     }
 
@@ -70,7 +69,7 @@ impl Bip39 {
     /// assert!(!bip39.check_word("avalon"));
     /// ```
     pub fn check_word(self, word: &str) -> bool {
-        self.lang.wordmap().get_bits(word).is_ok()
+        self.lang.wordmap().get_bits(word).is_some()
     }
 
     /// Lists all words in the BIP39 dictionary, which start with the given prefix.
@@ -105,7 +104,8 @@ impl Bip39 {
     /// assert!(bip39.validate("abandon abandon about").unwrap_err().to_string().contains("invalid number of words"));
     /// ```
     pub fn validate(self, phrase: impl AsRef<str>) -> Result<()> {
-        Mnemonic::validate(phrase.as_ref(), self.lang)
+        Mnemonic::validate(phrase.as_ref(), self.lang)?;
+        Ok(())
     }
 
     /// Validates a whole BIP39 mnemonic phrase and returns an intermediate object that can be

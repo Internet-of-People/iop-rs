@@ -1,11 +1,11 @@
 use super::*;
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn delete_SignedJson(signed: *mut Signed<serde_json::Value>) {
     delete(signed)
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn SignedJson_new(
     pk: *const MPublicKey, content: *const raw::c_char, sig: *const MSignature,
 ) -> CPtrResult<Signed<serde_json::Value>> {
@@ -22,14 +22,14 @@ pub extern "C" fn SignedJson_new(
     cresult(fun())
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn SignedJson_public_key_get(
     signed: *const Signed<serde_json::Value>,
 ) -> *mut MPublicKey {
     public_key(signed)
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn SignedJson_content_get(
     signed: *const Signed<serde_json::Value>,
 ) -> *mut raw::c_char {
@@ -39,20 +39,20 @@ pub extern "C" fn SignedJson_content_get(
     convert::string_out(string)
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn SignedJson_signature_get(
     signed: *const Signed<serde_json::Value>,
 ) -> *mut MSignature {
     signature(signed)
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn SignedJson_validate(signed: *const Signed<serde_json::Value>) -> bool {
     let signed = unsafe { convert::borrow_in(signed) };
     signed.validate()
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn SignedJson_validate_with_keyid(
     signed: *const Signed<serde_json::Value>, signer_id: *const MKeyId,
 ) -> bool {
@@ -61,7 +61,7 @@ pub extern "C" fn SignedJson_validate_with_keyid(
     signed.validate_with_keyid(Some(signer_id))
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn SignedJson_validate_with_did_doc(
     signed: *const Signed<serde_json::Value>, did_doc_str: *const raw::c_char,
     from_height_inc: *const BlockHeight, until_height_exc: *const BlockHeight,
@@ -69,7 +69,7 @@ pub extern "C" fn SignedJson_validate_with_did_doc(
     validate_with_did_doc(signed, did_doc_str, from_height_inc, until_height_exc)
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn SignedJson_to_json(signed: *const Signed<serde_json::Value>) -> *mut raw::c_char {
     let signed = unsafe { convert::borrow_in(signed) };
     let signed_string =
@@ -77,7 +77,7 @@ pub extern "C" fn SignedJson_to_json(signed: *const Signed<serde_json::Value>) -
     convert::string_out(signed_string)
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn SignedJson_from_json(
     signed_str: *const raw::c_char,
 ) -> CPtrResult<Signed<serde_json::Value>> {

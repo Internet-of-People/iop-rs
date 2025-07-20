@@ -1,40 +1,35 @@
 [package]
 name = "iop-sdk-ffi"
 description = "C ABI bindings to the client SDK for the IOP Stack™"
-version = "0.0.16"
-authors = [
-  "IOP Ventures LLC <dev@iop-ventures.com>",
-  "Rache Bartmoss <bartmoss@tutanota.com>",
-  "wigy <wigy_opensource_developer@yahoo.com>",
-]
-edition = "2021"
-license = "LGPL-3.0-or-later"
-repository = "https://github.com/Internet-of-People/iop-rs"
-homepage = "https://developer.iop.technology/"
 
+version.workspace = true
+rust-version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
 
 [lib]
 name = "iop_sdk_ffi"
 crate-type = ["rlib", "cdylib"]
 
-
 [dependencies]
-anyhow = "1.0.57"
-chrono = { version = "0.4.19", features = ["wasmbind"] }
-iop-coeus-proto = "0.0.16"
-iop-hydra-proto = "0.0.16"
-iop-hydra-sdk = "0.0.16"
-iop-journal-proto = "0.0.16"
-iop-keyvault = "0.0.16"
-iop-morpheus-proto = "0.0.16"
-iop-morpheus-sdk = "0.0.16"
-iop-vault = "0.0.16"
-json-digest = "0.0.16"
-serde = { version = "1.0.137", features = ["derive", "rc"] }
-serde_json = { version = "1.0.81", features = ["preserve_order"] }
-serde_repr = "0.1.8"
-
+anyhow = { workspace = true }
+chrono = { workspace = true }
+iop-coeus-proto = { workspace = true }
+iop-hydra-proto = { workspace = true }
+iop-hydra-sdk = { workspace = true }
+iop-journal-proto = { workspace = true }
+iop-keyvault = { workspace = true }
+iop-morpheus-proto = { workspace = true }
+iop-morpheus-sdk = { workspace = true }
+iop-vault = { workspace = true }
+json-digest = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+serde_repr = { workspace = true }
 
 [target.'cfg(target_os="android")'.dependencies]
-jni = { version = "0.19.0", default-features = false }
-android_logger = "0.11.0"
+jni = { version = "0.21.1", default-features = false }
+android_logger = "0.15.1"

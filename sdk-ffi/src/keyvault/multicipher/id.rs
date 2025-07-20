@@ -1,24 +1,24 @@
 use super::*;
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn delete_MKeyId(id: *mut MKeyId) {
     delete(id)
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn MKeyId_prefix() -> *mut raw::c_char {
     let prefix = MKeyId::PREFIX.to_string();
     convert::string_out(prefix)
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 // TODO Should _from_secp functions rather take ownership of the input like in Rust?
 pub extern "C" fn MKeyId_from_secp(secp: *mut SecpKeyId) -> *mut MKeyId {
     let secp = unsafe { convert::borrow_in(secp) };
     convert::move_out(MKeyId::from(secp.clone()))
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn MKeyId_from_bytes(data: *mut CSlice<u8>) -> CPtrResult<MKeyId> {
     let data = unsafe { convert::borrow_in(data) };
     let fun = || {
@@ -28,7 +28,7 @@ pub extern "C" fn MKeyId_from_bytes(data: *mut CSlice<u8>) -> CPtrResult<MKeyId>
     cresult(fun())
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn MKeyId_from_string(input: *mut raw::c_char) -> CPtrResult<MKeyId> {
     let fun = || {
         let input = unsafe { convert::str_in(input)? };
@@ -38,13 +38,13 @@ pub extern "C" fn MKeyId_from_string(input: *mut raw::c_char) -> CPtrResult<MKey
     cresult(fun())
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn MKeyId_to_bytes(id: *mut MKeyId) -> *mut CSlice<u8> {
     let id = unsafe { convert::borrow_in(id) };
     convert::move_out(CSlice::from(id.to_bytes()))
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn MKeyId_to_string(id: *mut MKeyId) -> *mut raw::c_char {
     let id = unsafe { convert::borrow_in(id) };
     convert::string_out(id.to_string())

@@ -7,7 +7,7 @@ use std::sync::Arc;
 
 // imports from 3rd party crates
 
-use anyhow::{bail, ensure, Context, Result};
+use anyhow::{Context, Result, bail, ensure};
 //use log::*;
 use parking_lot::RwLock;
 use serde::{Deserialize, Serialize};
@@ -16,8 +16,8 @@ use serde::{Deserialize, Serialize};
 
 use iop_hydra_proto::TransactionData;
 use iop_keyvault::{
-    secp256k1::{Secp256k1, SecpPrivateKey, SecpPublicKey},
     Bip32Node, Bip32PublicNode, Bip44, Bip44Account, Bip44AccountPath, Bip44Key,
     Bip44PublicAccount, Bip44PublicKey, Network, Networks, PrivateKey as _, Seed,
+    secp256k1::{Secp256k1, SecpPrivateKey, SecpPublicKey},
 };
 use iop_vault::{BoundPlugin, PluginPrivate, PluginPublic, State};

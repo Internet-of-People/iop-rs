@@ -1,5 +1,5 @@
 use super::{Bip178, Secp256k1, SecpExtPrivateKey, SecpExtPublicKey};
-use crate::{bip32, Bip32Node, Bip32PublicNode, Network};
+use crate::{Bip32Node, Bip32PublicNode, Network, bip32};
 
 use super::*;
 

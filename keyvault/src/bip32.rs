@@ -368,23 +368,59 @@ mod tests {
         let receives = account.derive_normal(0)?;
         let key = receives.derive_normal(0)?;
 
-        assert_eq!(master.to_xprv(net), "HYDMVzMRRudwQ4sYtEeUUTuvgSjfFdA4eEEs9tnexVi7wzLh1biJ23KpwowPwpanAcppzuoUuQnDyPG41BV6Haecn1Zzy5fBnEqvqm3EfYsJHfm2");
-        assert_eq!(master.neuter().to_xpub(net), "hydmVzu5j2FCm7zqZBeSU9i6QAU5wQTJCFZyU5nP2w1m7fzrFG9gn3CQhgnchDCuEF5LTsdEgqZsnATTisx8sY5bvf2xqgDbkHtw4o3qxKvjxz5X");
+        assert_eq!(
+            master.to_xprv(net),
+            "HYDMVzMRRudwQ4sYtEeUUTuvgSjfFdA4eEEs9tnexVi7wzLh1biJ23KpwowPwpanAcppzuoUuQnDyPG41BV6Haecn1Zzy5fBnEqvqm3EfYsJHfm2"
+        );
+        assert_eq!(
+            master.neuter().to_xpub(net),
+            "hydmVzu5j2FCm7zqZBeSU9i6QAU5wQTJCFZyU5nP2w1m7fzrFG9gn3CQhgnchDCuEF5LTsdEgqZsnATTisx8sY5bvf2xqgDbkHtw4o3qxKvjxz5X"
+        );
         assert_eq!(master.path(), &"m".parse()?);
-        assert_eq!(bip44.to_xprv(net), "HYDMVzQELuRPBY1JTQZ1LQD3oJmX9X3atztB57mEaCQEWZMAstsvMp36KGHyPSDR5dfCY1Fc4DLcLk5WwSTwvmwHwioV5dRd6kvqnewQPBBCoWjD");
-        assert_eq!(bip44.neuter().to_xpub(net), "hydmVzwte22eYb8b8MYyL61DX2VwqJLpT2DHPJkxedhsgF1L7ZKK7oug599C8ppMqKWqznGdxp2q28s3TQykNkJE6YFWNjuRc686X6XT9Yojtm9E");
+        assert_eq!(
+            bip44.to_xprv(net),
+            "HYDMVzQELuRPBY1JTQZ1LQD3oJmX9X3atztB57mEaCQEWZMAstsvMp36KGHyPSDR5dfCY1Fc4DLcLk5WwSTwvmwHwioV5dRd6kvqnewQPBBCoWjD"
+        );
+        assert_eq!(
+            bip44.neuter().to_xpub(net),
+            "hydmVzwte22eYb8b8MYyL61DX2VwqJLpT2DHPJkxedhsgF1L7ZKK7oug599C8ppMqKWqznGdxp2q28s3TQykNkJE6YFWNjuRc686X6XT9Yojtm9E"
+        );
         assert_eq!(bip44.path(), &"m/44'".parse()?);
-        assert_eq!(hyd.to_xprv(net), "HYDMVzSE83q9tomV2q935JF5mRZXUB37urS6ZpAvi17d5tFNK7K45ddZmjMZJKYQ8yLjKrq4HFewhXuL5AjDzb9Ft5efNT8upEy1ftARyhmxRFZH");
-        assert_eq!(hyd.neuter().to_xpub(net), "hydmVzytRASRFrtmhn914z3FV9Hx9xLMTsmCt1AenSRGFZuXYmkSqdW9XcCn3iAWcCZgEap3diAfhYPXRa5mpHuuxvWehM4j2ZS3V1rZpRF8xTr5");
+        assert_eq!(
+            hyd.to_xprv(net),
+            "HYDMVzSE83q9tomV2q935JF5mRZXUB37urS6ZpAvi17d5tFNK7K45ddZmjMZJKYQ8yLjKrq4HFewhXuL5AjDzb9Ft5efNT8upEy1ftARyhmxRFZH"
+        );
+        assert_eq!(
+            hyd.neuter().to_xpub(net),
+            "hydmVzytRASRFrtmhn914z3FV9Hx9xLMTsmCt1AenSRGFZuXYmkSqdW9XcCn3iAWcCZgEap3diAfhYPXRa5mpHuuxvWehM4j2ZS3V1rZpRF8xTr5"
+        );
         assert_eq!(hyd.path(), &"m/44'/4741444'".parse()?);
-        assert_eq!(account.to_xprv(net), "HYDMVzUVgP7S8GNPrKWhvoFPivfS25QnhfKi1iydA7jbWRwVuMJTVZzBQvBV86zpNJg83rrtvj6SWsftT3nNg5PQ9kwEdzTSpEDH5KbZsjbKBbhs");
-        assert_eq!(account.neuter().to_xpub(net), "hydmW129yVihVKVgXGWfvV3ZSePrhri2FgepKuyMEZ3Eg7bf91jrFZrmAo2hsVcS49dTRP5wZM7A8vudxWk5n8J2Ci12CSNvLy76CsnRaMK4A2b5");
+        assert_eq!(
+            account.to_xprv(net),
+            "HYDMVzUVgP7S8GNPrKWhvoFPivfS25QnhfKi1iydA7jbWRwVuMJTVZzBQvBV86zpNJg83rrtvj6SWsftT3nNg5PQ9kwEdzTSpEDH5KbZsjbKBbhs"
+        );
+        assert_eq!(
+            account.neuter().to_xpub(net),
+            "hydmW129yVihVKVgXGWfvV3ZSePrhri2FgepKuyMEZ3Eg7bf91jrFZrmAo2hsVcS49dTRP5wZM7A8vudxWk5n8J2Ci12CSNvLy76CsnRaMK4A2b5"
+        );
         assert_eq!(account.path(), &"m/44'/4741444'/0'".parse()?);
-        assert_eq!(receives.to_xprv(net), "HYDMVzVXwQGdZsas8KUKcmTzXtR4Le1fioCn4r8aMFa1CLvCzXJJa28ogEUPdZD1BrSTuBLDGRv5SaPHStH7ZYABhdD6Tf6dCPLd5eaJ9aArC8po");
-        assert_eq!(receives.neuter().to_xpub(net), "hydmW13CEWstvvi9oGUHcTGAFc9V2RJuGpXtP38JRgseN2aNEBjhL21PS7KcNwqbz2jh787bMSPNkd7sYsdVm5rzdeyweau32iL6qzCgpn79R4o2");
+        assert_eq!(
+            receives.to_xprv(net),
+            "HYDMVzVXwQGdZsas8KUKcmTzXtR4Le1fioCn4r8aMFa1CLvCzXJJa28ogEUPdZD1BrSTuBLDGRv5SaPHStH7ZYABhdD6Tf6dCPLd5eaJ9aArC8po"
+        );
+        assert_eq!(
+            receives.neuter().to_xpub(net),
+            "hydmW13CEWstvvi9oGUHcTGAFc9V2RJuGpXtP38JRgseN2aNEBjhL21PS7KcNwqbz2jh787bMSPNkd7sYsdVm5rzdeyweau32iL6qzCgpn79R4o2"
+        );
         assert_eq!(receives.path(), &"m/44'/4741444'/0'/0".parse()?);
-        assert_eq!(key.to_xprv(net), "HYDMVzXDVKq5jELcWwpPea9GzS7R8sPmoVo6MjhvGYhenJFBrjzgLw5LPoLzEZY1GyKRqbpPBxZNEvP6TnAq9Qpdi9wo3Bhb9NJNMC79egmr486W");
-        assert_eq!(key.neuter().to_xpub(net), "hydmW14snSSM6HTuBtpMeFwSi9qqpeh1MX8CfvheLz1HwyuM6QS56vwv9gCCyx9GMfhYfMxnn89ynj3y3STp2UxpwT3kFfeGenAkzJRHsuYCLMJW");
+        assert_eq!(
+            key.to_xprv(net),
+            "HYDMVzXDVKq5jELcWwpPea9GzS7R8sPmoVo6MjhvGYhenJFBrjzgLw5LPoLzEZY1GyKRqbpPBxZNEvP6TnAq9Qpdi9wo3Bhb9NJNMC79egmr486W"
+        );
+        assert_eq!(
+            key.neuter().to_xpub(net),
+            "hydmW14snSSM6HTuBtpMeFwSi9qqpeh1MX8CfvheLz1HwyuM6QS56vwv9gCCyx9GMfhYfMxnn89ynj3y3STp2UxpwT3kFfeGenAkzJRHsuYCLMJW"
+        );
         assert_eq!(key.path(), &"m/44'/4741444'/0'/0/0".parse()?);
 
         Ok(())
@@ -404,9 +440,15 @@ mod tests {
         let receives = public.derive_normal(0)?;
         let key = receives.derive_normal(0)?;
 
-        assert_eq!(receives.to_xpub(net), "hydmW13CEWstvvi9oGUHcTGAFc9V2RJuGpXtP38JRgseN2aNEBjhL21PS7KcNwqbz2jh787bMSPNkd7sYsdVm5rzdeyweau32iL6qzCgpn79R4o2");
+        assert_eq!(
+            receives.to_xpub(net),
+            "hydmW13CEWstvvi9oGUHcTGAFc9V2RJuGpXtP38JRgseN2aNEBjhL21PS7KcNwqbz2jh787bMSPNkd7sYsdVm5rzdeyweau32iL6qzCgpn79R4o2"
+        );
         assert_eq!(receives.path(), &"m/44'/4741444'/0'/0".parse()?);
-        assert_eq!(key.to_xpub(net), "hydmW14snSSM6HTuBtpMeFwSi9qqpeh1MX8CfvheLz1HwyuM6QS56vwv9gCCyx9GMfhYfMxnn89ynj3y3STp2UxpwT3kFfeGenAkzJRHsuYCLMJW");
+        assert_eq!(
+            key.to_xpub(net),
+            "hydmW14snSSM6HTuBtpMeFwSi9qqpeh1MX8CfvheLz1HwyuM6QS56vwv9gCCyx9GMfhYfMxnn89ynj3y3STp2UxpwT3kFfeGenAkzJRHsuYCLMJW"
+        );
         assert_eq!(key.path(), &"m/44'/4741444'/0'/0/0".parse()?);
 
         Ok(())

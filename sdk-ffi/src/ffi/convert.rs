@@ -4,29 +4,25 @@ pub(crate) unsafe fn move_in_opt<T>(t: *mut T) -> Option<Box<T>> {
     if t.is_null() {
         return None;
     }
-    Some(Box::from_raw(t))
+    Some(unsafe { Box::from_raw(t) })
 }
 
 // TODO consider null checks for all borrow_... functions as well with Result<> return value
 pub(crate) unsafe fn borrow_in<'a, T>(value: *const T) -> &'a T {
-    &*value
+    unsafe { &*value }
 }
 
 pub(crate) unsafe fn borrow_in_opt<'a, T>(value: *const T) -> Option<&'a T> {
-    if value.is_null() {
-        None
-    } else {
-        Some(borrow_in(value))
-    }
+    if value.is_null() { None } else { Some(unsafe { borrow_in(value) }) }
 }
 
 pub(crate) unsafe fn borrow_mut_in<'a, T>(value: *mut T) -> &'a mut T {
-    &mut *value
+    unsafe { &mut *value }
 }
 
 pub(crate) unsafe fn str_in<'a>(s: *const raw::c_char) -> Result<&'a str> {
     ensure!(!s.is_null(), "Attempt to convert null pointer to string");
-    let c_str = ffi::CStr::from_ptr(s);
+    let c_str = unsafe { ffi::CStr::from_ptr(s) };
     let s = c_str.to_str()?;
     Ok(s)
 }
@@ -37,11 +33,7 @@ pub(crate) fn string_out(s: String) -> *mut raw::c_char {
 }
 
 pub(crate) fn string_out_opt(o: Option<String>) -> *mut raw::c_char {
-    if let Some(s) = o {
-        string_out(s)
-    } else {
-        std::ptr::null_mut()
-    }
+    if let Some(s) = o { string_out(s) } else { std::ptr::null_mut() }
 }
 
 // TODO this normally should be just a simple c_uchar,

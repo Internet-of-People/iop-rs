@@ -1,11 +1,11 @@
 use super::*;
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn delete_SecpPrivateKey(secp_sk: *mut SecpPrivateKey) {
     delete(secp_sk)
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn SecpPrivateKey_from_ark_passphrase(
     passphrase: *mut raw::c_char,
 ) -> CPtrResult<SecpPrivateKey> {
@@ -17,7 +17,7 @@ pub extern "C" fn SecpPrivateKey_from_ark_passphrase(
     cresult(fun())
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn SecpPrivateKey_to_wif(
     secp_sk: *mut SecpPrivateKey, network: *mut raw::c_char,
 ) -> CPtrResult<raw::c_char> {
@@ -31,13 +31,13 @@ pub extern "C" fn SecpPrivateKey_to_wif(
     cresult(fun())
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn SecpPrivateKey_public_key(secp_sk: *mut SecpPrivateKey) -> *mut SecpPublicKey {
     let secp_sk = unsafe { convert::borrow_in(secp_sk) };
     convert::move_out(secp_sk.public_key())
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn SecpPrivateKey_sign_ecdsa(
     secp_sk: *mut SecpPrivateKey, data: *mut CSlice<u8>,
 ) -> *mut SecpSignature {

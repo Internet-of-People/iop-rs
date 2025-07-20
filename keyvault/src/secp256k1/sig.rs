@@ -99,7 +99,7 @@ mod test {
         let transfer_txn = "ff0280010000000000460000000000000003d4bda72219264ff106e21044b047b6c6b2c0dde8f49b42c848e086b97920adbf80969800000000000000e1f505000000000000000080954d93b02f3f0b189a9b308b15de1c4a550cf454";
         let sig_der_bytes = "3044022043e0c3379b364416d0eb154316e7c1ae9863afe4041c348efeb7c5b21b83c4610220451e3ef2f6c502356e2b962bf19632d690fe0e211268154bc34a7d7a57189739";
 
-        let sig = sk.sign(&hex::decode(transfer_txn).unwrap());
+        let sig = sk.sign(hex::decode(transfer_txn).unwrap());
 
         assert_eq!(hex::encode(sig.to_der()), sig_der_bytes);
     }

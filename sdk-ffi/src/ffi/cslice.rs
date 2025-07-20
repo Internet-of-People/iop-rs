@@ -16,15 +16,9 @@ impl<T> CSlice<T> {
 }
 
 impl<T> From<Box<[T]>> for CSlice<T> {
-    fn from(mut slice: Box<[T]>) -> Self {
+    fn from(slice: Box<[T]>) -> Self {
         let length = slice.len();
-        let first = if length != 0 {
-            let first = slice.as_mut_ptr();
-            Box::into_raw(slice);
-            first
-        } else {
-            std::ptr::null_mut()
-        };
+        let first = if length != 0 { Box::leak(slice).as_mut_ptr() } else { std::ptr::null_mut() };
         Self { first, length }
     }
 }

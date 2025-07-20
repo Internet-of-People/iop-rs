@@ -10,7 +10,7 @@ pub use state::*;
 
 use std::collections::HashMap;
 
-use anyhow::{bail, ensure, Context, Result};
+use anyhow::{Context, Result, bail, ensure};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use valico::json_schema;

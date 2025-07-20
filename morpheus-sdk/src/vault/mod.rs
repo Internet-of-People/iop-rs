@@ -56,7 +56,7 @@ mod test {
         println!("{}", serde_json::to_string_pretty(&vault)?);
 
         let err = Plugin::init(&mut vault, unlock_password).unwrap_err();
-        assert!((&err.to_string()).contains("was already added"));
+        assert!(err.to_string().contains("was already added"));
 
         Ok(())
     }

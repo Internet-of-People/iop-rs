@@ -1,6 +1,6 @@
 use super::*;
 
-use iop_hydra_proto::txtype::{morpheus::Transaction, Aip29Transaction, CommonTransactionFields};
+use iop_hydra_proto::txtype::{Aip29Transaction, CommonTransactionFields, morpheus::Transaction};
 use iop_morpheus_proto::txtype::{
     MorpheusAsset, OperationAttempt, SignableOperation, SignableOperationAttempt,
     SignableOperationDetails, SignedOperation,
