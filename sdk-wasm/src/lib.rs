@@ -37,13 +37,17 @@ use iop_keyvault::{
     secp256k1::{Secp256k1, SecpPublicKey},
     Network, Networks, PublicKey as _,
 };
-use iop_keyvault_wasm::*;
 use iop_morpheus_proto::{
     crypto::sign::{PrivateKeySigner, Signable, Signed, SyncMorpheusSigner},
     data::{Authentication, ClaimPresentation, Did, WitnessRequest, WitnessStatement},
 };
 use iop_morpheus_sdk::vault as hd_morpheus;
 use iop_vault::{BoundPlugin, Vault, VaultPlugin};
+
+// Explicit imports to resolve ambiguity between iop_keyvault_wasm and json_digest_wasm
+// (both crates export identical err_to_js and MapJsError definitions)
+pub use iop_keyvault_wasm::err_to_js;
+pub use iop_keyvault_wasm::MapJsError;
 
 pub use iop_keyvault_wasm::*;
 pub use iop_proto_wasm::*;
