@@ -1,0 +1,35 @@
+[package]
+name = "pallet-mosaic-did"
+description = "Substrate pallet for DID management on the Mosaic Trust Network (did:mosaic)"
+version = "0.1.0"
+authors = ["Mosaic Trust Network Team <dev@mosaic.network>"]
+edition = "2021"
+license = "LGPL-3.0-or-later"
+repository = "https://gitlab.dlabs.hu/mosaic-trust-network/iop-rs"
+
+[dependencies]
+mosaic-did-types = { path = "../mosaic-did-types", default-features = false }
+
+# Substrate dependencies
+frame-support = { version = "37", default-features = false }
+frame-system = { version = "37", default-features = false }
+parity-scale-codec = { version = "3", default-features = false, features = ["derive", "max-encoded-len"] }
+scale-info = { version = "2", default-features = false, features = ["derive"] }
+sp-runtime = { version = "39", default-features = false }
+sp-std = { version = "14", default-features = false }
+
+[dev-dependencies]
+sp-core = { version = "34" }
+sp-io = { version = "38" }
+
+[features]
+default = ["std"]
+std = [
+    "mosaic-did-types/std",
+    "frame-support/std",
+    "frame-system/std",
+    "parity-scale-codec/std",
+    "scale-info/std",
+    "sp-runtime/std",
+    "sp-std/std",
+]

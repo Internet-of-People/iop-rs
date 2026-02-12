@@ -12,6 +12,7 @@ members = [
     "morpheus-node",
     "morpheus-proto",
     "morpheus-sdk",
+    "mosaic-did-types",
     "node-wasm",
     "proto-wasm",
     "sdk",
@@ -41,6 +42,7 @@ iop-proto-wasm = { path="./proto-wasm" }
 iop-vault = { path="./vault" }
 json-digest-wasm = { path="./json-digest-wasm" }
 json-digest = { path="./json-digest" }
+mosaic-did-types = { path="./mosaic-did-types" }
 
 # Local clone at parent folder
 #iop-keyvault = { path="../keyvault-rs/keyvault" }

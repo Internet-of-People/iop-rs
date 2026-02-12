@@ -1,0 +1,36 @@
+[package]
+name = "mosaic-did-types"
+description = "Core type definitions for the did:mosaic DID method on the Mosaic Trust Network"
+version = "0.1.0"
+authors = ["Mosaic Trust Network Team <dev@mosaic.network>"]
+edition = "2021"
+license = "LGPL-3.0-or-later"
+repository = "https://gitlab.dlabs.hu/mosaic-trust-network/iop-rs"
+
+[dependencies]
+blake3 = { version = "1", default-features = false }
+bs58 = { version = "0.5", default-features = false, features = ["alloc"] }
+serde = { version = "1", default-features = false, features = ["derive", "alloc"] }
+serde_json = { version = "1", default-features = false, features = ["alloc"] }
+
+# Substrate SCALE codec — optional, enabled with "substrate" feature
+parity-scale-codec = { version = "3", default-features = false, features = ["derive", "max-encoded-len"], optional = true }
+scale-info = { version = "2", default-features = false, features = ["derive"], optional = true }
+
+# IOP reuse (keyvault crypto is blockchain-agnostic)
+iop-keyvault = "0.0.16"
+
+[dev-dependencies]
+anyhow = "1"
+
+[features]
+default = ["std"]
+std = [
+    "blake3/std",
+    "bs58/std",
+    "serde/std",
+    "serde_json/std",
+    "parity-scale-codec?/std",
+    "scale-info?/std",
+]
+substrate = ["parity-scale-codec", "scale-info"]
