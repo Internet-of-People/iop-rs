@@ -44,6 +44,11 @@ use iop_morpheus_proto::{
 use iop_morpheus_sdk::vault as hd_morpheus;
 use iop_vault::{BoundPlugin, Vault, VaultPlugin};
 
+// Explicit imports to resolve ambiguity between iop_keyvault_wasm and json_digest_wasm
+// (both crates export identical err_to_js and MapJsError definitions)
+pub use iop_keyvault_wasm::err_to_js;
+pub use iop_keyvault_wasm::MapJsError;
+
 pub use iop_keyvault_wasm::*;
 pub use iop_proto_wasm::*;
 pub use json_digest_wasm::{digest, selective_digest, stringify, wrap_with_nonce};
