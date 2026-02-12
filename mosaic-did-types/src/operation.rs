@@ -15,7 +15,7 @@ use crate::signature::MultiSignature;
 /// The rights model extends IOP Morpheus (Update, Impersonate) with
 /// additional capabilities for enterprise and compliance use cases.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
-#[cfg_attr(feature = "substrate", derive(Encode, Decode, TypeInfo))]
+#[cfg_attr(feature = "substrate", derive(parity_scale_codec::Encode, parity_scale_codec::Decode, parity_scale_codec::MaxEncodedLen, scale_info::TypeInfo))]
 pub enum Right {
     /// Can modify the DID Document (add/revoke keys, rights).
     Update,
@@ -60,7 +60,7 @@ impl core::fmt::Display for Right {
 
 /// Supported key types for verification methods.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
-#[cfg_attr(feature = "substrate", derive(Encode, Decode, TypeInfo))]
+#[cfg_attr(feature = "substrate", derive(parity_scale_codec::Encode, parity_scale_codec::Decode, parity_scale_codec::MaxEncodedLen, scale_info::TypeInfo))]
 pub enum KeyType {
     /// Ed25519 — default, required.
     Ed25519,
@@ -80,7 +80,7 @@ impl Default for KeyType {
 
 /// Key purposes per W3C DID Core verification relationships.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
-#[cfg_attr(feature = "substrate", derive(Encode, Decode, TypeInfo))]
+#[cfg_attr(feature = "substrate", derive(parity_scale_codec::Encode, parity_scale_codec::Decode, parity_scale_codec::MaxEncodedLen, scale_info::TypeInfo))]
 pub enum KeyPurpose {
     /// Prove control of DID (login, challenge-response).
     Authentication,
@@ -99,7 +99,7 @@ pub enum KeyPurpose {
 /// All operations are submitted inside `SignedOperation` bundles within an
 /// atomic `submit_did_operations` batch.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
-#[cfg_attr(feature = "substrate", derive(Encode, Decode, TypeInfo))]
+#[cfg_attr(feature = "substrate", derive(parity_scale_codec::Encode, parity_scale_codec::Decode, scale_info::TypeInfo))]
 pub enum DidOperation {
     /// Add a new key to the DID document.
     ///
@@ -174,7 +174,7 @@ impl DidOperation {
 
 /// A top-level SSI operation: either a DID operation or a BeforeProof timestamp.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
-#[cfg_attr(feature = "substrate", derive(Encode, Decode, TypeInfo))]
+#[cfg_attr(feature = "substrate", derive(parity_scale_codec::Encode, parity_scale_codec::Decode, scale_info::TypeInfo))]
 pub enum SsiOperation {
     /// A signed DID document operation.
     Did(SignedDidOperation),
@@ -187,7 +187,7 @@ pub enum SsiOperation {
 /// The signature proves the signer has authority over the operation.
 /// The nonce provides replay protection.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
-#[cfg_attr(feature = "substrate", derive(Encode, Decode, TypeInfo))]
+#[cfg_attr(feature = "substrate", derive(parity_scale_codec::Encode, parity_scale_codec::Decode, scale_info::TypeInfo))]
 pub struct SignedDidOperation {
     /// The DID operation to execute.
     pub operation: DidOperation,
@@ -201,7 +201,7 @@ pub struct SignedDidOperation {
 
 /// Record stored on-chain for a registered BeforeProof.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
-#[cfg_attr(feature = "substrate", derive(Encode, Decode, TypeInfo))]
+#[cfg_attr(feature = "substrate", derive(parity_scale_codec::Encode, parity_scale_codec::Decode, parity_scale_codec::MaxEncodedLen, scale_info::TypeInfo))]
 pub struct BeforeProofRecord {
     /// Block height at which the proof was registered.
     pub block_height: u32,
@@ -211,7 +211,7 @@ pub struct BeforeProofRecord {
 
 /// Type of DID operation (for events, without carrying full data).
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
-#[cfg_attr(feature = "substrate", derive(Encode, Decode, TypeInfo))]
+#[cfg_attr(feature = "substrate", derive(parity_scale_codec::Encode, parity_scale_codec::Decode, scale_info::TypeInfo))]
 pub enum DidOperationType {
     AddKey,
     RevokeKey,

@@ -8,11 +8,11 @@ license = "LGPL-3.0-or-later"
 repository = "https://gitlab.dlabs.hu/mosaic-trust-network/iop-rs"
 
 [dependencies]
-mosaic-did-types = { path = "../mosaic-did-types", default-features = false }
+mosaic-did-types = { path = "../mosaic-did-types", default-features = false, features = ["substrate"] }
 
-# Substrate dependencies
-frame-support = { version = "37", default-features = false }
-frame-system = { version = "37", default-features = false }
+# Substrate dependencies (polkadot-stable2503 / polkadot-sdk 2.0)
+frame-support = { version = "38", default-features = false }
+frame-system = { version = "38", default-features = false }
 parity-scale-codec = { version = "3", default-features = false, features = ["derive", "max-encoded-len"] }
 scale-info = { version = "2", default-features = false, features = ["derive"] }
 sp-runtime = { version = "39", default-features = false }
@@ -21,6 +21,7 @@ sp-std = { version = "14", default-features = false }
 [dev-dependencies]
 sp-core = { version = "34" }
 sp-io = { version = "38" }
+serde_json = "1"
 
 [features]
 default = ["std"]

@@ -3,24 +3,17 @@
 //! Substrate pallet implementing the `did:mosaic` DID method for the
 //! Mosaic Trust Network. Derived from the IOP Morpheus SSI Stack.
 //!
-//! ## Overview
+//! ## Architecture (v2 — Materialized State)
 //!
-//! This pallet provides:
-//! - **DID Document management** — Keys, rights, deactivation
-//! - **BeforeProof timestamping** — Proof-of-existence for Verifiable Credentials
+//! DID document state is stored directly on-chain using `OnChainDidState`.
+//! No event-log replay is needed for validation — the pallet reads and
+//! mutates state in-place. Events carry full operation payloads for
+//! off-chain indexers to reconstruct history.
 //!
 //! ## Anti-Censorship Design
 //!
-//! Nodes cannot censor DID/VC requests. The transaction submitter account != DID controller.
-//! Authorization is verified via cryptographic signatures inside operations, not transaction origin.
-//!
-//! ## Extrinsics
-//!
-//! - `submit_did_operations` — Atomic batch of signed DID operations (the primary entry point)
-//! - `register_before_proof` — Timestamp a content hash for proof-of-existence
-//!
-//! All convenience wrappers (register_did, update_did, tombstone_did) internally route
-//! through `submit_did_operations`.
+//! Any account can submit operations for any DID. Authorization is verified
+//! via cryptographic signatures inside operations, not transaction origin.
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
@@ -30,6 +23,7 @@ pub use pallet::*;
 mod tests;
 
 mod validation;
+pub mod state;
 
 #[frame_support::pallet]
 pub mod pallet {
@@ -38,8 +32,13 @@ pub mod pallet {
     use sp_std::vec::Vec;
 
     use mosaic_did_types::{
-        BeforeProofRecord, ContentId, Did, DidOperation, DidOperationType,
+        BeforeProofRecord, ContentId, Did, DidOperation,
         KeyId, KeyPurpose, KeyType, Right, SignedDidOperation, SsiOperation,
+    };
+
+    use crate::state::{
+        OnChainDidState, OnChainVerificationMethod, OnChainRightGrant,
+        MAX_KEY_ID_LEN, MAX_PUBLIC_KEY_LEN, MAX_PURPOSES_PER_KEY,
     };
 
     use crate::validation;
@@ -52,10 +51,6 @@ pub mod pallet {
         /// Maximum operations per transaction.
         #[pallet::constant]
         type MaxOperationsPerTx: Get<u32>;
-
-        /// Maximum operations stored per block per DID.
-        #[pallet::constant]
-        type MaxOpsPerBlock: Get<u32>;
 
         /// Weight information for extrinsics.
         type WeightInfo: WeightInfo;
@@ -82,36 +77,14 @@ pub mod pallet {
 
     // ========== STORAGE ==========
 
-    /// All operations for a DID, indexed by block height.
-    /// This is the append-only audit log from which DID Documents are reconstructed.
+    /// Materialized DID document state, keyed by DID.
+    /// This is the single source of truth — read and mutated in place.
     #[pallet::storage]
-    #[pallet::getter(fn did_operations)]
-    pub type DidOperations<T: Config> = StorageDoubleMap<
+    #[pallet::getter(fn did_state)]
+    pub type DidStates<T: Config> = StorageMap<
         _,
         Blake2_128Concat, Did,
-        Blake2_128Concat, BlockNumberFor<T>,
-        BoundedVec<DidOperation, T::MaxOpsPerBlock>,
-        ValueQuery,
-    >;
-
-    /// Replay protection nonce per DID per key.
-    #[pallet::storage]
-    #[pallet::getter(fn did_key_nonce)]
-    pub type DidKeyNonce<T: Config> = StorageDoubleMap<
-        _,
-        Blake2_128Concat, Did,
-        Blake2_128Concat, Vec<u8>, // KeyId bytes
-        u64,
-        ValueQuery,
-    >;
-
-    /// Tombstoned DIDs (block at which deactivated).
-    #[pallet::storage]
-    #[pallet::getter(fn tombstoned_dids)]
-    pub type TombstonedDids<T: Config> = StorageMap<
-        _,
-        Blake2_128Concat, Did,
-        BlockNumberFor<T>,
+        OnChainDidState,
         OptionQuery,
     >;
 
@@ -122,17 +95,6 @@ pub mod pallet {
         _,
         Blake2_128Concat, ContentId,
         BeforeProofRecord,
-        OptionQuery,
-    >;
-
-    /// DID existence tracker — records which DIDs have been created.
-    /// The value is the block height at which the DID was first created.
-    #[pallet::storage]
-    #[pallet::getter(fn did_created_at)]
-    pub type DidCreatedAt<T: Config> = StorageMap<
-        _,
-        Blake2_128Concat, Did,
-        BlockNumberFor<T>,
         OptionQuery,
     >;
 
@@ -148,10 +110,38 @@ pub mod pallet {
             block_height: BlockNumberFor<T>,
         },
 
-        /// Individual DID operation applied (emitted per-operation within batch).
-        DidOperationApplied {
+        /// A key was added to a DID document.
+        KeyAdded {
             did: Did,
-            operation_type: DidOperationType,
+            key_id: Vec<u8>,
+            key_type: KeyType,
+            public_key: Vec<u8>,
+            purposes: Vec<KeyPurpose>,
+            expires_at_height: Option<u32>,
+            block_height: BlockNumberFor<T>,
+        },
+
+        /// A key was revoked from a DID document.
+        KeyRevoked {
+            did: Did,
+            key_id: Vec<u8>,
+            block_height: BlockNumberFor<T>,
+        },
+
+        /// A right was granted to a key.
+        RightAdded {
+            did: Did,
+            key_id: Vec<u8>,
+            right: Right,
+            expires_at_height: Option<u32>,
+            block_height: BlockNumberFor<T>,
+        },
+
+        /// A right was revoked from a key.
+        RightRevoked {
+            did: Did,
+            key_id: Vec<u8>,
+            right: Right,
             block_height: BlockNumberFor<T>,
         },
 
@@ -198,22 +188,17 @@ pub mod pallet {
         DidMismatch,
         /// The public key is invalid or unsupported.
         InvalidPublicKey,
+        /// Storage bounds exceeded (too many keys, rights, or nonces).
+        StorageBoundsExceeded,
     }
 
     // ========== EXTRINSICS ==========
 
     #[pallet::call]
     impl<T: Config> Pallet<T> {
-        /// Submit a batch of SSI operations (DID operations and/or BeforeProof timestamps).
+        /// Submit a batch of SSI operations atomically.
         ///
-        /// **Atomicity Guarantee:** All operations succeed or all fail. No partial state changes.
-        ///
-        /// **Anti-Censorship:** Any account can submit for any DID; authorization is verified
-        /// via cryptographic signatures inside each `SignedDidOperation`.
-        ///
-        /// # Parameters
-        /// - `origin`: Transaction sender (pays fees; NOT necessarily the DID controller)
-        /// - `operations`: Batch of SSI operations
+        /// **Anti-Censorship:** Any account can submit for any DID.
         #[pallet::call_index(0)]
         #[pallet::weight(T::WeightInfo::submit_did_operations(operations.len() as u32))]
         pub fn submit_did_operations(
@@ -222,17 +207,18 @@ pub mod pallet {
         ) -> DispatchResult {
             let submitter = ensure_signed(origin)?;
             let block_height = <frame_system::Pallet<T>>::block_number();
+            let height_u32: u32 = Self::block_number_to_u32(block_height);
 
             ensure!(
                 operations.len() <= T::MaxOperationsPerTx::get() as usize,
                 Error::<T>::TooManyOperations
             );
 
-            // Phase 1: Validate all operations (dry run)
+            // Phase 1: Validate all operations (dry run — reads state but doesn't mutate)
             for op in &operations {
                 match op {
                     SsiOperation::Did(signed_op) => {
-                        validation::validate_did_operation::<T>(signed_op, block_height)?;
+                        validation::validate_did_operation::<T>(signed_op, height_u32)?;
                     }
                     SsiOperation::BeforeProof(content_id) => {
                         ensure!(
@@ -243,19 +229,18 @@ pub mod pallet {
                 }
             }
 
-            // Phase 2: Apply all operations (commit)
+            // Phase 2: Apply all operations (commit — mutates state)
             for op in &operations {
                 match op {
                     SsiOperation::Did(signed_op) => {
-                        Self::apply_did_operation(signed_op, block_height)?;
+                        Self::apply_did_operation(signed_op, height_u32, block_height)?;
                     }
                     SsiOperation::BeforeProof(content_id) => {
-                        Self::apply_before_proof(*content_id, block_height)?;
+                        Self::apply_before_proof(*content_id, height_u32, block_height)?;
                     }
                 }
             }
 
-            // Emit batch event
             Self::deposit_event(Event::SsiBatchApplied {
                 submitter,
                 operation_count: operations.len() as u32,
@@ -266,23 +251,12 @@ pub mod pallet {
         }
 
         /// Register a content hash for proof-of-existence (convenience wrapper).
-        ///
-        /// Before issuing a Verifiable Credential, the issuer registers its hash.
-        /// This proves the document existed at block height N.
-        ///
-        /// # Parameters
-        /// - `origin`: Transaction sender
-        /// - `content_id`: BLAKE3 hash of the content being timestamped
         #[pallet::call_index(1)]
         #[pallet::weight(T::WeightInfo::register_before_proof())]
         pub fn register_before_proof(
             origin: OriginFor<T>,
             content_id: ContentId,
         ) -> DispatchResult {
-            let submitter = ensure_signed(origin.clone())?;
-            let block_height = <frame_system::Pallet<T>>::block_number();
-
-            // Route through submit_did_operations for consistency
             Self::submit_did_operations(
                 origin,
                 sp_std::vec![SsiOperation::BeforeProof(content_id)],
@@ -293,56 +267,141 @@ pub mod pallet {
     // ========== INTERNAL METHODS ==========
 
     impl<T: Config> Pallet<T> {
-        /// Apply a single signed DID operation to storage.
+        /// Apply a single signed DID operation by mutating `OnChainDidState` in place.
         fn apply_did_operation(
             signed_op: &SignedDidOperation,
+            height_u32: u32,
             block_height: BlockNumberFor<T>,
         ) -> DispatchResult {
-            let did = signed_op.operation.did();
-            let op_type = DidOperationType::from(&signed_op.operation);
+            let did = *signed_op.operation.did();
 
-            // Store the operation in the audit log
-            DidOperations::<T>::try_mutate(
-                did,
-                block_height,
-                |ops| -> DispatchResult {
-                    ops.try_push(signed_op.operation.clone())
-                        .map_err(|_| Error::<T>::TooManyOperations)?;
-                    Ok(())
-                },
-            )?;
+            match &signed_op.operation {
+                DidOperation::AddKey { did: _, key_id, key_type, public_key, purposes, expires_at_height } => {
+                    let key_id_bytes: BoundedVec<u8, ConstU32<MAX_KEY_ID_LEN>> =
+                        key_id.as_bytes().to_vec().try_into()
+                            .map_err(|_| Error::<T>::StorageBoundsExceeded)?;
+                    let pk_bytes: BoundedVec<u8, ConstU32<MAX_PUBLIC_KEY_LEN>> =
+                        public_key.clone().try_into()
+                            .map_err(|_| Error::<T>::InvalidPublicKey)?;
+                    let bounded_purposes: BoundedVec<KeyPurpose, ConstU32<MAX_PURPOSES_PER_KEY>> =
+                        purposes.clone().try_into()
+                            .map_err(|_| Error::<T>::StorageBoundsExceeded)?;
 
-            // Update nonce
-            DidKeyNonce::<T>::mutate(
-                did,
-                signed_op.signer_key_id.as_bytes().to_vec(),
-                |nonce| {
-                    *nonce = signed_op.nonce;
-                },
-            );
+                    let vm = OnChainVerificationMethod {
+                        id: key_id_bytes,
+                        key_type: *key_type,
+                        controller: did,
+                        public_key: pk_bytes,
+                        purposes: bounded_purposes,
+                        added_at_height: height_u32,
+                        expires_at_height: *expires_at_height,
+                        revoked_at_height: None,
+                    };
 
-            // Handle DID creation (implicit on first AddKey)
-            if let DidOperation::AddKey { .. } = &signed_op.operation {
-                if !DidCreatedAt::<T>::contains_key(did) {
-                    DidCreatedAt::<T>::insert(did, block_height);
+                    DidStates::<T>::try_mutate(did, |maybe_state| -> DispatchResult {
+                        let state = maybe_state.get_or_insert_with(|| OnChainDidState::new(did));
+                        state.keys.try_push(vm)
+                            .map_err(|_| Error::<T>::StorageBoundsExceeded)?;
+
+                        // Update nonce
+                        Self::update_nonce(state, &signed_op.signer_key_id, signed_op.nonce)?;
+                        Ok(())
+                    })?;
+
+                    Self::deposit_event(Event::KeyAdded {
+                        did,
+                        key_id: key_id.as_bytes().to_vec(),
+                        key_type: *key_type,
+                        public_key: public_key.clone(),
+                        purposes: purposes.clone(),
+                        expires_at_height: *expires_at_height,
+                        block_height,
+                    });
+                }
+
+                DidOperation::RevokeKey { did: _, key_id } => {
+                    DidStates::<T>::try_mutate(did, |maybe_state| -> DispatchResult {
+                        let state = maybe_state.as_mut().ok_or(Error::<T>::DidNotFound)?;
+                        let key = state.find_key_mut(key_id.as_bytes())
+                            .ok_or(Error::<T>::KeyNotFound)?;
+                        key.revoked_at_height = Some(height_u32);
+                        Self::update_nonce(state, &signed_op.signer_key_id, signed_op.nonce)?;
+                        Ok(())
+                    })?;
+
+                    Self::deposit_event(Event::KeyRevoked {
+                        did,
+                        key_id: key_id.as_bytes().to_vec(),
+                        block_height,
+                    });
+                }
+
+                DidOperation::AddRight { did: _, key_id, right, expires_at_height } => {
+                    let key_id_bytes: BoundedVec<u8, ConstU32<MAX_KEY_ID_LEN>> =
+                        key_id.as_bytes().to_vec().try_into()
+                            .map_err(|_| Error::<T>::StorageBoundsExceeded)?;
+
+                    let grant = OnChainRightGrant {
+                        key_id: key_id_bytes,
+                        right: *right,
+                        granted_at_height: height_u32,
+                        expires_at_height: *expires_at_height,
+                        revoked_at_height: None,
+                    };
+
+                    DidStates::<T>::try_mutate(did, |maybe_state| -> DispatchResult {
+                        let state = maybe_state.as_mut().ok_or(Error::<T>::DidNotFound)?;
+                        state.rights.try_push(grant)
+                            .map_err(|_| Error::<T>::StorageBoundsExceeded)?;
+                        Self::update_nonce(state, &signed_op.signer_key_id, signed_op.nonce)?;
+                        Ok(())
+                    })?;
+
+                    Self::deposit_event(Event::RightAdded {
+                        did,
+                        key_id: key_id.as_bytes().to_vec(),
+                        right: *right,
+                        expires_at_height: *expires_at_height,
+                        block_height,
+                    });
+                }
+
+                DidOperation::RevokeRight { did: _, key_id, right } => {
+                    DidStates::<T>::try_mutate(did, |maybe_state| -> DispatchResult {
+                        let state = maybe_state.as_mut().ok_or(Error::<T>::DidNotFound)?;
+                        // Find most recent active grant for this key+right
+                        let grant = state.rights.iter_mut().rev().find(|rg| {
+                            rg.key_id.as_slice() == key_id.as_bytes()
+                                && rg.right == *right
+                                && rg.revoked_at_height.is_none()
+                        }).ok_or(Error::<T>::RightNotFound)?;
+                        grant.revoked_at_height = Some(height_u32);
+                        Self::update_nonce(state, &signed_op.signer_key_id, signed_op.nonce)?;
+                        Ok(())
+                    })?;
+
+                    Self::deposit_event(Event::RightRevoked {
+                        did,
+                        key_id: key_id.as_bytes().to_vec(),
+                        right: *right,
+                        block_height,
+                    });
+                }
+
+                DidOperation::TombstoneDid { did: _ } => {
+                    DidStates::<T>::try_mutate(did, |maybe_state| -> DispatchResult {
+                        let state = maybe_state.as_mut().ok_or(Error::<T>::DidNotFound)?;
+                        state.tombstoned_at_height = Some(height_u32);
+                        Self::update_nonce(state, &signed_op.signer_key_id, signed_op.nonce)?;
+                        Ok(())
+                    })?;
+
+                    Self::deposit_event(Event::DidTombstoned {
+                        did,
+                        block_height,
+                    });
                 }
             }
-
-            // Handle tombstoning
-            if let DidOperation::TombstoneDid { did } = &signed_op.operation {
-                TombstonedDids::<T>::insert(did, block_height);
-                Self::deposit_event(Event::DidTombstoned {
-                    did: *did,
-                    block_height,
-                });
-            }
-
-            // Emit per-operation event
-            Self::deposit_event(Event::DidOperationApplied {
-                did: *did,
-                operation_type: op_type,
-                block_height,
-            });
 
             Ok(())
         }
@@ -350,6 +409,7 @@ pub mod pallet {
         /// Apply a BeforeProof timestamp registration.
         fn apply_before_proof(
             content_id: ContentId,
+            height_u32: u32,
             block_height: BlockNumberFor<T>,
         ) -> DispatchResult {
             ensure!(
@@ -360,7 +420,7 @@ pub mod pallet {
             BeforeProofs::<T>::insert(
                 &content_id,
                 BeforeProofRecord {
-                    block_height: Self::block_number_to_u32(block_height),
+                    block_height: height_u32,
                     extrinsic_index: 0, // TODO: get actual extrinsic index
                 },
             );
@@ -373,8 +433,28 @@ pub mod pallet {
             Ok(())
         }
 
+        /// Update the nonce for a signer key in the DID state.
+        fn update_nonce(
+            state: &mut OnChainDidState,
+            signer_key_id: &KeyId,
+            nonce: u64,
+        ) -> DispatchResult {
+            let key_bytes: BoundedVec<u8, ConstU32<MAX_KEY_ID_LEN>> =
+                signer_key_id.as_bytes().to_vec().try_into()
+                    .map_err(|_| Error::<T>::StorageBoundsExceeded)?;
+
+            // Try to update existing entry first
+            if let Some(existing) = state.nonces.get_mut(&key_bytes) {
+                *existing = nonce;
+            } else {
+                state.nonces.try_insert(key_bytes, nonce)
+                    .map_err(|_| Error::<T>::StorageBoundsExceeded)?;
+            }
+            Ok(())
+        }
+
         /// Helper to convert BlockNumber to u32.
-        fn block_number_to_u32(block_number: BlockNumberFor<T>) -> u32 {
+        pub(crate) fn block_number_to_u32(block_number: BlockNumberFor<T>) -> u32 {
             use sp_runtime::traits::SaturatedConversion;
             block_number.saturated_into()
         }

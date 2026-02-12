@@ -20,6 +20,7 @@ members = [
     "sdk-wasm",
     "vault"
 ]
+exclude = ["pallet-mosaic-did"]
 
 # Experiment for optimizing WASM and FFI binary sizes
 [profile.release]
@@ -43,6 +44,7 @@ iop-vault = { path="./vault" }
 json-digest-wasm = { path="./json-digest-wasm" }
 json-digest = { path="./json-digest" }
 mosaic-did-types = { path="./mosaic-did-types" }
+pallet-mosaic-did = { path="./pallet-mosaic-did" }
 
 # Local clone at parent folder
 #iop-keyvault = { path="../keyvault-rs/keyvault" }
